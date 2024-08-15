@@ -1,0 +1,5 @@
+/data
+/outputs
+/save
+/notebooks/save/*
+/notebooks/wandb/*
