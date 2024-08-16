@@ -3,3 +3,4 @@
 /save
 /notebooks/save/*
 /notebooks/wandb/*
+/config
