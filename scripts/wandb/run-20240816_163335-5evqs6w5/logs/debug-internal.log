@@ -1,0 +1,221 @@
+2024-08-16 16:33:35,792 INFO    StreamThr :208081 [internal.py:wandb_internal():85] W&B internal server running at pid: 208081, started at: 2024-08-16 16:33:35.791719
+2024-08-16 16:33:35,793 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status
+2024-08-16 16:33:35,793 INFO    WriterThread:208081 [datastore.py:open_for_write():87] open: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/run-5evqs6w5.wandb
+2024-08-16 16:33:35,795 DEBUG   SenderThread:208081 [sender.py:send():379] send: header
+2024-08-16 16:33:35,802 DEBUG   SenderThread:208081 [sender.py:send():379] send: run
+2024-08-16 16:33:36,174 INFO    SenderThread:208081 [dir_watcher.py:__init__():211] watching files in: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files
+2024-08-16 16:33:36,174 INFO    SenderThread:208081 [sender.py:_start_run_threads():1188] run started: 5evqs6w5 with start time 1723818815.791291
+2024-08-16 16:33:36,179 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: check_version
+2024-08-16 16:33:36,179 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: check_version
+2024-08-16 16:33:36,237 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: run_start
+2024-08-16 16:33:36,244 DEBUG   HandlerThread:208081 [system_info.py:__init__():26] System info init
+2024-08-16 16:33:36,244 DEBUG   HandlerThread:208081 [system_info.py:__init__():41] System info init done
+2024-08-16 16:33:36,244 INFO    HandlerThread:208081 [system_monitor.py:start():194] Starting system monitor
+2024-08-16 16:33:36,244 INFO    SystemMonitor:208081 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-08-16 16:33:36,244 INFO    HandlerThread:208081 [system_monitor.py:probe():214] Collecting system info
+2024-08-16 16:33:36,245 INFO    SystemMonitor:208081 [interfaces.py:start():188] Started cpu monitoring
+2024-08-16 16:33:36,246 INFO    SystemMonitor:208081 [interfaces.py:start():188] Started disk monitoring
+2024-08-16 16:33:36,246 INFO    SystemMonitor:208081 [interfaces.py:start():188] Started gpu monitoring
+2024-08-16 16:33:36,247 INFO    SystemMonitor:208081 [interfaces.py:start():188] Started memory monitoring
+2024-08-16 16:33:36,247 INFO    SystemMonitor:208081 [interfaces.py:start():188] Started network monitoring
+2024-08-16 16:33:36,256 DEBUG   HandlerThread:208081 [system_info.py:probe():152] Probing system
+2024-08-16 16:33:36,258 DEBUG   HandlerThread:208081 [system_info.py:_probe_git():137] Probing git
+2024-08-16 16:33:36,269 DEBUG   HandlerThread:208081 [system_info.py:_probe_git():145] Probing git done
+2024-08-16 16:33:36,269 DEBUG   HandlerThread:208081 [system_info.py:probe():200] Probing system done
+2024-08-16 16:33:36,269 DEBUG   HandlerThread:208081 [system_monitor.py:probe():223] {'os': 'Linux-6.5.0-44-generic-x86_64-with-glibc2.38', 'python': '3.10.14', 'heartbeatAt': '2024-08-16T14:33:36.256517', 'startedAt': '2024-08-16T14:33:35.777216', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py', 'codePathLocal': 'Tutorial_Annotation.py', 'codePath': 'scripts/Tutorial_Annotation.py', 'git': {'remote': 'https://github.com/00dylan00/scGPT_playground.git', 'commit': '5b2896dcee20fce8649df33e4c7b3200bdd9d664'}, 'email': 'dylandalton2021@gmail.com', 'root': '/aloy/home/ddalton/projects/scGPT_playground', 'host': 'bigboy', 'username': 'ddalton', 'executable': '/home/ddalton/miniconda3/envs/scgpt/bin/python', 'cpu_count': 8, 'cpu_count_logical': 16, 'cpu_freq': {'current': 4252.406249999999, 'min': 400.0, 'max': 5573.0}, 'cpu_freq_per_core': [{'current': 4400.924, 'min': 400.0, 'max': 5573.0}, {'current': 4280.2, 'min': 400.0, 'max': 5573.0}, {'current': 3738.876, 'min': 400.0, 'max': 5573.0}, {'current': 4463.336, 'min': 400.0, 'max': 5573.0}, {'current': 4491.416, 'min': 400.0, 'max': 5573.0}, {'current': 4461.239, 'min': 400.0, 'max': 5573.0}, {'current': 3936.728, 'min': 400.0, 'max': 5573.0}, {'current': 4354.981, 'min': 400.0, 'max': 5573.0}, {'current': 4482.03, 'min': 400.0, 'max': 5573.0}, {'current': 3687.492, 'min': 400.0, 'max': 5573.0}, {'current': 3591.993, 'min': 400.0, 'max': 5573.0}, {'current': 4486.094, 'min': 400.0, 'max': 5573.0}, {'current': 4482.45, 'min': 400.0, 'max': 5573.0}, {'current': 4484.402, 'min': 400.0, 'max': 5573.0}, {'current': 4457.842, 'min': 400.0, 'max': 5573.0}, {'current': 4461.192, 'min': 400.0, 'max': 5573.0}], 'disk': {'/': {'total': 1831.6662673950195, 'used': 567.5209426879883}}, 'gpu': 'NVIDIA GeForce RTX 4090', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 4090', 'memory_total': 25757220864}], 'memory': {'total': 61.936492919921875}}
+2024-08-16 16:33:36,269 INFO    HandlerThread:208081 [system_monitor.py:probe():224] Finished collecting system info
+2024-08-16 16:33:36,269 INFO    HandlerThread:208081 [system_monitor.py:probe():227] Publishing system info
+2024-08-16 16:33:36,269 DEBUG   HandlerThread:208081 [system_info.py:_save_conda():209] Saving list of conda packages installed into the current environment
+2024-08-16 16:33:37,175 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/conda-environment.yaml
+2024-08-16 16:33:37,787 DEBUG   HandlerThread:208081 [system_info.py:_save_conda():224] Saving conda packages done
+2024-08-16 16:33:37,788 INFO    HandlerThread:208081 [system_monitor.py:probe():229] Finished publishing system info
+2024-08-16 16:33:37,789 DEBUG   SenderThread:208081 [sender.py:send():379] send: files
+2024-08-16 16:33:37,789 INFO    SenderThread:208081 [sender.py:_save_file():1454] saving file wandb-metadata.json with policy now
+2024-08-16 16:33:37,853 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: python_packages
+2024-08-16 16:33:37,853 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: python_packages
+2024-08-16 16:33:37,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 16:33:37,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:37,855 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 16:33:38,075 DEBUG   SenderThread:208081 [sender.py:send():379] send: telemetry
+2024-08-16 16:33:38,175 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/conda-environment.yaml
+2024-08-16 16:33:38,175 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/wandb-metadata.json
+2024-08-16 16:33:38,176 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/requirements.txt
+2024-08-16 16:33:38,176 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:33:38,402 INFO    wandb-upload_0:208081 [upload_job.py:push():130] Uploaded file /tmp/tmphh6oxm5_wandb/45xg8c3m-wandb-metadata.json
+2024-08-16 16:33:38,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:39,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:40,180 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:33:40,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:41,076 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 16:33:41,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:42,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:43,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:44,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:45,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:46,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 16:33:46,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:47,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:48,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:49,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:50,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:51,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:52,853 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 16:33:52,854 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 16:33:52,894 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:52,996 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 16:33:53,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:54,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:55,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:56,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:57,226 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:33:57,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:58,227 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:33:58,854 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 16:33:58,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:33:59,855 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:34:00,711 DEBUG   SenderThread:208081 [sender.py:send():379] send: exit
+2024-08-16 16:34:00,711 INFO    SenderThread:208081 [sender.py:send_exit():586] handling exit code: 0
+2024-08-16 16:34:00,711 INFO    SenderThread:208081 [sender.py:send_exit():588] handling runtime: 24
+2024-08-16 16:34:00,713 INFO    SenderThread:208081 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 16:34:00,713 INFO    SenderThread:208081 [sender.py:send_exit():594] send defer
+2024-08-16 16:34:00,713 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,714 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 0
+2024-08-16 16:34:00,714 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,714 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 0
+2024-08-16 16:34:00,714 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 1
+2024-08-16 16:34:00,714 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,715 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 1
+2024-08-16 16:34:00,715 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,715 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 1
+2024-08-16 16:34:00,715 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 2
+2024-08-16 16:34:00,715 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,716 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 2
+2024-08-16 16:34:00,716 INFO    HandlerThread:208081 [system_monitor.py:finish():203] Stopping system monitor
+2024-08-16 16:34:00,716 INFO    HandlerThread:208081 [interfaces.py:finish():200] Joined cpu monitor
+2024-08-16 16:34:00,716 DEBUG   SystemMonitor:208081 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-08-16 16:34:00,716 INFO    HandlerThread:208081 [interfaces.py:finish():200] Joined disk monitor
+2024-08-16 16:34:00,716 DEBUG   SystemMonitor:208081 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-08-16 16:34:00,717 DEBUG   SystemMonitor:208081 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-08-16 16:34:00,761 INFO    HandlerThread:208081 [interfaces.py:finish():200] Joined gpu monitor
+2024-08-16 16:34:00,761 INFO    HandlerThread:208081 [interfaces.py:finish():200] Joined memory monitor
+2024-08-16 16:34:00,762 INFO    HandlerThread:208081 [interfaces.py:finish():200] Joined network monitor
+2024-08-16 16:34:00,762 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,762 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 2
+2024-08-16 16:34:00,762 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 3
+2024-08-16 16:34:00,762 DEBUG   SenderThread:208081 [sender.py:send():379] send: stats
+2024-08-16 16:34:00,762 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,763 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 3
+2024-08-16 16:34:00,764 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,764 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 3
+2024-08-16 16:34:00,764 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 4
+2024-08-16 16:34:00,764 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,765 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 4
+2024-08-16 16:34:00,765 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,765 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 4
+2024-08-16 16:34:00,765 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 5
+2024-08-16 16:34:00,765 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,766 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 5
+2024-08-16 16:34:00,766 DEBUG   SenderThread:208081 [sender.py:send():379] send: summary
+2024-08-16 16:34:00,767 INFO    SenderThread:208081 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 16:34:00,768 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,768 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 5
+2024-08-16 16:34:00,768 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 6
+2024-08-16 16:34:00,768 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,769 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 6
+2024-08-16 16:34:00,769 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,769 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 6
+2024-08-16 16:34:00,771 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 16:34:00,906 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 7
+2024-08-16 16:34:00,907 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:00,907 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 7
+2024-08-16 16:34:00,907 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:00,907 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 7
+2024-08-16 16:34:01,231 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/config.yaml
+2024-08-16 16:34:01,231 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/wandb-summary.json
+2024-08-16 16:34:01,711 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 16:34:02,231 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:34:03,115 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 8
+2024-08-16 16:34:03,115 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 16:34:03,115 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:03,116 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 8
+2024-08-16 16:34:03,116 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:03,117 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 8
+2024-08-16 16:34:03,117 INFO    SenderThread:208081 [job_builder.py:build():440] Attempting to build job artifact
+2024-08-16 16:34:03,118 INFO    SenderThread:208081 [job_builder.py:_get_source_type():569] is repo sourced job
+2024-08-16 16:34:03,128 INFO    SenderThread:208081 [job_builder.py:build():545] adding wandb-job metadata file
+2024-08-16 16:34:03,138 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 9
+2024-08-16 16:34:03,139 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:03,139 DEBUG   SenderThread:208081 [sender.py:send():379] send: artifact
+2024-08-16 16:34:03,139 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 9
+2024-08-16 16:34:03,232 INFO    Thread-12 :208081 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:34:03,712 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 16:34:04,677 INFO    wandb-upload_1:208081 [upload_job.py:push():88] Uploaded file /tmp/tmp9mloejf1/wandb-job.json
+2024-08-16 16:34:04,735 INFO    wandb-upload_0:208081 [upload_job.py:push():88] Uploaded file /home/ddalton/.local/share/wandb/artifacts/staging/tmprjruud_u
+2024-08-16 16:34:05,622 INFO    SenderThread:208081 [sender.py:send_artifact():1537] sent artifact job-https___github.com_00dylan00_scGPT_playground.git_scripts_Tutorial_Annotation.py - {'id': 'QXJ0aWZhY3Q6MTE1MjkxMzM0NA==', 'state': 'PENDING', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjQxNDY4MTIyNg==', 'latestArtifact': None}}
+2024-08-16 16:34:05,622 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:05,622 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 9
+2024-08-16 16:34:05,622 INFO    SenderThread:208081 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-08-16 16:34:06,233 INFO    SenderThread:208081 [dir_watcher.py:finish():388] scan: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files
+2024-08-16 16:34:06,234 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/config.yaml config.yaml
+2024-08-16 16:34:06,234 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/conda-environment.yaml conda-environment.yaml
+2024-08-16 16:34:06,235 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/wandb-metadata.json wandb-metadata.json
+2024-08-16 16:34:06,236 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/requirements.txt requirements.txt
+2024-08-16 16:34:06,236 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log output.log
+2024-08-16 16:34:06,237 INFO    SenderThread:208081 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/wandb-summary.json wandb-summary.json
+2024-08-16 16:34:06,238 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 10
+2024-08-16 16:34:06,238 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 16:34:06,239 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:06,239 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 10
+2024-08-16 16:34:06,240 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:06,240 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 10
+2024-08-16 16:34:06,240 INFO    SenderThread:208081 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-16 16:34:06,564 INFO    wandb-upload_1:208081 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/config.yaml
+2024-08-16 16:34:06,584 INFO    wandb-upload_0:208081 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/conda-environment.yaml
+2024-08-16 16:34:06,646 INFO    wandb-upload_4:208081 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/wandb-summary.json
+2024-08-16 16:34:06,657 INFO    wandb-upload_2:208081 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/requirements.txt
+2024-08-16 16:34:06,664 INFO    wandb-upload_3:208081 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/files/output.log
+2024-08-16 16:34:06,713 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 16:34:06,713 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 16:34:06,864 INFO    Thread-11 (_thread_body):208081 [sender.py:transition_state():614] send defer: 11
+2024-08-16 16:34:06,865 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:06,865 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 11
+2024-08-16 16:34:06,865 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:06,865 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 11
+2024-08-16 16:34:06,866 INFO    SenderThread:208081 [file_pusher.py:join():175] waiting for file pusher
+2024-08-16 16:34:06,866 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 12
+2024-08-16 16:34:06,866 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:06,867 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 12
+2024-08-16 16:34:06,867 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:06,867 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 12
+2024-08-16 16:34:06,867 INFO    SenderThread:208081 [file_stream.py:finish():601] file stream finish called
+2024-08-16 16:34:07,012 INFO    SenderThread:208081 [file_stream.py:finish():605] file stream finish is done
+2024-08-16 16:34:07,012 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 13
+2024-08-16 16:34:07,012 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:07,013 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 13
+2024-08-16 16:34:07,013 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:07,013 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 13
+2024-08-16 16:34:07,013 INFO    SenderThread:208081 [sender.py:transition_state():614] send defer: 14
+2024-08-16 16:34:07,013 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 16:34:07,014 DEBUG   SenderThread:208081 [sender.py:send():379] send: final
+2024-08-16 16:34:07,014 INFO    HandlerThread:208081 [handler.py:handle_request_defer():184] handle defer: 14
+2024-08-16 16:34:07,014 DEBUG   SenderThread:208081 [sender.py:send():379] send: footer
+2024-08-16 16:34:07,015 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: defer
+2024-08-16 16:34:07,015 INFO    SenderThread:208081 [sender.py:send_request_defer():610] handle sender defer: 14
+2024-08-16 16:34:07,016 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 16:34:07,016 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: server_info
+2024-08-16 16:34:07,016 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 16:34:07,017 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 16:34:07,017 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: get_summary
+2024-08-16 16:34:07,017 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: server_info
+2024-08-16 16:34:07,017 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: sampled_history
+2024-08-16 16:34:07,018 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 16:34:07,143 DEBUG   SenderThread:208081 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 16:34:07,143 INFO    MainThread:208081 [wandb_run.py:_footer_history_summary_info():4016] rendering history
+2024-08-16 16:34:07,144 INFO    MainThread:208081 [wandb_run.py:_footer_history_summary_info():4048] rendering summary
+2024-08-16 16:34:07,144 INFO    MainThread:208081 [wandb_run.py:_footer_sync_info():3975] logging synced files
+2024-08-16 16:34:07,144 DEBUG   HandlerThread:208081 [handler.py:handle_request():158] handle_request: shutdown
+2024-08-16 16:34:07,145 INFO    HandlerThread:208081 [handler.py:finish():882] shutting down handler
+2024-08-16 16:34:08,017 INFO    WriterThread:208081 [datastore.py:close():296] close: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_163335-5evqs6w5/run-5evqs6w5.wandb
+2024-08-16 16:34:08,143 INFO    SenderThread:208081 [sender.py:finish():1615] shutting down sender
+2024-08-16 16:34:08,143 INFO    SenderThread:208081 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-16 16:34:08,144 INFO    SenderThread:208081 [file_pusher.py:join():175] waiting for file pusher

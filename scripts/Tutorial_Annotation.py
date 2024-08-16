@@ -6,7 +6,7 @@ Structure:
     3. Load the pre-trained scGPT model
     4. Finetune scGPT with task-specific objectives
     5. Inference with fine-tuned scGPT model
-    6. Save output & model
+    6. Save output
 """
 
 #region 0. Imports, Variables & Functions
@@ -69,6 +69,19 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 sc.set_figure_params(figsize=(6, 6))
 os.environ["KMP_WARNINGS"] = "off"
 warnings.filterwarnings("ignore")
+
+
+
+
+if torch.cuda.is_available():
+    print("Available GPUs:", torch.cuda.device_count())
+    for i in range(torch.cuda.device_count()):
+        print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+else:
+    print("CUDA is not available.")
+    sys.exit(0)
+
+
 
 
 # variables
@@ -1089,8 +1102,6 @@ logger.info(
 
 #endregion
 
-sys.exit(0)
-
 #region 3. Load the pre-trained scGPT model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -1126,7 +1137,7 @@ model = TransformerModel(
 if config.load_model is not None:
     try:
         model.load_state_dict(torch.load(model_file))
-        logger.info(f"Loading all model params from {model_file}")
+        logger.debug(f"Loading all model params from {model_file}")
     except:
         # only load params that are in the model and match the size
         model_dict = model.state_dict()
@@ -1137,7 +1148,7 @@ if config.load_model is not None:
             if k in model_dict and v.shape == model_dict[k].shape
         }
         for k, v in pretrained_dict.items():
-            logger.info(f"Loading params {k} with shape {v.shape}")
+            logger.debug(f"Loading params {k} with shape {v.shape}")
         model_dict.update(pretrained_dict)
         model.load_state_dict(model_dict)
 
@@ -1149,11 +1160,11 @@ pre_freeze_param_count = sum(
 
 # Freeze all pre-decoder weights
 for name, para in model.named_parameters():
-    print("-" * 20)
-    print(f"name: {name}")
+    logging.debug("-" * 20)
+    logging.debug(f"name: {name}")
     if config.freeze and "encoder" in name and "transformer_encoder" not in name:
         # if config.freeze and "encoder" in name:
-        print(f"freezing weights for: {name}")
+        logging.debug(f"freezing weights for: {name}")
         para.requires_grad = False
 
 post_freeze_param_count = sum(
@@ -1210,6 +1221,7 @@ scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
 
 
 #endregion
+
 
 #region 4. Finetune scGPT with task-specific objectives
 
@@ -1268,15 +1280,18 @@ for epoch in range(1, epochs + 1):
         scheduler_D.step()
         scheduler_E.step()
 
+    # ! FOR DEBUGGING
+    break
+
 val_loss, val_err = evaluate(
     model,
     loader=valid_loader,
 )
+logging.info(f"Results Validation: {val_loss, val_err}")    
 
+#endregion
+#region 5. Inference with fine-tuned scGPT model
 
-
-"""5. Inference with fine-tuned scGPT model
-"""
 # test inference
 (
     predictions_test,
@@ -1284,6 +1299,10 @@ val_loss, val_err = evaluate(
     results_test,
     all_outputs_test,
 ) = test_2(best_model, adata_test)
+
+logging.info(f"Results Test: {results_test}")
+
+sys.exit(0)
 
 # train inference
 (
@@ -1295,6 +1314,14 @@ val_loss, val_err = evaluate(
 
 #endregion
 
+
+
+#region 6. Save output
+output_dir = os.path.join("..","outputs",f"run")
+
+
+
+#endregion
 
 
 

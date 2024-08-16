@@ -1,0 +1,128 @@
+{
+    "os": "Linux-6.5.0-44-generic-x86_64-with-glibc2.38",
+    "python": "3.10.14",
+    "heartbeatAt": "2024-08-16T14:37:25.370532",
+    "startedAt": "2024-08-16T14:37:24.938603",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py",
+    "codePathLocal": "Tutorial_Annotation.py",
+    "codePath": "scripts/Tutorial_Annotation.py",
+    "git": {
+        "remote": "https://github.com/00dylan00/scGPT_playground.git",
+        "commit": "5b2896dcee20fce8649df33e4c7b3200bdd9d664"
+    },
+    "email": "dylandalton2021@gmail.com",
+    "root": "/aloy/home/ddalton/projects/scGPT_playground",
+    "host": "bigboy",
+    "username": "ddalton",
+    "executable": "/home/ddalton/miniconda3/envs/scgpt/bin/python",
+    "cpu_count": 8,
+    "cpu_count_logical": 16,
+    "cpu_freq": {
+        "current": 3713.10725,
+        "min": 400.0,
+        "max": 5573.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 4440.559,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4476.236,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4485.223,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4354.924,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4491.193,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4416.812,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4486.188,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4390.331,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4475.791,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4191.837,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4490.3,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4436.135,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4489.941,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4419.586,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4480.113,
+            "min": 400.0,
+            "max": 5573.0
+        },
+        {
+            "current": 4462.125,
+            "min": 400.0,
+            "max": 5573.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 1831.6662673950195,
+            "used": 567.5192680358887
+        }
+    },
+    "gpu": "NVIDIA GeForce RTX 4090",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce RTX 4090",
+            "memory_total": 25757220864
+        }
+    ],
+    "memory": {
+        "total": 61.936492919921875
+    }
+}

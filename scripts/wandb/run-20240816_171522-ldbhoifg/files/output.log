@@ -1,0 +1,110 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '../../scGPT/save/scGPT_human', 'mask_ratio': 0.0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0.0, 'dab_weight': 0.0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+save to save/dev_test_1-Aug16-17-15
+2024-08-16 17:15:41,166 - Presence thr 10053.85, 7192 genes left
+2024-08-16 17:15:41,294 - Presence thr 10053.85, 7192 genes left
+2024-08-16 17:15:42,229 - Variance thr 6547654.53, 9085 genes left
+2024-08-16 17:15:42,229 - Combined mask nº of genes 3000
+scGPT - INFO - match 2996/3000 genes in vocabulary of size 60697.
+scGPT - INFO - Resume model from ../../scGPT/save/scGPT_human/best_model.pt, the model args will override the config ../../scGPT/save/scGPT_human/args.json.
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - WARNING - The input data seems to be already log1p transformed. Set `log1p=False` to avoid double log1p transform.
+scGPT - INFO - Binning data ...
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - WARNING - The input data seems to be already log1p transformed. Set `log1p=False` to avoid double log1p transform.
+scGPT - INFO - Binning data ...
+scGPT - INFO - train set number of samples: 7619,
+	 feature length: 2997
+scGPT - INFO - valid set number of samples: 847,
+	 feature length: 2997
+scGPT - INFO - Total Pre freeze Params 51335176
+scGPT - INFO - Total Post freeze Params 51335176
+random masking at epoch   1, ratio of masked values in train:  0.0000
+scGPT - INFO - | epoch   1 | 100/239 batches | lr 0.0001 | ms/batch 477.31 | loss  1.23 | cls  1.23 | err  0.46 |
+Traceback (most recent call last):
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py", line 1241, in <module>
+    train(
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py", line 236, in train
+    output_dict = model(
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 345, in forward
+    transformer_output = self._encode(
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 194, in _encode
+    output = self.transformer_encoder(
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 387, in forward
+    output = mod(output, src_mask=mask, is_causal=is_causal, src_key_padding_mask=src_key_padding_mask_for_layers)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 713, in forward
+    src2 = self.self_attn(src, key_padding_mask=src_key_padding_mask_)[0]
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/flash_attention.py", line 99, in forward
+    context, attn_weights = self.inner_attn(qkv, key_padding_mask=key_padding_mask,
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/flash_attention.py", line 55, in forward
+    x_unpad, indices, cu_seqlens, max_s = unpad_input(x, key_padding_mask)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/bert_padding.py", line 108, in unpad_input
+    indices = torch.nonzero(attention_mask.flatten(), as_tuple=False).flatten()
+RuntimeError: CUDA error: invalid device ordinal
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.
+Traceback (most recent call last):
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py", line 1241, in <module>
+    train(
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py", line 236, in train
+    output_dict = model(
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 345, in forward
+    transformer_output = self._encode(
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 194, in _encode
+    output = self.transformer_encoder(
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/transformer.py", line 387, in forward
+    output = mod(output, src_mask=mask, is_causal=is_causal, src_key_padding_mask=src_key_padding_mask_for_layers)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/aloy/home/ddalton/projects/scGPT_playground/scripts/../../scGPT/scgpt/model/model.py", line 713, in forward
+    src2 = self.self_attn(src, key_padding_mask=src_key_padding_mask_)[0]
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/flash_attention.py", line 99, in forward
+    context, attn_weights = self.inner_attn(qkv, key_padding_mask=key_padding_mask,
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1518, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1527, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/flash_attention.py", line 55, in forward
+    x_unpad, indices, cu_seqlens, max_s = unpad_input(x, key_padding_mask)
+  File "/home/ddalton/miniconda3/envs/scgpt/lib/python3.10/site-packages/flash_attn/bert_padding.py", line 108, in unpad_input
+    indices = torch.nonzero(attention_mask.flatten(), as_tuple=False).flatten()
+RuntimeError: CUDA error: invalid device ordinal
+CUDA kernel errors might be asynchronously reported at some other API call, so the stacktrace below might be incorrect.
+For debugging consider passing CUDA_LAUNCH_BLOCKING=1.
+Compile with `TORCH_USE_CUDA_DSA` to enable device-side assertions.

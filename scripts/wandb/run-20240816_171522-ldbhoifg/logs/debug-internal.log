@@ -1,0 +1,1253 @@
+2024-08-16 17:15:22,384 INFO    StreamThr :217134 [internal.py:wandb_internal():85] W&B internal server running at pid: 217134, started at: 2024-08-16 17:15:22.383431
+2024-08-16 17:15:22,385 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status
+2024-08-16 17:15:22,385 INFO    WriterThread:217134 [datastore.py:open_for_write():87] open: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/run-ldbhoifg.wandb
+2024-08-16 17:15:22,386 DEBUG   SenderThread:217134 [sender.py:send():379] send: header
+2024-08-16 17:15:22,394 DEBUG   SenderThread:217134 [sender.py:send():379] send: run
+2024-08-16 17:15:22,813 INFO    SenderThread:217134 [dir_watcher.py:__init__():211] watching files in: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files
+2024-08-16 17:15:22,813 INFO    SenderThread:217134 [sender.py:_start_run_threads():1188] run started: ldbhoifg with start time 1723821322.382593
+2024-08-16 17:15:22,818 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: check_version
+2024-08-16 17:15:22,818 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: check_version
+2024-08-16 17:15:22,877 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: run_start
+2024-08-16 17:15:22,884 DEBUG   HandlerThread:217134 [system_info.py:__init__():26] System info init
+2024-08-16 17:15:22,884 DEBUG   HandlerThread:217134 [system_info.py:__init__():41] System info init done
+2024-08-16 17:15:22,884 INFO    HandlerThread:217134 [system_monitor.py:start():194] Starting system monitor
+2024-08-16 17:15:22,884 INFO    SystemMonitor:217134 [system_monitor.py:_start():158] Starting system asset monitoring threads
+2024-08-16 17:15:22,884 INFO    HandlerThread:217134 [system_monitor.py:probe():214] Collecting system info
+2024-08-16 17:15:22,885 INFO    SystemMonitor:217134 [interfaces.py:start():188] Started cpu monitoring
+2024-08-16 17:15:22,886 INFO    SystemMonitor:217134 [interfaces.py:start():188] Started disk monitoring
+2024-08-16 17:15:22,886 INFO    SystemMonitor:217134 [interfaces.py:start():188] Started gpu monitoring
+2024-08-16 17:15:22,886 INFO    SystemMonitor:217134 [interfaces.py:start():188] Started memory monitoring
+2024-08-16 17:15:22,887 INFO    SystemMonitor:217134 [interfaces.py:start():188] Started network monitoring
+2024-08-16 17:15:22,896 DEBUG   HandlerThread:217134 [system_info.py:probe():152] Probing system
+2024-08-16 17:15:22,897 DEBUG   HandlerThread:217134 [system_info.py:_probe_git():137] Probing git
+2024-08-16 17:15:22,909 DEBUG   HandlerThread:217134 [system_info.py:_probe_git():145] Probing git done
+2024-08-16 17:15:22,909 DEBUG   HandlerThread:217134 [system_info.py:probe():200] Probing system done
+2024-08-16 17:15:22,909 DEBUG   HandlerThread:217134 [system_monitor.py:probe():223] {'os': 'Linux-6.5.0-44-generic-x86_64-with-glibc2.38', 'python': '3.10.14', 'heartbeatAt': '2024-08-16T15:15:22.896094', 'startedAt': '2024-08-16T15:15:22.368647', 'docker': None, 'cuda': None, 'args': (), 'state': 'running', 'program': '/aloy/home/ddalton/projects/scGPT_playground/scripts/Tutorial_Annotation.py', 'codePathLocal': 'Tutorial_Annotation.py', 'codePath': 'scripts/Tutorial_Annotation.py', 'git': {'remote': 'https://github.com/00dylan00/scGPT_playground.git', 'commit': '5b2896dcee20fce8649df33e4c7b3200bdd9d664'}, 'email': 'dylandalton2021@gmail.com', 'root': '/aloy/home/ddalton/projects/scGPT_playground', 'host': 'bigboy', 'username': 'ddalton', 'executable': '/home/ddalton/miniconda3/envs/scgpt/bin/python', 'cpu_count': 8, 'cpu_count_logical': 16, 'cpu_freq': {'current': 3374.5304374999996, 'min': 400.0, 'max': 5573.0}, 'cpu_freq_per_core': [{'current': 400.0, 'min': 400.0, 'max': 5573.0}, {'current': 400.0, 'min': 400.0, 'max': 5573.0}, {'current': 4061.324, 'min': 400.0, 'max': 5573.0}, {'current': 4488.411, 'min': 400.0, 'max': 5573.0}, {'current': 400.0, 'min': 400.0, 'max': 5573.0}, {'current': 3708.959, 'min': 400.0, 'max': 5573.0}, {'current': 4462.718, 'min': 400.0, 'max': 5573.0}, {'current': 4421.09, 'min': 400.0, 'max': 5573.0}, {'current': 4037.194, 'min': 400.0, 'max': 5573.0}, {'current': 3720.201, 'min': 400.0, 'max': 5573.0}, {'current': 4491.306, 'min': 400.0, 'max': 5573.0}, {'current': 4095.306, 'min': 400.0, 'max': 5573.0}, {'current': 4404.937, 'min': 400.0, 'max': 5573.0}, {'current': 3635.651, 'min': 400.0, 'max': 5573.0}, {'current': 3673.652, 'min': 400.0, 'max': 5573.0}, {'current': 3591.738, 'min': 400.0, 'max': 5573.0}], 'disk': {'/': {'total': 1831.6662673950195, 'used': 567.5272064208984}}, 'gpu': 'NVIDIA GeForce RTX 4090', 'gpu_count': 1, 'gpu_devices': [{'name': 'NVIDIA GeForce RTX 4090', 'memory_total': 25757220864}], 'memory': {'total': 61.936492919921875}}
+2024-08-16 17:15:22,909 INFO    HandlerThread:217134 [system_monitor.py:probe():224] Finished collecting system info
+2024-08-16 17:15:22,909 INFO    HandlerThread:217134 [system_monitor.py:probe():227] Publishing system info
+2024-08-16 17:15:22,909 DEBUG   HandlerThread:217134 [system_info.py:_save_conda():209] Saving list of conda packages installed into the current environment
+2024-08-16 17:15:23,815 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/conda-environment.yaml
+2024-08-16 17:15:24,427 DEBUG   HandlerThread:217134 [system_info.py:_save_conda():224] Saving conda packages done
+2024-08-16 17:15:24,429 INFO    HandlerThread:217134 [system_monitor.py:probe():229] Finished publishing system info
+2024-08-16 17:15:24,430 DEBUG   SenderThread:217134 [sender.py:send():379] send: files
+2024-08-16 17:15:24,430 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-metadata.json with policy now
+2024-08-16 17:15:24,493 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: python_packages
+2024-08-16 17:15:24,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: python_packages
+2024-08-16 17:15:24,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:15:24,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:24,496 DEBUG   SenderThread:217134 [sender.py:send():379] send: telemetry
+2024-08-16 17:15:24,496 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:15:24,817 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/conda-environment.yaml
+2024-08-16 17:15:24,817 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/requirements.txt
+2024-08-16 17:15:24,820 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-metadata.json
+2024-08-16 17:15:24,821 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:24,963 INFO    wandb-upload_0:217134 [upload_job.py:push():130] Uploaded file /tmp/tmpuxqumsidwandb/iv69hpu7-wandb-metadata.json
+2024-08-16 17:15:25,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:26,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:26,821 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:27,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:27,666 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:28,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:29,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:30,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:31,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:32,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:33,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:33,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:34,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:35,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:36,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:37,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:38,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:39,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:15:39,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:15:39,534 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:39,649 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:40,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:41,496 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:42,653 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:43,632 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:43,868 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:44,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:44,869 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:45,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:45,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:46,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:46,871 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:47,260 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:47,260 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:47,261 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:47,263 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:47,281 DEBUG   SenderThread:217134 [sender.py:send():379] send: telemetry
+2024-08-16 17:15:47,288 DEBUG   SenderThread:217134 [sender.py:send():379] send: telemetry
+2024-08-16 17:15:47,288 DEBUG   SenderThread:217134 [sender.py:send():379] send: telemetry
+2024-08-16 17:15:47,289 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,289 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,289 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,289 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,290 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,290 DEBUG   SenderThread:217134 [sender.py:send():379] send: metric
+2024-08-16 17:15:47,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:47,872 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_created():271] file/dir created: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:48,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:48,872 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:15:49,175 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:49,176 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:49,176 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:49,178 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:49,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:49,683 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:49,683 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:49,684 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:49,685 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:49,873 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:50,132 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:50,133 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:50,133 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:50,135 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:50,584 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:50,585 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:50,585 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:50,585 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:50,587 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:50,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:50,874 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:51,064 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:51,064 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:51,065 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:51,066 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:51,515 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:51,515 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:51,515 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:51,518 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:51,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:51,874 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:51,963 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:51,963 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:51,963 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:51,965 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:52,439 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:52,440 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:52,440 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:52,442 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:52,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:52,875 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:52,919 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:52,919 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:52,919 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:52,921 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:53,398 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:53,399 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:53,399 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:53,401 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:53,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:53,851 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:53,851 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:53,851 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:53,853 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:53,875 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:54,330 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:54,330 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:54,331 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:54,332 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:54,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:15:54,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:15:54,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:54,809 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:54,810 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:54,810 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:54,812 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:54,876 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:55,289 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:55,289 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:55,289 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:55,291 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:55,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:55,741 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:55,741 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:55,744 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:15:55,877 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:55,894 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:55,895 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:56,219 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:56,220 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:56,220 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:56,222 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:56,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:56,671 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:56,671 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:56,672 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:56,673 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:56,877 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/config.yaml
+2024-08-16 17:15:56,877 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:57,123 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:57,123 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:57,123 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:57,125 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:57,574 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:57,575 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:57,575 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:57,577 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:57,633 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:57,878 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:58,026 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:58,026 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:58,027 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:58,029 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:58,505 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:58,506 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:58,506 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:58,508 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:58,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:58,878 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:15:58,957 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:58,958 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:58,958 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:58,959 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:59,409 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:59,409 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:59,410 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:59,412 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:59,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:15:59,861 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:15:59,861 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:15:59,862 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:15:59,863 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:15:59,879 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:00,313 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:00,313 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:00,314 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:00,316 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:00,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:00,764 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:00,765 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:00,765 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:00,767 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:00,880 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:01,244 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:01,244 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:01,245 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:01,245 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:01,247 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:01,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:01,723 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:01,723 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:01,724 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:01,728 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:01,882 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:02,175 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:02,175 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:02,176 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:02,177 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:02,626 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:02,627 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:02,627 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:02,629 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:02,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:02,883 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:03,078 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:03,079 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:03,079 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:03,081 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:03,530 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:03,531 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:03,531 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:03,533 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:03,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:03,883 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:03,982 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:03,982 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:03,983 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:03,985 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:04,463 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:04,463 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:04,465 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:04,467 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:04,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:04,884 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:04,942 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:04,943 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:04,943 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:04,945 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:05,422 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:05,422 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:05,423 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:05,424 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:05,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:05,874 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:05,875 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:05,875 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:05,877 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:05,884 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:06,326 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:06,327 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:06,327 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:06,327 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:06,329 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:06,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:06,807 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:06,807 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:06,808 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:06,809 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:06,885 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:07,260 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:07,260 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:07,261 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:07,263 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:07,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:07,714 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:07,714 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:07,715 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:07,716 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:07,886 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:08,167 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:08,167 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:08,168 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:08,169 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:08,620 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:08,620 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:08,620 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:08,622 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:08,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:08,886 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:09,100 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:09,100 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:09,100 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:09,103 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:09,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:16:09,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:16:09,552 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:09,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:09,887 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:10,004 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:10,483 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:10,517 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:10,517 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:10,519 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:10,519 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:10,519 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:10,520 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:10,521 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:10,521 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:10,523 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:10,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:10,887 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:10,963 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:10,964 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:10,964 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:10,966 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:11,416 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:11,416 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:11,417 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:11,417 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:11,419 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:11,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:11,868 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:11,868 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:11,869 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:11,870 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:11,889 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:12,320 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:12,320 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:12,321 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:12,322 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:12,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:12,772 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:12,773 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:12,773 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:12,775 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:12,889 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:13,224 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:13,225 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:13,225 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:13,227 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:13,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:13,677 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:13,677 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:13,678 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:13,679 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:13,890 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:14,155 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:14,156 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:14,156 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:14,159 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:14,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:14,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:14,636 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:14,636 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:14,638 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:14,890 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:15,088 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:15,088 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:15,088 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:15,090 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:15,540 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:15,541 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:15,541 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:15,543 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:15,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:15,891 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:15,993 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:15,993 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:15,994 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:15,995 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:16,446 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:16,446 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:16,447 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:16,447 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:16,449 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:16,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:16,891 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:16,898 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:16,899 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:16,899 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:16,900 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:17,350 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:17,351 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:17,351 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:17,353 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:17,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:17,830 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:17,830 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:17,831 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:17,832 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:17,892 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:18,282 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:18,283 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:18,283 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:18,284 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:18,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:18,762 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:18,762 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:18,763 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:18,764 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:18,892 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:19,215 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:19,215 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:19,215 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:19,217 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:19,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:19,696 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:19,697 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:19,697 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:19,699 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:19,893 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:20,180 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:20,180 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:20,180 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:20,182 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:20,634 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:20,634 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:20,634 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:20,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:20,636 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:20,894 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:21,088 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:21,088 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:21,088 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:21,090 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:21,569 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:21,569 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:21,569 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:21,569 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:21,571 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:21,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:21,894 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:22,022 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:22,023 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:22,023 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:22,025 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:22,504 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:22,505 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:22,505 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:22,507 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:22,635 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:22,887 DEBUG   SystemMonitor:217134 [system_monitor.py:_start():172] Starting system metrics aggregation loop
+2024-08-16 17:16:22,888 DEBUG   SenderThread:217134 [sender.py:send():379] send: stats
+2024-08-16 17:16:22,895 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:22,986 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:22,986 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:22,986 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:22,988 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:23,438 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:23,438 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:23,438 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:23,440 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:23,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:23,896 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:23,918 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:23,918 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:23,919 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:23,921 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:24,370 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:24,371 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:24,371 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:24,373 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:24,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:16:24,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:16:24,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:24,822 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:24,823 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:24,823 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:24,825 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:24,896 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:25,302 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:25,302 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:25,303 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:25,305 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:25,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:25,755 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:25,755 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:25,756 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:25,757 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:25,897 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:26,207 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:26,208 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:26,208 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:26,210 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:26,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:26,659 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:26,660 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:26,660 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:26,660 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:26,661 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:26,898 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:27,139 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:27,140 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:27,140 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:27,141 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:27,591 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:27,592 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:27,592 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:27,594 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:27,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:27,898 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:28,043 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:28,044 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:28,044 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:28,047 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:28,495 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:28,496 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:28,496 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:28,498 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:28,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:28,899 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:28,975 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:28,975 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:28,976 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:28,977 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:29,454 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:29,454 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:29,455 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:29,456 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:29,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:29,899 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:29,906 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:29,907 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:29,907 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:29,909 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:30,358 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:30,359 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:30,359 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:30,361 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:30,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:30,810 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:30,811 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:30,811 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:30,813 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:30,900 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:31,262 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:31,263 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:31,263 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:31,265 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:31,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:31,715 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:31,715 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:31,716 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:31,716 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:31,717 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:31,900 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:32,168 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:32,168 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:32,169 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:32,171 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:32,620 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:32,621 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:32,621 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:32,623 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:32,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:32,901 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:33,073 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:33,073 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:33,074 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:33,078 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:33,554 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:33,555 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:33,555 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:33,557 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:33,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:33,902 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:34,007 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:34,007 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:34,008 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:34,010 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:34,486 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:34,487 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:34,487 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:34,489 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:34,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:34,902 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:34,940 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:34,940 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:34,940 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:34,942 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:35,392 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:35,393 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:35,393 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:35,395 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:35,636 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:35,873 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:35,873 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:35,874 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:35,875 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:35,903 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:36,326 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:36,327 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:36,327 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:36,329 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:36,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:36,805 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:36,806 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:36,806 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:36,806 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:36,808 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:36,904 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:16:36,904 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:37,285 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:37,285 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:37,286 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:37,287 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:37,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:37,737 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:37,738 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:37,738 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:37,739 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:37,904 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:38,189 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:38,190 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:38,190 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:38,192 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:38,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:38,669 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:38,670 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:38,670 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:38,671 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:38,905 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:39,150 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:39,150 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:39,150 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:39,152 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:39,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:16:39,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:16:39,630 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:39,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:39,686 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:39,686 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:39,687 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:39,905 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:40,083 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:40,084 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:40,084 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:40,086 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:40,536 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:40,537 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:40,537 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:40,539 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:40,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:40,906 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:40,989 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:40,989 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:40,989 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:40,991 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:41,442 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:41,443 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:41,443 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:41,445 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:41,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:41,895 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:41,895 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:41,896 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:41,896 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:41,897 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:41,906 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:42,375 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:42,376 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:42,376 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:42,378 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:42,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:42,856 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:42,856 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:42,857 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:42,858 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:42,907 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:43,309 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:43,309 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:43,310 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:43,311 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:43,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:43,762 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:43,762 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:43,763 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:43,764 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:43,907 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:44,215 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:44,215 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:44,216 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:44,218 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:44,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:44,667 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:44,667 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:44,668 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:44,669 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:44,908 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:45,119 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:45,120 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:45,120 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:45,122 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:45,571 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:45,572 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:45,572 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:45,574 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:45,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:45,908 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:46,052 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:46,052 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:46,052 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:46,054 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:46,530 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:46,531 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:46,531 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:46,533 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:46,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:46,909 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:47,009 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:47,009 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:47,010 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:47,010 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:47,012 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:47,488 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:47,489 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:47,489 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:47,491 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:47,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:47,910 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:47,970 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:47,970 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:47,970 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:47,972 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:48,423 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:48,423 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:48,424 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:48,425 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:48,637 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:48,876 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:48,877 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:48,877 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:48,879 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:48,910 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:49,329 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:49,330 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:49,330 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:49,332 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:49,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:49,782 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:49,783 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:49,783 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:49,785 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:49,911 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:50,262 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:50,262 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:50,262 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:50,264 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:50,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:50,742 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:50,742 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:50,743 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:50,744 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:50,912 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:51,222 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:51,222 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:51,222 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:51,224 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:51,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:51,674 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:51,675 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:51,675 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:51,677 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:51,912 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:52,127 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:52,127 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:52,127 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:52,128 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:52,129 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:52,579 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:52,580 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:52,580 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:52,582 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:52,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:52,889 DEBUG   SenderThread:217134 [sender.py:send():379] send: stats
+2024-08-16 17:16:52,913 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:53,031 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:53,032 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:53,032 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:53,038 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:53,484 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:53,484 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:53,485 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:53,486 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:53,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:53,913 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:53,937 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:53,937 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:53,937 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:53,939 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:54,389 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:54,389 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:54,390 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:54,391 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:54,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:16:54,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:16:54,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:54,841 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:54,842 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:54,842 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:54,844 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:54,914 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:55,293 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:55,294 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:55,294 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:55,296 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:55,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:55,773 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:55,774 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:55,774 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:55,775 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:55,915 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:56,225 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:56,226 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:56,226 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:56,228 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:56,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:56,678 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:56,678 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:56,678 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:56,680 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:56,916 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:57,130 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:57,130 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:57,131 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:57,131 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:16:57,132 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:57,609 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:57,610 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:57,610 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:57,612 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:57,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:57,916 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:58,063 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:58,063 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:58,063 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:58,065 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:58,543 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:58,544 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:58,544 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:58,546 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:58,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:58,917 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:16:58,996 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:58,996 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:58,997 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:58,998 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:59,448 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:59,449 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:59,449 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:59,451 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:59,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:16:59,901 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:16:59,901 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:16:59,902 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:16:59,903 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:16:59,919 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:00,353 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:00,354 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:00,354 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:00,356 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:00,638 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:00,807 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:00,808 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:00,808 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:00,810 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:00,919 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:01,260 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:01,261 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:01,261 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:01,263 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:01,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:01,743 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:01,743 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:01,744 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:01,746 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:01,920 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:02,196 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:02,197 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:02,197 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:02,197 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:02,199 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:02,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:02,678 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:02,679 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:02,680 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:02,682 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:02,920 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:03,131 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:03,132 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:03,133 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:03,134 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:03,585 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:03,585 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:03,585 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:03,587 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:03,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:03,921 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:04,066 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:04,067 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:04,067 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:04,069 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:04,519 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:04,520 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:04,520 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:04,522 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:04,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:04,922 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:05,001 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:05,002 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:05,002 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:05,004 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:05,485 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:05,485 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:05,486 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:05,488 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:05,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:05,922 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:05,937 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:05,938 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:05,938 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:05,940 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:06,390 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:06,391 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:06,391 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:06,394 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:06,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:06,873 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:06,874 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:06,874 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:06,876 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:06,923 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:07,356 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:07,356 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:07,357 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:07,357 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:07,359 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:07,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:07,838 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:07,838 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:07,839 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:07,840 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:07,924 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:08,293 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:08,294 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:08,294 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:08,296 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:08,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:08,778 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:08,778 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:08,778 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:08,780 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:08,925 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:09,261 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:09,262 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:09,262 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:09,264 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:09,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:17:09,495 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:17:09,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:09,714 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:09,728 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:09,728 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:09,730 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:09,925 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:10,167 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:10,168 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:10,168 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:10,170 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:10,621 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:10,621 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:10,622 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:10,624 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:10,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:10,926 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:11,103 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:11,103 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:11,103 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:11,105 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:11,556 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:11,557 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:11,557 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:11,559 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:11,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:11,926 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:12,038 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:12,039 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:12,039 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:12,041 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:12,493 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:12,494 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:12,494 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:12,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:12,496 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:12,639 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:12,927 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:12,948 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:12,948 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:12,948 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:12,951 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:13,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:13,928 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:14,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,115 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:15,118 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: partial_history
+2024-08-16 17:17:15,119 DEBUG   SenderThread:217134 [sender.py:send():379] send: history
+2024-08-16 17:17:15,119 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: summary_record
+2024-08-16 17:17:15,120 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:15,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:15,929 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:16,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,116 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,117 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:17,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:18,121 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:18,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:19,117 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,117 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,117 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,117 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,118 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,118 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,118 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:19,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:20,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:21,118 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,118 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,119 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,119 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,119 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,119 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,120 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:21,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:22,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:22,890 DEBUG   SenderThread:217134 [sender.py:send():379] send: stats
+2024-08-16 17:17:23,128 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,136 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,145 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,154 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,162 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,170 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,178 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: GPU is lost
+2024-08-16 17:17:23,178 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,178 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,179 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,179 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:23,640 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:23,890 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:24,494 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: stop_status
+2024-08-16 17:17:24,495 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: stop_status
+2024-08-16 17:17:24,641 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,180 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:25,641 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:26,641 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,181 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,182 ERROR   gpu       :217134 [interfaces.py:monitor():142] Failed to sample metric: GPU is lost
+2024-08-16 17:17:27,641 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:28,260 DEBUG   SenderThread:217134 [sender.py:send():379] send: exit
+2024-08-16 17:17:28,260 INFO    SenderThread:217134 [sender.py:send_exit():586] handling exit code: 1
+2024-08-16 17:17:28,260 INFO    SenderThread:217134 [sender.py:send_exit():588] handling runtime: 125
+2024-08-16 17:17:28,262 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:28,262 INFO    SenderThread:217134 [sender.py:send_exit():594] send defer
+2024-08-16 17:17:28,263 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,263 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 0
+2024-08-16 17:17:28,264 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,264 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 0
+2024-08-16 17:17:28,264 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 1
+2024-08-16 17:17:28,264 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,265 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 1
+2024-08-16 17:17:28,265 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,265 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 1
+2024-08-16 17:17:28,265 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 2
+2024-08-16 17:17:28,265 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,265 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 2
+2024-08-16 17:17:28,265 INFO    HandlerThread:217134 [system_monitor.py:finish():203] Stopping system monitor
+2024-08-16 17:17:28,266 DEBUG   SystemMonitor:217134 [system_monitor.py:_start():179] Finished system metrics aggregation loop
+2024-08-16 17:17:28,266 INFO    HandlerThread:217134 [interfaces.py:finish():200] Joined cpu monitor
+2024-08-16 17:17:28,266 ERROR   gpu       :217134 [interfaces.py:aggregate():159] Failed to serialize metric: division by zero
+2024-08-16 17:17:28,266 DEBUG   SystemMonitor:217134 [system_monitor.py:_start():183] Publishing last batch of metrics
+2024-08-16 17:17:28,266 INFO    HandlerThread:217134 [interfaces.py:finish():200] Joined disk monitor
+2024-08-16 17:17:28,267 INFO    HandlerThread:217134 [interfaces.py:finish():200] Joined gpu monitor
+2024-08-16 17:17:28,267 INFO    HandlerThread:217134 [interfaces.py:finish():200] Joined memory monitor
+2024-08-16 17:17:28,268 INFO    HandlerThread:217134 [interfaces.py:finish():200] Joined network monitor
+2024-08-16 17:17:28,269 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,269 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 2
+2024-08-16 17:17:28,269 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 3
+2024-08-16 17:17:28,269 DEBUG   SenderThread:217134 [sender.py:send():379] send: stats
+2024-08-16 17:17:28,269 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,270 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 3
+2024-08-16 17:17:28,270 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,270 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 3
+2024-08-16 17:17:28,270 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 4
+2024-08-16 17:17:28,270 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,271 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 4
+2024-08-16 17:17:28,271 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,271 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 4
+2024-08-16 17:17:28,271 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 5
+2024-08-16 17:17:28,271 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,272 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 5
+2024-08-16 17:17:28,272 DEBUG   SenderThread:217134 [sender.py:send():379] send: summary
+2024-08-16 17:17:28,279 INFO    SenderThread:217134 [sender.py:_save_file():1454] saving file wandb-summary.json with policy end
+2024-08-16 17:17:28,284 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,284 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 5
+2024-08-16 17:17:28,284 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 6
+2024-08-16 17:17:28,284 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,285 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 6
+2024-08-16 17:17:28,285 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,285 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 6
+2024-08-16 17:17:28,286 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 7
+2024-08-16 17:17:28,286 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:28,286 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:28,287 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 7
+2024-08-16 17:17:28,287 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:28,287 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 7
+2024-08-16 17:17:28,937 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:29,261 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:29,292 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 8
+2024-08-16 17:17:29,292 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:29,292 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:29,293 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 8
+2024-08-16 17:17:29,293 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:29,294 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 8
+2024-08-16 17:17:29,294 INFO    SenderThread:217134 [job_builder.py:build():440] Attempting to build job artifact
+2024-08-16 17:17:29,294 INFO    SenderThread:217134 [job_builder.py:_get_source_type():569] is repo sourced job
+2024-08-16 17:17:29,305 INFO    SenderThread:217134 [job_builder.py:build():545] adding wandb-job metadata file
+2024-08-16 17:17:29,308 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 9
+2024-08-16 17:17:29,308 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:29,308 DEBUG   SenderThread:217134 [sender.py:send():379] send: artifact
+2024-08-16 17:17:29,309 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 9
+2024-08-16 17:17:29,938 INFO    Thread-12 :217134 [dir_watcher.py:_on_file_modified():288] file/dir modified: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:17:30,261 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:30,269 INFO    wandb-upload_1:217134 [upload_job.py:push():85] Skipped uploading /home/ddalton/.local/share/wandb/artifacts/staging/tmp_h8z3bc2
+2024-08-16 17:17:30,954 INFO    wandb-upload_0:217134 [upload_job.py:push():88] Uploaded file /tmp/tmpxvqg7cbc/wandb-job.json
+2024-08-16 17:17:35,262 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: keepalive
+2024-08-16 17:17:35,282 INFO    SenderThread:217134 [sender.py:send_artifact():1537] sent artifact job-https___github.com_00dylan00_scGPT_playground.git_scripts_Tutorial_Annotation.py - {'id': 'QXJ0aWZhY3Q6MTE1Mjk0OTU3Mw==', 'state': 'PENDING', 'artifactSequence': {'id': 'QXJ0aWZhY3RDb2xsZWN0aW9uOjQxNDY4MTIyNg==', 'latestArtifact': {'id': 'QXJ0aWZhY3Q6MTE1Mjk0NjgxMA==', 'versionIndex': 2}}}
+2024-08-16 17:17:35,282 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:35,282 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: status_report
+2024-08-16 17:17:35,283 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 9
+2024-08-16 17:17:35,284 INFO    SenderThread:217134 [dir_watcher.py:finish():358] shutting down directory watcher
+2024-08-16 17:17:35,939 INFO    SenderThread:217134 [dir_watcher.py:finish():388] scan: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files
+2024-08-16 17:17:35,940 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/config.yaml config.yaml
+2024-08-16 17:17:35,940 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/conda-environment.yaml conda-environment.yaml
+2024-08-16 17:17:35,941 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-metadata.json wandb-metadata.json
+2024-08-16 17:17:35,941 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/requirements.txt requirements.txt
+2024-08-16 17:17:35,942 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log output.log
+2024-08-16 17:17:35,943 INFO    SenderThread:217134 [dir_watcher.py:finish():402] scan save: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json wandb-summary.json
+2024-08-16 17:17:35,944 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 10
+2024-08-16 17:17:35,945 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:35,945 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:35,949 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 10
+2024-08-16 17:17:35,949 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:35,950 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 10
+2024-08-16 17:17:35,950 INFO    SenderThread:217134 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-16 17:17:36,263 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:36,263 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:36,334 INFO    wandb-upload_1:217134 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/config.yaml
+2024-08-16 17:17:36,403 INFO    wandb-upload_0:217134 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/conda-environment.yaml
+2024-08-16 17:17:36,755 INFO    wandb-upload_4:217134 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/wandb-summary.json
+2024-08-16 17:17:36,764 INFO    wandb-upload_2:217134 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/requirements.txt
+2024-08-16 17:17:36,819 INFO    wandb-upload_3:217134 [upload_job.py:push():130] Uploaded file /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/files/output.log
+2024-08-16 17:17:37,019 INFO    Thread-11 (_thread_body):217134 [sender.py:transition_state():614] send defer: 11
+2024-08-16 17:17:37,019 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:37,020 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 11
+2024-08-16 17:17:37,020 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:37,020 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 11
+2024-08-16 17:17:37,020 INFO    SenderThread:217134 [file_pusher.py:join():175] waiting for file pusher
+2024-08-16 17:17:37,021 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 12
+2024-08-16 17:17:37,021 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:37,022 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 12
+2024-08-16 17:17:37,022 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:37,022 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 12
+2024-08-16 17:17:37,022 INFO    SenderThread:217134 [file_stream.py:finish():601] file stream finish called
+2024-08-16 17:17:37,263 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:37,572 INFO    SenderThread:217134 [file_stream.py:finish():605] file stream finish is done
+2024-08-16 17:17:37,572 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 13
+2024-08-16 17:17:37,572 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:37,572 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:37,573 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 13
+2024-08-16 17:17:37,574 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:37,574 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 13
+2024-08-16 17:17:37,574 INFO    SenderThread:217134 [sender.py:transition_state():614] send defer: 14
+2024-08-16 17:17:37,575 DEBUG   SenderThread:217134 [sender.py:send():379] send: final
+2024-08-16 17:17:37,575 DEBUG   SenderThread:217134 [sender.py:send():379] send: footer
+2024-08-16 17:17:37,575 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: defer
+2024-08-16 17:17:37,575 INFO    HandlerThread:217134 [handler.py:handle_request_defer():184] handle defer: 14
+2024-08-16 17:17:37,576 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: defer
+2024-08-16 17:17:37,576 INFO    SenderThread:217134 [sender.py:send_request_defer():610] handle sender defer: 14
+2024-08-16 17:17:37,576 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:37,577 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: server_info
+2024-08-16 17:17:37,577 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: poll_exit
+2024-08-16 17:17:37,577 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:37,577 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: get_summary
+2024-08-16 17:17:37,577 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: server_info
+2024-08-16 17:17:37,578 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: sampled_history
+2024-08-16 17:17:37,579 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: internal_messages
+2024-08-16 17:17:37,704 DEBUG   SenderThread:217134 [sender.py:send_request():406] send_request: poll_exit
+2024-08-16 17:17:37,704 INFO    MainThread:217134 [wandb_run.py:_footer_history_summary_info():4016] rendering history
+2024-08-16 17:17:37,704 INFO    MainThread:217134 [wandb_run.py:_footer_history_summary_info():4048] rendering summary
+2024-08-16 17:17:37,705 INFO    MainThread:217134 [wandb_run.py:_footer_sync_info():3975] logging synced files
+2024-08-16 17:17:37,705 DEBUG   HandlerThread:217134 [handler.py:handle_request():158] handle_request: shutdown
+2024-08-16 17:17:37,706 INFO    HandlerThread:217134 [handler.py:finish():882] shutting down handler
+2024-08-16 17:17:38,577 INFO    WriterThread:217134 [datastore.py:close():296] close: /aloy/home/ddalton/projects/scGPT_playground/scripts/wandb/run-20240816_171522-ldbhoifg/run-ldbhoifg.wandb
+2024-08-16 17:17:38,704 INFO    SenderThread:217134 [sender.py:finish():1615] shutting down sender
+2024-08-16 17:17:38,704 INFO    SenderThread:217134 [file_pusher.py:finish():169] shutting down file pusher
+2024-08-16 17:17:38,704 INFO    SenderThread:217134 [file_pusher.py:join():175] waiting for file pusher
