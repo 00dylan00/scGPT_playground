@@ -62,6 +62,8 @@ from scgpt.tokenizer.gene_tokenizer import GeneVocab
 from scgpt.preprocess import Preprocessor
 from scgpt import SubsetsBatchSampler
 from scgpt.utils import set_seed, category_str2int, eval_scib_metrics
+from datetime import datetime
+from tqdm import tqdm
 
 import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -71,17 +73,20 @@ os.environ["KMP_WARNINGS"] = "off"
 warnings.filterwarnings("ignore")
 
 
-
-
 if torch.cuda.is_available():
     print("Available GPUs:", torch.cuda.device_count())
+    cuda_version = torch.version.cuda
+    print(f"PyTorch is using CUDA version: {cuda_version}")
     for i in range(torch.cuda.device_count()):
         print(f"GPU {i}: {torch.cuda.get_device_name(i)}")
+
+
 else:
     print("CUDA is not available.")
+    print(torch.cuda.is_available())
+    cuda_version = torch.version.cuda
+    print(f"PyTorch is using CUDA version: {cuda_version}")
     sys.exit(0)
-
-
 
 
 # variables
@@ -369,7 +374,8 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 loss_adv_E.backward()
                 optimizer_E.step()
 
-        wandb.log(metrics_to_log)
+        # ! Disable wandb logging for now
+        # wandb.log(metrics_to_log)
 
         total_loss += loss.item()
         total_mse += loss_mse.item() if MLM else 0.0
@@ -440,8 +446,6 @@ def train(model: nn.Module, loader: DataLoader) -> None:
             total_mvc_zero_log_prob = 0
             total_error = 0
             start_time = time.time()
-
-
 
 
 def define_wandb_metrcis():
@@ -597,7 +601,7 @@ def test(model: nn.Module, adata: DataLoader) -> float:
     return predictions, celltypes_labels, results
 
 
-def evaluate_2(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> float:
+def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, return_raw: bool = False) -> float:
     """
     Evaluate the model on the evaluation data.
     """
@@ -607,7 +611,7 @@ def evaluate_2(model: nn.Module, loader: DataLoader, return_raw: bool = False) -
     total_dab = 0.0
     total_num = 0
     predictions = []
-    all_outputs = []
+    all_outputs = list()
     with torch.no_grad():
         for batch_data in loader:
             input_gene_ids = batch_data["gene_ids"].to(device)
@@ -646,7 +650,12 @@ def evaluate_2(model: nn.Module, loader: DataLoader, return_raw: bool = False) -
             total_num += len(input_gene_ids)
             preds = output_values.argmax(1).cpu().numpy()
             predictions.append(preds)
+
+            # convert everythin to cpu !
+            output_dict = {key: value.cpu() if isinstance(value, torch.Tensor) else value for key, value in output_dict.items()}
+            
             all_outputs.append(output_dict)
+            torch.cuda.empty_cache()
 
     wandb.log(
         {
@@ -663,7 +672,7 @@ def evaluate_2(model: nn.Module, loader: DataLoader, return_raw: bool = False) -
 
     return total_loss / total_num, total_error / total_num, all_outputs
 
-
+# device: torch.device
 def test_2(model: nn.Module, adata: DataLoader) -> float:
     all_counts = (
         adata.layers[input_layer_key].A
@@ -716,6 +725,7 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
     predictions, all_outputs = evaluate_2(
         model,
         loader=test_loader,
+        device=device,
         return_raw=True,
     )
 
@@ -783,9 +793,67 @@ def mask_genes(X: np.ndarray, presence: int, max_n_genes: int) -> List[bool]:
     return gene_mask
 
 
+def get_available_cuda_device(model):
+    used_device = next(model.parameters()).device
+
+    logging.info(f"Model is currently on device: {next(best_model.parameters()).device}")
+
+    n_available_devices = torch.cuda.device_count()
+
+    for i in range(n_available_devices):
+        if used_device.type == 'cuda' and used_device.index != i:
+            available_device = torch.device(f"cuda:{i}")
+            return available_device
+
+    return None
+
+
+def get_folder_name():
+    # Step 1: Generate today's date string
+    today = datetime.now().strftime("%y-%m-%d")
+
+    # Step 2: Define the base output directory
+    base_output_dir = os.path.join("..", "outputs")
+
+    # Step 3: Find the highest existing run number for today
+    existing_runs = [
+        d for d in os.listdir(base_output_dir)
+        if os.path.isdir(os.path.join(base_output_dir, d)) and d.startswith(f"run-{today}")
+    ]
+
+    # Extract numbers from existing runs and find the max
+    existing_numbers = [
+        int(d.split("-")[-1]) for d in existing_runs if d.split("-")[-1].isdigit()
+    ]
+
+    # Calculate the next run number
+    next_run_number = max(existing_numbers, default=0) + 1
+
+    # Step 4: Create the directory name with zero-padded run number
+    output_dir = os.path.join(base_output_dir, f"run-{today}-{next_run_number:02d}")
+
+    # Step 5: Create the directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    print(f"Output directory created: {output_dir}")
+    return output_dir
+
+
 #endregion
 
 #region 1. Specify hyper-parameter setup for integration task
+
+# Load the config file
+with open('config/wandb.json', 'r') as f:
+    config = json.load(f)
+
+# Use the Wandb API key from the config file
+if 'wandb_api_key' in config:
+    os.environ['WANDB_API_KEY'] = config['wandb_api_key']
+
+# Log in to Wandb using the API key
+wandb.login()
+
 
 hyperparameter_defaults = dict(
     seed=0,
@@ -825,6 +893,7 @@ print(config)
 
 set_seed(config.seed)
 
+logging.info(f"`wandb.config`: {config}")
 
 # settings for input and preprocessing
 pad_token = "<pad>"
@@ -869,7 +938,7 @@ per_seq_batch_sample = False
 lr = config.lr  # TODO: test learning rate ratio between two tasks
 lr_ADV = 1e-3  # learning rate for discriminator, used when ADV is True
 batch_size = config.batch_size
-eval_batch_size = config.batch_size
+eval_batch_size = int(config.batch_size/2)
 epochs = config.epochs
 schedule_interval = 1
 
@@ -942,10 +1011,6 @@ num_types = len(np.unique(celltype_id_labels))
 id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories))
 adata.obs["celltype_id"] = celltype_id_labels
 
-
-import logging
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 presence = 0.95  # gene presence in samples
 variance = 45  # gene variance in top %
 
@@ -1175,14 +1240,18 @@ post_freeze_param_count = sum(
 
 logger.info(f"Total Pre freeze Params {(pre_freeze_param_count )}")
 logger.info(f"Total Post freeze Params {(post_freeze_param_count )}")
-wandb.log(
-    {
-        "info/pre_freeze_param_count": pre_freeze_param_count,
-        "info/post_freeze_param_count": post_freeze_param_count,
-    },
-)
+
+# ! Disable logging for now
+# wandb.log(
+#     {
+#         "info/pre_freeze_param_count": pre_freeze_param_count,
+#         "info/post_freeze_param_count": post_freeze_param_count,
+#     },
+# )
 
 model.to(device)
+
+
 wandb.watch(model)
 
 if ADV:
@@ -1221,7 +1290,6 @@ scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
 
 
 #endregion
-
 
 #region 4. Finetune scGPT with task-specific objectives
 
@@ -1287,11 +1355,15 @@ val_loss, val_err = evaluate(
     model,
     loader=valid_loader,
 )
-logging.info(f"Results Validation: {val_loss, val_err}")    
+logging.info(f"Results Validation: {val_loss, val_err}")
 
 #endregion
 #region 5. Inference with fine-tuned scGPT model
 
+adata_train_raw = adata.copy()
+
+
+# get predictions
 # test inference
 (
     predictions_test,
@@ -1302,7 +1374,7 @@ logging.info(f"Results Validation: {val_loss, val_err}")
 
 logging.info(f"Results Test: {results_test}")
 
-sys.exit(0)
+
 
 # train inference
 (
@@ -1312,15 +1384,54 @@ sys.exit(0)
     all_outputs_train,
 ) = test_2(best_model, adata)
 
+
+
+
+# if available_device is not None:
+#     logging.info(f"Switching model to available device found: {available_device}")
+
+#     best_model.to(available_device)
+
+# else:
+#     logging.info("No available device found, using the default device")
+#     sys.exit(1)
+
+
+
+
 #endregion
 
 
 
 #region 6. Save output
-output_dir = os.path.join("..","outputs",f"run")
 
+# Generate the output directory
+output_dir = get_folder_name()
 
+# Prepare a dictionary of all variables to be saved
+data_to_save = {
+    "predictions_test": predictions_test,
+    "labels_test": labels_test,
+    "results_test": results_test,
+    "all_outputs_test": all_outputs_test,
+    "predictions_train": predictions_train,
+    "labels_train": labels_train,
+    "results_train": results_train,
+    "all_outputs_train": all_outputs_train,
+    "adata_train": adata,
+    "adata_test": adata_test,
+    "id2type": id2type,
+}
 
+# Save each item in the dictionary to a pickle file
+for filename, data in data_to_save.items():
+    if filename.startswith("adata"):
+        file_path = os.path.join(output_dir, f"{filename}.h5ad")
+        data.write(file_path)
+    else:
+        file_path = os.path.join(output_dir, f"{filename}.pkl")
+        with open(file_path, "wb") as f:
+            pickle.dump(data, f)
 #endregion
 
 
