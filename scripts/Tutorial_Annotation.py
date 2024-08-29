@@ -90,8 +90,12 @@ else:
 
 
 # variables
-data_path = os.path.join("../data/test_1/","test_2.h5ad")
-
+# data_path = os.path.join("../data/test_1/","test_2.h5ad")
+data_path = os.path.join("../data/pp_data-24-08-29-01/","data.h5ad")
+max_n_genes = 20000
+max_seq_len = 20000
+batch_size = 6
+presence = 0  # gene presence in samples
 
 # functions
 class SeqDataset(Dataset):
@@ -763,7 +767,7 @@ def mask_genes(X: np.ndarray, presence: int, max_n_genes: int) -> List[bool]:
     # filter out the genes with lowest presence
     # fixed filter
     thr_presence = adata.X.shape[0] * presence
-    mask_presence = np.sum(~np.isnan(adata.X), axis=0) > thr_presence
+    mask_presence = np.sum(~np.isnan(adata.X), axis=0) >= thr_presence
 
     logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
 
@@ -775,6 +779,8 @@ def mask_genes(X: np.ndarray, presence: int, max_n_genes: int) -> List[bool]:
 
     # filter out nan values
     gene_std_ftd = gene_std_ftd[~np.isnan(gene_std_ftd)]
+
+    max_n_genes = min(max_n_genes, len(gene_std_ftd))
 
     # compute threshold value which corresponds to the variance
     thr_std = np.sort(gene_std_ftd)[
@@ -867,7 +873,7 @@ hyperparameter_defaults = dict(
     ecs_thres=0.0,  # Elastic cell similarity objective, 0.0 to 1.0, 0.0 to disable
     dab_weight=0.0,
     lr=1e-4,
-    batch_size=32,
+    batch_size=batch_size,
     layer_size=128,
     nlayers=4,  # number of nn.TransformerEncoderLayer in nn.TransformerEncoder
     nhead=4,  # number of heads in nn.MultiheadAttention
@@ -904,7 +910,7 @@ mask_value = "auto"  # for masked values, now it should always be auto
 include_zero_gene = (
     config.include_zero_gene
 )  # if True, include zero genes among hvgs in the training
-max_seq_len = 3501
+max_seq_len = max_seq_len
 # max_seq_len = 9062  # adata.X.shape[1]+1
 n_bins = config.n_bins
 
@@ -1011,9 +1017,6 @@ num_types = len(np.unique(celltype_id_labels))
 id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories))
 adata.obs["celltype_id"] = celltype_id_labels
 
-presence = 0.95  # gene presence in samples
-variance = 45  # gene variance in top %
-
 # filter out the genes with lowest presence
 thr_presence = adata.X.shape[0] * presence
 
@@ -1024,7 +1027,7 @@ logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
 
 # mask for genes w/ low presence and select
 # top N genes w/ highest variance
-mask_genes = mask_genes(X=adata.X, presence=0.95, max_n_genes=3000)
+mask_genes = mask_genes(X=adata.X, presence=presence, max_n_genes=max_n_genes)
 
 # copy the original data
 adata_orig = adata.copy()
@@ -1358,8 +1361,9 @@ val_loss, val_err = evaluate(
 logging.info(f"Results Validation: {val_loss, val_err}")
 
 #endregion
-#region 5. Inference with fine-tuned scGPT model
+sys.exit(0)
 
+#region 5. Inference with fine-tuned scGPT model
 adata_train_raw = adata.copy()
 
 

@@ -19,7 +19,7 @@ from typing import *
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 from matplotlib import pyplot as plt
 from datetime import datetime
-
+import pickle
 
 # variables
 # diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma"}
@@ -168,13 +168,31 @@ def get_folder_name(base_output_dir:str)->str:
     next_run_number = max(existing_numbers, default=0) + 1
 
     # Step 3: Create the directory name with zero-padded run number
-    output_dir = os.path.join(base_output_dir, f"run-{today}-{next_run_number:02d}")
+    output_dir = os.path.join(base_output_dir, f"pp_data-{today}-{next_run_number:02d}")
 
     # Step 4: Create the directory
     os.makedirs(output_dir, exist_ok=True)
 
     print(f"Output directory created: {output_dir}")
     return output_dir
+
+def get_dataset_to_batch(ids:List[str], df_info:pd.DataFrame)->Tuple[List[str], List[int]]:
+    """Get Dataset to Batch
+    Args:
+        - ids (list): List of IDs
+        - df_info (pd.DataFrame): DataFrame with information
+    Returns:
+        - dataset_accessions (list): List of dataset accessions
+        - dataset_ids (list): List of dataset IDs
+    """
+    dsaid_2_accession = dict(zip(df_info["dsaid"], df_info["accession"]))
+
+    dataset_accessions = [dsaid_2_accession[id.split(";")[0]] for id in ids]
+
+    accession_2_id = {k: v for v, k in enumerate(set(dataset_accessions))}
+    dataset_ids = [accession_2_id[accession] for accession in dataset_accessions]
+
+    return dataset_accessions, dataset_ids
 
 # 2. Load Data
 # df = pd.read_csv(example_data_path)
@@ -259,6 +277,12 @@ adata.var["index"] = gene_names
 datasets = get_dataset(ids)
 adata.obs["dataset"] = datasets
 
+# get batch
+dataset_accessions, batch_ids = get_dataset_to_batch(ids, df_info)
+adata.obs["batch"] = batch_ids
+adata.obs["str_batch"] = [str(x) for x in batch_ids]
+
+
 # get dsaid
 dsaids = [x.split(";")[0] for x in ids]
 adata.obs["dsaid"] = dsaids
@@ -275,8 +299,12 @@ adata.obs["n_genes"] = n_genes
 diseases = get_disease(ids)
 adata.obs["disease"] = diseases
 
-# get disease
+# get celltype
 diseases = get_disease(ids)
+adata.obs["celltype"] = diseases
+
+# get disease
+diseases_study = get_disease(ids)
 adata.obs["disease_study"] = diseases
 
 # save to output file
@@ -286,11 +314,31 @@ output_folder = get_folder_name(base_output_dir)
 adata.write(os.path.join(output_folder, "data.h5ad"))
 
 # save metadata
-if diseases is None:
-    metadata = "All Human Diseases"
+if diseases_of_interest_set is None:
+    metadata_txt = "All Human Diseases"
 else:
-    metadata = ", ".join(diseases_of_interest_set)
+    metadata_txt = ", ".join(diseases_of_interest_set)
 
-metadata_path = os.path.join(output_folder, "metadata.txt")
-with open(metadata_path, "w") as f:
-    f.write(metadata)
+# compute metadata values
+n_genes = adata.X.shape[1]
+n_gex = adata.X.shape[0]    
+n_non_nan_genes = np.sum(~np.isnan(adata.X), axis=0)
+n_non_nan_gex = np.sum(~np.isnan(adata.X), axis=1)
+genes_std = np.nanstd(adata.X, axis=0)
+gex_std = np.nanstd(adata.X, axis=1)
+
+metadata = {"metadata": metadata_txt,
+            "n_genes": n_genes,
+            "n_gex": n_gex,
+            "n_non_nan_genes": n_non_nan_genes,
+            "n_non_nan_gex": n_non_nan_gex,
+            "genes_std":genes_std,
+            "gex_std":gex_std}
+
+
+
+metadata_path = os.path.join(output_folder, "metadata.pkl")
+with open(metadata_path, "wb") as f:
+    pickle.dump(metadata, f)
+    
+logging.info(f"Metadata saved to {metadata_path}")
