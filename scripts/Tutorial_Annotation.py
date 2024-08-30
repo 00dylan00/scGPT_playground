@@ -91,7 +91,7 @@ else:
 
 # variables
 # data_path = os.path.join("../data/test_1/","test_2.h5ad")
-data_path = os.path.join("../data/pp_data-24-08-29-01/","data.h5ad")
+data_path = os.path.join("../data/pp_data-24-08-30-01/","data.h5ad")
 max_n_genes = 20000
 max_seq_len = 20000
 batch_size = 6

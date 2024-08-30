@@ -267,8 +267,9 @@ adata = ad.AnnData(X=gene_expression_data)
 # Add cell and gene metadata
 adata.obs["ids"] = ids.values
 
-# gene symbols
+# gene symbols/name
 adata.var["gene_symbols"] = gene_names
+adata.var["gene_name"] = gene_names
 
 # gene index - nomenclature scGPT
 adata.var["index"] = gene_names
@@ -280,6 +281,7 @@ adata.obs["dataset"] = datasets
 # get batch
 dataset_accessions, batch_ids = get_dataset_to_batch(ids, df_info)
 adata.obs["batch"] = batch_ids
+adata.obs["batch_id"] = batch_ids
 adata.obs["str_batch"] = [str(x) for x in batch_ids]
 
 
