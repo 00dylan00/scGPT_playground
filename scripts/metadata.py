@@ -9,9 +9,11 @@ from datetime import datetime
 import pickle
 
 
-data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-24-08-27-01/data.h5ad"
+folder_run_name = "pp_data-24-09-02-01"
 
-output_folder = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-24-08-27-01/"
+data_folder = os.path.join("/aloy/home/ddalton/projects/scGPT_playground/data/",
+                            folder_run_name)
+data_path = os.path.join(data_folder, "data.h5ad")
 
 adata = sc.read(data_path)
 
@@ -37,7 +39,7 @@ metadata = {"metadata": metadata_txt,
 
 
 
-metadata_path = os.path.join(output_folder, "metadata.pkl")
+metadata_path = os.path.join(data_folder, "metadata.pkl")
 with open(metadata_path, "wb") as f:
     pickle.dump(metadata, f)
     

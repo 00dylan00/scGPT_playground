@@ -24,6 +24,7 @@ import traceback
 from typing import List, Tuple, Dict, Union, Optional
 import warnings
 import pandas as pd
+import psutil
 
 
 # from . import asyn
@@ -845,7 +846,26 @@ def get_folder_name():
     return output_dir
 
 
+def log_cpu_memory_usage():
+    memory = psutil.virtual_memory()
+    logging.info(f"CPU Memory Usage: {memory.percent}% used of {memory.total / (1024 ** 3):.2f} GB total")
+
+
+def log_gpu_memory_usage():
+    if torch.cuda.is_available():
+        for i in range(torch.cuda.device_count()):
+            allocated = torch.cuda.memory_allocated(i) / (1024 ** 3)
+            cached = torch.cuda.memory_reserved(i) / (1024 ** 3)
+            logging.info(f"GPU {i} Memory Usage: {allocated:.2f} GB allocated, {cached:.2f} GB cached")
+
+
 #endregion
+
+
+logging.info("region 0")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
 
 #region 1. Specify hyper-parameter setup for integration task
 
@@ -997,6 +1017,11 @@ logger = scg.logger
 scg.utils.add_file_handler(logger, save_dir / "run.log")
 
 
+logging.info("region 1")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
 
 #endregion
 
@@ -1034,6 +1059,8 @@ adata_orig = adata.copy()
 
 # filter the genes
 adata = adata[:, mask_genes]
+
+logging.info(f"adata shape before vs after filtering: {adata_orig.X.shape} vs {adata.X.shape}")
 
 
 if config.load_model is not None:
@@ -1087,6 +1114,7 @@ preprocessor = Preprocessor(
     result_binned_key="X_binned",  # the key in adata.layers to store the binned data
 )
 
+# ! KEY STEP
 
 adata_test = adata[adata.obs["str_batch"] == "1"]
 adata = adata[adata.obs["str_batch"] == "0"]
@@ -1166,6 +1194,11 @@ logger.info(
     f"valid set number of samples: {tokenized_valid['genes'].shape[0]}, "
     f"\n\t feature length: {tokenized_valid['genes'].shape[1]}"
 )
+
+
+logging.info("region 2")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
 
 
 #endregion
@@ -1292,6 +1325,11 @@ if ADV:
 scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
 
 
+logging.info("region 3")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
 #endregion
 
 #region 4. Finetune scGPT with task-specific objectives
@@ -1352,7 +1390,7 @@ for epoch in range(1, epochs + 1):
         scheduler_E.step()
 
     # ! FOR DEBUGGING
-    break
+    # break
 
 val_loss, val_err = evaluate(
     model,
@@ -1360,8 +1398,14 @@ val_loss, val_err = evaluate(
 )
 logging.info(f"Results Validation: {val_loss, val_err}")
 
+
+logging.info("region 4")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
 #endregion
-sys.exit(0)
+
 
 #region 5. Inference with fine-tuned scGPT model
 adata_train_raw = adata.copy()
@@ -1403,6 +1447,10 @@ logging.info(f"Results Test: {results_test}")
 
 
 
+logging.info("region 5")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
 #endregion
 
 
@@ -1436,6 +1484,12 @@ for filename, data in data_to_save.items():
         file_path = os.path.join(output_dir, f"{filename}.pkl")
         with open(file_path, "wb") as f:
             pickle.dump(data, f)
+            
+            
+logging.info("region 4")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
 #endregion
 
 

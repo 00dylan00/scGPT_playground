@@ -6,10 +6,11 @@ Structure:
     1. Imports, Variables, Functions
     2. Load Data
     3. Convert to `adata` object
+    4. Save to output file
 
 """
 
-# 1. Imports, Variables, Functions
+# region 1. Imports, Variables, Functions
 # imports
 import numpy as np, os, sys, pandas as pd, scanpy as sc
 import anndata as ad
@@ -20,9 +21,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 from matplotlib import pyplot as plt
 from datetime import datetime
 import pickle
+from typing import *
 
 # variables
-# diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma"}
+# diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
 diseases_of_interest_set = None
 
 example_data_path = (
@@ -194,17 +196,20 @@ def get_dataset_to_batch(ids:List[str], df_info:pd.DataFrame)->Tuple[List[str], 
 
     return dataset_accessions, dataset_ids
 
-# 2. Load Data
+# endregion
+
+# region 2. Load Data
 # df = pd.read_csv(example_data_path)
 df_info = pd.read_csv(df_info_path)
 
 
 # Query data to retrieve dsaids of interest
-library_strategies_of_interest_set = {"RNA-seq", "Microarray"}
+library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
 
 if diseases_of_interest_set :
     QUERY = "disease in @diseases_of_interest_set & library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
     dsaids_interest = df_info.query(QUERY)["dsaid"].to_list()
+    # df = get_exp_prof(dsaids_interest)
     df = get_exp_prof(dsaids_interest)
 
 else:
@@ -255,7 +260,11 @@ mask = [False if id.split(";")[2] == "Unknown" else True for id in df.iloc[:, 0]
 df = df[mask]
 logging.info(f"Filtered out Unkowns from dataframe with shape: {df.shape}")
 
-# 3. Convert to `adata` object
+
+
+# endregion
+
+# region 3. Convert to `adata` object
 # Extract cell identifiers and gene expression data
 ids = df.iloc[:, 0]
 gene_expression_data = df.iloc[:, 1:].values
@@ -282,8 +291,6 @@ adata.obs["dataset"] = datasets
 dataset_accessions, batch_ids = get_dataset_to_batch(ids, df_info)
 adata.obs["batch"] = batch_ids
 adata.obs["batch_id"] = batch_ids
-adata.obs["str_batch"] = [str(x) for x in batch_ids]
-
 
 # get dsaid
 dsaids = [x.split(";")[0] for x in ids]
@@ -306,11 +313,19 @@ diseases = get_disease(ids)
 adata.obs["celltype"] = diseases
 
 # get disease
-diseases_study = get_disease(ids)
-adata.obs["disease_study"] = diseases
+diseases_study = get_disease_study(ids)
+adata.obs["disease_study"] = diseases_study
+
 
 # save to output file
 output_folder = get_folder_name(base_output_dir)
+
+
+
+# endregion
+
+
+# region 4. Save to output file
 
 # save adata
 adata.write(os.path.join(output_folder, "data.h5ad"))
@@ -344,3 +359,5 @@ with open(metadata_path, "wb") as f:
     pickle.dump(metadata, f)
     
 logging.info(f"Metadata saved to {metadata_path}")
+
+# endregion
