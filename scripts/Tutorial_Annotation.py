@@ -66,6 +66,8 @@ from scgpt.utils import set_seed, category_str2int, eval_scib_metrics
 from datetime import datetime
 from tqdm import tqdm
 
+from sklearn.model_selection import StratifiedGroupKFold
+
 import logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
@@ -87,12 +89,12 @@ else:
     print(torch.cuda.is_available())
     cuda_version = torch.version.cuda
     print(f"PyTorch is using CUDA version: {cuda_version}")
-    sys.exit(0)
+    
 
 
 # variables
 # data_path = os.path.join("../data/test_1/","test_2.h5ad")
-data_path = os.path.join("../data/pp_data-24-08-30-01/","data.h5ad")
+data_path = os.path.join("../data/pp_data-24-09-04-01/","data.h5ad")
 max_n_genes = 20000
 max_seq_len = 20000
 batch_size = 6
@@ -859,12 +861,88 @@ def log_gpu_memory_usage():
             logging.info(f"GPU {i} Memory Usage: {allocated:.2f} GB allocated, {cached:.2f} GB cached")
 
 
-#endregion
+def filter_samples_n_genes(data_folder:str, n_genes:int)->np.array:
+    """Filter Samples by Nº of Genes
+    Args:
+        - data_folder (str): Data Folder
+        - n_genes (int): Nº of Genes
+    Returns:
+        - np.array: Filter
+    """
+    with open(os.path.join(data_folder,"metadata.pkl"),"rb") as f:
+        metadata = pickle.load(f)
+    
+    n_genes_per_gex = metadata["n_non_nan_gex"]
+    return n_genes_per_gex >= n_genes
 
+
+
+def get_test_split(obs: pd.DataFrame,n_splits=5) -> List[str]:
+    """Get Test Split
+    We will perform a split for those diseases which have more than one dataset.
+
+    Ther MUST not be any data-leakage between the train and test set - no shared datasets between the two sets.
+
+    Strategy:
+        1. Check diseases w/ 5+ datasets
+        2. Divide dataset into train and test w/ 4:1 ratio
+        3. Assign train and test to the respective datasets
+
+    """
+
+    obs_copy = obs.copy(deep=True)
+
+    # pre-process data
+    obs_copy["combination"] = obs_copy["disease"].astype(str) + "_" + obs_copy["dataset"].astype(str)
+
+    logging.info(f"Columns in obs_copy {obs_copy.columns}")
+
+    assert "combination" in obs_copy.columns, "combination column not created in obs"
+
+    diseases_f1 = set() # diseases filter 1
+
+
+    # 1. Check diseases w/ 5+ datasets
+    all_diseases = obs_copy["disease"].unique()
+    for diseases in all_diseases:
+        QUERY = f"disease == \"{diseases}\""
+        _df_query = obs_copy.query(QUERY)
+        if len(_df_query["dataset"].unique()) >= 5:
+            diseases_f1.add(diseases)
+
+    logging.info(f"Number of diseases with 5+ datasets: {len(diseases_f1)}")
+
+    # 2. Divide dataset into train and test w/ 4:1 ratio
+    QUERY = "disease in @diseases_f1"
+    df_diseases_f1 = obs_copy.query(QUERY)
+    
+    sgkf = StratifiedGroupKFold(n_splits=n_splits)
+    for i, (train_idx, test_idx) in enumerate(sgkf.split(X=df_diseases_f1["dsaid"], y=df_diseases_f1["disease"], groups=df_diseases_f1["dataset"])):
+        
+        
+        # get which disease & datasets are in the test
+        df_diseases_f1_test = df_diseases_f1.iloc[test_idx]
+
+        assert "combination" in obs_copy.columns, "combination column not found in obs"
+        assert "combination" in df_diseases_f1_test.columns, "combination column not found in df_diseases_f1_test"
+
+        logging.info(f"Nº of diseases in test split {i+1}: {len(df_diseases_f1_test['disease'].unique())}")        
+        logging.info(f"Nº of datasets in test split {i+1}: {len(df_diseases_f1_test['dataset'].unique())}")        
+        
+        # 3. Assign train and test labels
+        obs_copy[f'test_split_{i+1}'] = obs_copy['combination'].isin(df_diseases_f1_test['combination']).astype(int)
+        
+        logging.info(f"Nº of samples in test split {i+1}: {obs_copy[f'test_split_{i+1}'].sum()}")
+    
+    obs_copy.drop(columns=["combination"], inplace=True)
+
+    return obs_copy
 
 logging.info("region 0")
 log_cpu_memory_usage()
 log_gpu_memory_usage()
+
+#endregion
 
 
 #region 1. Specify hyper-parameter setup for integration task
@@ -1030,6 +1108,29 @@ log_gpu_memory_usage()
 # load adata file
 adata = sc.read(data_path)
 
+
+logging.info("region 2 - Loaded adata file")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+# Convert the array to float32
+adata.X = adata.X.astype(np.float32)
+
+logging.info("region 2 - Changed to float32")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
+
+import gc
+gc.collect()
+logging.info("region 2 - Clean garbage")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
+
+
 # config parameters
 data_is_raw = True
 filter_gene_by_counts = False
@@ -1043,25 +1144,46 @@ id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories
 adata.obs["celltype_id"] = celltype_id_labels
 
 # filter out the genes with lowest presence
-thr_presence = adata.X.shape[0] * presence
+# thr_presence = adata.X.shape[0] * presence
 
-mask_presence = np.sum(~np.isnan(adata.X), axis=0) > thr_presence
+# mask_presence = np.sum(~np.isnan(adata.X), axis=0) > thr_presence
 
-logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
+# logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
 
 
 # mask for genes w/ low presence and select
 # top N genes w/ highest variance
 mask_genes = mask_genes(X=adata.X, presence=presence, max_n_genes=max_n_genes)
+logging.info(f"Presence thr {presence}, {np.sum(mask_genes)} genes left")
+
 
 # copy the original data
 adata_orig = adata.copy()
+logging.info(f"adata shape before filtering: {adata.X.shape}")
 
 # filter the genes
 adata = adata[:, mask_genes]
+logging.info(f"adata shape filtering genes: {adata.X.shape}")
 
-logging.info(f"adata shape before vs after filtering: {adata_orig.X.shape} vs {adata.X.shape}")
+# filter gex by presence of genes
+mask_gex = filter_samples_n_genes(data_folder=os.path.dirname(data_path), n_genes=10000)
+adata = adata[mask_gex]
+logging.info(f"adata shape filtering gex:{adata.X.shape}")
 
+
+# define validation split
+df_obs = adata.obs
+new_obs = get_test_split(obs=df_obs,n_splits=5)
+adata.obs = new_obs
+
+
+# ! ADD LOOP FOR EACH TEST SPLIT
+# ! SIGNIFICANTLY DIFFERENT FROM THE ORIGINAL IMPLEMENTATION
+adata_test = adata[adata.obs["test_split_1"] == 1]
+adata = adata[adata.obs["test_split_1"] == 0]
+
+logging.info(f"adata train/validation shape: {adata.X.shape}")
+logging.info(f"adata test shape: {adata_test.X.shape}")
 
 if config.load_model is not None:
     model_dir = Path(config.load_model)
@@ -1099,6 +1221,11 @@ if config.load_model is not None:
     n_layers_cls = model_configs["n_layers_cls"]
 
 
+logging.info("region 2 - Loading Model")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
 # set up the preprocessor, use the args to config the workflow
 preprocessor = Preprocessor(
     use_key="X",  # the key in adata.layers to use as raw data
@@ -1114,16 +1241,26 @@ preprocessor = Preprocessor(
     result_binned_key="X_binned",  # the key in adata.layers to store the binned data
 )
 
-# ! KEY STEP
+logging.info("region 2 - Loading Preprocesser")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
 
-adata_test = adata[adata.obs["str_batch"] == "1"]
-adata = adata[adata.obs["str_batch"] == "0"]
 
 # added
 adata_test_raw = adata_test.copy()
 
+logging.info("region 2 - copy data")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
+
 preprocessor(adata, batch_key=None)
 preprocessor(adata_test, batch_key=None)
+
+
+logging.info("region 2 - Preprocess Data")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
 
 
 input_layer_key = {  # the values of this map coorespond to the keys in preprocessing
@@ -1155,6 +1292,11 @@ batch_ids = np.array(batch_ids)
 ) = train_test_split(
     all_counts, celltypes_labels, batch_ids, test_size=0.1, shuffle=True
 )
+
+logging.info("region 2 - split data")
+log_cpu_memory_usage()
+log_gpu_memory_usage()
+
 
 
 if config.load_model is None:
@@ -1199,6 +1341,13 @@ logger.info(
 logging.info("region 2")
 log_cpu_memory_usage()
 log_gpu_memory_usage()
+
+logging.info(f"dtype adata.X: {adata.X.dtype}")
+
+# # check decimals in the data
+# decimals, integ = np.modf(adata.X)
+
+# logging.info(f"Decimals: {decimals.astype(bool).sum()} / {adata.X.size}")
 
 
 #endregion

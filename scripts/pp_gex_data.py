@@ -25,7 +25,18 @@ from typing import *
 
 # variables
 # diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
-diseases_of_interest_set = None
+# diseases_of_interest_set = None
+diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
+       'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
+       'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
+       'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
+       'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
+       'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
+       'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
+       'Colorectal Carcinoma', 'Type 1 Diabetes',
+       'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
+       'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
+       'Prostate Cancer'}
 
 example_data_path = (
     "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/DSA00123.csv"
