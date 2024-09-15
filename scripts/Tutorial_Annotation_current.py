@@ -94,17 +94,13 @@ else:
 
 
 # variables
-# data_path = os.path.join("../data/pp_data-24-09-14-01/","data.h5ad")
-# data_path = os.path.join("../data/pp_data-24-09-14-01/","data.h5ad")
-
-data_path = os.path.join("../data/test_1/","test_2.h5ad")
-benchmark_data = True
-
+# data_path = os.path.join("../data/test_1/","test_2.h5ad")
+data_path = os.path.join("../data/pp_data-24-09-09-02/","data.h5ad")
 max_n_genes = 3000
 max_seq_len = 3000
 batch_size = 32 # original 32 // 6 - 20k
-presence = 0.5  # gene presence in samples
-epochs=10
+presence = 0  # gene presence in samples
+epochs=20
 new_split = False
 # functions
 class SeqDataset(Dataset):
@@ -388,7 +384,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 optimizer_E.step()
 
         # ! Disable wandb logging for now
-        wandb.log(metrics_to_log)
+        # wandb.log(metrics_to_log)
 
         total_loss += loss.item()
         total_mse += loss_mse.item() if MLM else 0.0
@@ -1011,19 +1007,16 @@ log_gpu_memory_usage()
 
 #region 1. Specify hyper-parameter setup for integration task
 
-# # Load the config file
-# with open('config/wandb.json', 'r') as f:
-#     config = json.load(f)
+# Load the config file
+with open('config/wandb.json', 'r') as f:
+    config = json.load(f)
 
-# # Use the Wandb API key from the config file
-# if 'wandb_api_key' in config:
-#     os.environ['WANDB_API_KEY'] = config['wandb_api_key']
+# Use the Wandb API key from the config file
+if 'wandb_api_key' in config:
+    os.environ['WANDB_API_KEY'] = config['wandb_api_key']
 
-# # Log in to Wandb using the API key
-# wandb.login()
-
-
-
+# Log in to Wandb using the API key
+wandb.login()
 
 
 hyperparameter_defaults = dict(
@@ -1052,20 +1045,6 @@ hyperparameter_defaults = dict(
     freeze=False,  # freeze
     DSBN=False,  # Domain-spec batchnorm
 )
-
-
-with open('/aloy/home/ddalton/projects/scGPT_playground/scripts/config/wandb.json', 'r') as f:
-    api_config = json.load(f)
-
-# Use the Wandb API key from the config file
-if 'wandb_api_key' in api_config:
-    os.environ['WANDB_API_KEY'] = api_config['wandb_api_key']
-
-# Log in to Wandb using the API key
-wandb.login()
-
-
-
 
 run = wandb.init(
     config=hyperparameter_defaults,
@@ -1123,7 +1102,7 @@ per_seq_batch_sample = False
 lr = config.lr  # TODO: test learning rate ratio between two tasks
 lr_ADV = 1e-3  # learning rate for discriminator, used when ADV is True
 batch_size = config.batch_size
-eval_batch_size = int(config.batch_size) #! this was set to /2 for some reason . .  
+eval_batch_size = int(config.batch_size/2)
 epochs = config.epochs
 schedule_interval = 1
 
@@ -1232,57 +1211,24 @@ adata.obs["celltype_id"] = celltype_id_labels
 # logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
 
 
-if benchmark_data:
-    import logging
-
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
-    presence = 0.95  # gene presence in samples
-    variance = 45  # gene variance in top %
-
-    # filter out the genes with lowest presence
-    thr_presence = adata.X.shape[0] * presence
-
-    mask_presence = np.sum(~np.isnan(adata.X), axis=0) > thr_presence
-
-    logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
+# mask for genes w/ low presence and select
+# top N genes w/ highest variance
+mask_genes = mask_genes(X=adata.X, presence=presence, max_n_genes=max_n_genes)
+logging.info(f"Presence thr {presence}, {np.sum(mask_genes)} genes left")
 
 
-    # filter out the genes with lowest standard deviation
-    gene_std = np.nanstd(adata.X, axis=0)
-    gene_std = gene_std[~np.isnan(gene_std)]
-    thr_std = np.percentile(gene_std, variance)
+# copy the original data
+adata_orig = adata.copy()
+logging.info(f"adata shape before filtering: {adata.X.shape}")
 
-    mask_variance = np.nanstd(adata.X, axis=0) > thr_std
+# filter the genes
+adata = adata[:, mask_genes]
+logging.info(f"adata shape filtering genes: {adata.X.shape}")
 
-
-    logging.info(f"Variance thr {thr_std:.2f}, {np.sum(mask_variance)} genes left")
-
-    # combine mask
-    mask = mask_presence & mask_variance
-
-
-    logging.info(f"Combined mask {np.sum(mask)} genes left")
-
-
-else:
-    # mask for genes w/ low presence and select
-    # top N genes w/ highest variance
-    mask_genes = mask_genes(X=adata.X, presence=presence, max_n_genes=max_n_genes)
-    logging.info(f"Presence thr {presence}, {np.sum(mask_genes)} genes left")
-
-
-    # copy the original data
-    adata_orig = adata.copy()
-    logging.info(f"adata shape before filtering: {adata.X.shape}")
-
-    # filter the genes
-    adata = adata[:, mask_genes]
-    logging.info(f"adata shape filtering genes: {adata.X.shape}")
-
-    # filter gex by presence of genes
-    mask_gex = filter_samples_n_genes(data_folder=os.path.dirname(data_path), n_genes=10000)
-    adata = adata[mask_gex]
-    logging.info(f"adata shape filtering gex:{adata.X.shape}")
+# filter gex by presence of genes
+mask_gex = filter_samples_n_genes(data_folder=os.path.dirname(data_path), n_genes=10000)
+adata = adata[mask_gex]
+logging.info(f"adata shape filtering gex:{adata.X.shape}")
 
 
 if config.load_model is not None:
@@ -1322,32 +1268,20 @@ if config.load_model is not None:
 
 
 # define validation split
-
+df_obs = adata.obs
+new_obs = get_test_split(obs=df_obs,n_splits=5)
+adata.obs = new_obs
 
 
 # ! ADD LOOP FOR EACH TEST SPLIT
 # ! SIGNIFICANTLY DIFFERENT FROM THE ORIGINAL IMPLEMENTATION
-
-if benchmark_data:
-
-    adata_test = adata[adata.obs["str_batch"] == "1"]
-    adata = adata[adata.obs["str_batch"] == "0"]
-
-    # added
-    adata_test_raw = adata_test.copy()
-
-
+if new_split:
+    adata_test = adata[adata.obs["test_split_1"] == 1]
+    adata = adata[adata.obs["test_split_1"] == 0]
 else:
-    if new_split:
-        df_obs = adata.obs
-        new_obs = get_test_split(obs=df_obs,n_splits=5)
-        adata.obs = new_obs
-        adata_test = adata[adata.obs["test_split_1"] == 1]
-        adata = adata[adata.obs["test_split_1"] == 0]
-    else:
-        mask_old_split = get_old_test_split(adata)
-        adata_test = adata[mask_old_split]
-        adata = adata[~mask_old_split]
+    mask_old_split = get_old_test_split(adata)
+    adata_test = adata[mask_old_split]
+    adata = adata[~mask_old_split]
 
 logging.info(f"adata train/validation shape: {adata.X.shape}")
 logging.info(f"adata test shape: {adata_test.X.shape}")

@@ -26,21 +26,58 @@ from typing import *
 # variables
 # diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
 # diseases_of_interest_set = None
-diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
-       'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
-       'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
-       'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
-       'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
-       'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
-       'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
-       'Colorectal Carcinoma', 'Type 1 Diabetes',
-       'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
-       'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
-       'Prostate Cancer'}
+# diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
+#        'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
+#        'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
+#        'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
+#        'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
+#        'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
+#        'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
+#        'Colorectal Carcinoma', 'Type 1 Diabetes',
+#        'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
+#        'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
+#        'Prostate Cancer'}
 
-example_data_path = (
-    "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/DSA00123.csv"
-)
+# diseases_of_interest_set = {'Acute-On-Chronic Liver Failure',
+#  "Barrett's Esophagus",
+#  "Behcet's Disease",
+#  'Chronic Rhinosinusitis',
+#  'Cornelia De Lange Syndrome',
+#  'Coronary Artery Disease',
+#  'Diabetes',
+#  'Diabetic Kidney Disease',
+#  'Follicular Lymphoma',
+#  'Glioblastoma Multiforme',
+#  'Hepatitis B',
+#  'Hutchinson-Gilford Progeria Syndrome',
+#  'Hypertension',
+#  'Multiple System Atrophy',
+#  'Pneumonia',
+#  'Primary Myelofibrosis',
+#  'Spinal Muscular Atrophy',
+#  'Squamous Cell Carcinoma',
+#  'Steatosis',
+#  'Type 2 Diabetes Mellitus'}
+
+# diseases_of_interest_set = {'Breast Cancer', 'Colorectal Carcinoma', 'Influenza'}
+# diseases_of_interest_set = {'Control', 'Lung Adenocarcinoma', 'Breast Cancer', 'Psoriasis', 'Ulcerative Colitis', "Crohn's Disease", 'Lung Cancer'}
+
+diseases_of_interest_set = {
+    "Crohn's Disease",
+    "Ulcerative Colitis",
+    "Lung Cancer",
+    "Lung Adenocarcinoma",
+    "Breast Cancer",
+    "Psoriasis",
+}
+
+# library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
+library_strategies_of_interest_set = {"Microarray"}
+
+
+# example_data_path = (
+#     "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/DSA00123.csv"
+# )
 
 df_info_path = os.path.join(
     "/aloy",
@@ -169,7 +206,7 @@ def get_folder_name(base_output_dir:str)->str:
     # Step 2: Find the highest existing run number for today
     existing_runs = [
         d for d in os.listdir(base_output_dir)
-        if os.path.isdir(os.path.join(base_output_dir, d)) and d.startswith(f"ppdata-{today}")
+        if os.path.isdir(os.path.join(base_output_dir, d)) and d.startswith(f"pp_data-{today}")
     ]
 
     # Extract numbers from existing runs and find the max
@@ -214,8 +251,6 @@ def get_dataset_to_batch(ids:List[str], df_info:pd.DataFrame)->Tuple[List[str], 
 df_info = pd.read_csv(df_info_path)
 
 
-# Query data to retrieve dsaids of interest
-library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
 
 if diseases_of_interest_set :
     QUERY = "disease in @diseases_of_interest_set & library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
@@ -355,13 +390,42 @@ n_non_nan_gex = np.sum(~np.isnan(adata.X), axis=1)
 genes_std = np.nanstd(adata.X, axis=0)
 gex_std = np.nanstd(adata.X, axis=1)
 
+# compute nº non-nan values per disease-dataset
+all_dis_dt = [ds+";"+dt for ds,dt in zip(diseases_study,datasets)]
+unique_dis_dt = list(set(all_dis_dt))
+gene_expression_data_bool = ~np.isnan(gene_expression_data)
+
+n_non_nan_dis_dt_row = list()
+n_non_nan_dis_dt_col = list()
+for dis_dt in tqdm(unique_dis_dt):
+    row_mask = np.isin(all_dis_dt,dis_dt)
+    
+    # get rows of interest
+    rows_interest = gene_expression_data_bool[row_mask]
+
+    # merge by columns
+    merge_columns = rows_interest.sum(axis=0).astype(bool)
+
+    # get nº non-nan values
+    n_non_nan_values = merge_columns.sum()
+    
+    # append to list
+    n_non_nan_dis_dt_row.append(n_non_nan_values)
+    n_non_nan_dis_dt_col.append(merge_columns)
+
+n_non_nan_dis_dt_genes = np.array(n_non_nan_dis_dt_col).sum(axis=0)
+
 metadata = {"metadata": metadata_txt,
             "n_genes": n_genes,
             "n_gex": n_gex,
             "n_non_nan_genes": n_non_nan_genes,
             "n_non_nan_gex": n_non_nan_gex,
             "genes_std":genes_std,
-            "gex_std":gex_std}
+            "gex_std":gex_std,
+            "unique_dis_dt":unique_dis_dt,
+            "n_non_nan_dis_dt_row":n_non_nan_dis_dt_row,
+            "n_non_nan_dis_dt_genes":n_non_nan_dis_dt_genes,
+            }
 
 
 
