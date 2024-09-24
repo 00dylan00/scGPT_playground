@@ -22,57 +22,25 @@ from matplotlib import pyplot as plt
 from datetime import datetime
 import pickle
 from typing import *
+import json
 
 # variables
-# diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
-# diseases_of_interest_set = None
-# diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
-#        'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
-#        'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
-#        'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
-#        'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
-#        'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
-#        'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
-#        'Colorectal Carcinoma', 'Type 1 Diabetes',
-#        'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
-#        'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
-#        'Prostate Cancer'}
-
-# diseases_of_interest_set = {'Acute-On-Chronic Liver Failure',
-#  "Barrett's Esophagus",
-#  "Behcet's Disease",
-#  'Chronic Rhinosinusitis',
-#  'Cornelia De Lange Syndrome',
-#  'Coronary Artery Disease',
-#  'Diabetes',
-#  'Diabetic Kidney Disease',
-#  'Follicular Lymphoma',
-#  'Glioblastoma Multiforme',
-#  'Hepatitis B',
-#  'Hutchinson-Gilford Progeria Syndrome',
-#  'Hypertension',
-#  'Multiple System Atrophy',
-#  'Pneumonia',
-#  'Primary Myelofibrosis',
-#  'Spinal Muscular Atrophy',
-#  'Squamous Cell Carcinoma',
-#  'Steatosis',
-#  'Type 2 Diabetes Mellitus'}
-
-# diseases_of_interest_set = {'Breast Cancer', 'Colorectal Carcinoma', 'Influenza'}
-# diseases_of_interest_set = {'Control', 'Lung Adenocarcinoma', 'Breast Cancer', 'Psoriasis', 'Ulcerative Colitis', "Crohn's Disease", 'Lung Cancer'}
-
-diseases_of_interest_set = {
-    "Crohn's Disease",
-    "Ulcerative Colitis",
-    "Lung Cancer",
-    "Lung Adenocarcinoma",
+manual_parameters = { "diseases_of_interest_set": list({
+    "Colorectal Carcinoma",
     "Breast Cancer",
-    "Psoriasis",
+    "Prostate Cancer",
+    "Hepatocellular Carcinoma",
+    "Crohn's Disease",
+    "Duchenne Muscular Dystrophy",
+    "Multiple Sclerosis"
+    
+}),
+    "library_strategies_of_interest_set": list({
+        "Microarray","RNA-Seq"
+    }),
 }
 
 # library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
-library_strategies_of_interest_set = {"Microarray"}
 
 
 # example_data_path = (
@@ -193,6 +161,19 @@ def get_dataset(ids:List[str])->List[str]:
     return datasets
 
 
+def get_library(ids:List[str])->List[str]:
+    """Get Library
+    Args:
+        - ids (list): List of IDs
+    Returns:
+        - datasets (list): List of datasets
+    """
+    dsaids = [x.split(";")[0] for x in ids]
+    dsaid_2_dataset = dict(zip(df_info["dsaid"], df_info["library_strategy"]))
+    datasets = [str(dsaid_2_dataset[dsaid]) for dsaid in dsaids]
+    return datasets
+
+
 def get_folder_name(base_output_dir:str)->str:
     """Get Folder Name
     Args:
@@ -247,6 +228,9 @@ def get_dataset_to_batch(ids:List[str], df_info:pd.DataFrame)->Tuple[List[str], 
 # endregion
 
 # region 2. Load Data
+diseases_of_interest_set = manual_parameters.get("diseases_of_interest_set")
+library_strategies_of_interest_set = manual_parameters.get("library_strategies_of_interest_set")
+
 # df = pd.read_csv(example_data_path)
 df_info = pd.read_csv(df_info_path)
 
@@ -333,6 +317,10 @@ adata.var["index"] = gene_names
 datasets = get_dataset(ids)
 adata.obs["dataset"] = datasets
 
+# get dataset
+datasets = get_dataset(ids)
+adata.obs["dataset_id"] = datasets
+
 # get batch
 dataset_accessions, batch_ids = get_dataset_to_batch(ids, df_info)
 adata.obs["batch"] = batch_ids
@@ -361,6 +349,10 @@ adata.obs["celltype"] = diseases
 # get disease
 diseases_study = get_disease_study(ids)
 adata.obs["disease_study"] = diseases_study
+
+# get library
+library_stratergy = get_library(ids)
+adata.obs["library"] = library_stratergy
 
 
 # save to output file
@@ -435,4 +427,63 @@ with open(metadata_path, "wb") as f:
     
 logging.info(f"Metadata saved to {metadata_path}")
 
+
+# save manual parameters
+# Write parameters to a JSON file
+with open(os.path.join(output_folder,"parameters.json"), 'w') as json_file:
+    json.dump(manual_parameters, json_file, indent=4)
+
+
+
 # endregion
+
+
+
+
+# diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
+# diseases_of_interest_set = None
+# diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
+#        'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
+#        'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
+#        'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
+#        'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
+#        'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
+#        'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
+#        'Colorectal Carcinoma', 'Type 1 Diabetes',
+#        'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
+#        'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
+#        'Prostate Cancer'}
+
+# diseases_of_interest_set = {'Acute-On-Chronic Liver Failure',
+#  "Barrett's Esophagus",
+#  "Behcet's Disease",
+#  'Chronic Rhinosinusitis',
+#  'Cornelia De Lange Syndrome',
+#  'Coronary Artery Disease',
+#  'Diabetes',
+#  'Diabetic Kidney Disease',
+#  'Follicular Lymphoma',
+#  'Glioblastoma Multiforme',
+#  'Hepatitis B',
+#  'Hutchinson-Gilford Progeria Syndrome',
+#  'Hypertension',
+#  'Multiple System Atrophy',
+#  'Pneumonia',
+#  'Primary Myelofibrosis',
+#  'Spinal Muscular Atrophy',
+#  'Squamous Cell Carcinoma',
+#  'Steatosis',
+#  'Type 2 Diabetes Mellitus'}
+
+# diseases_of_interest_set 
+# = {'Breast Cancer', 'Colorectal Carcinoma', 'Influenza'}
+# diseases_of_interest_set = {'Control', 'Lung Adenocarcinoma', 'Breast Cancer', 'Psoriasis', 'Ulcerative Colitis', "Crohn's Disease", 'Lung Cancer'}
+
+# diseases_of_interest_set = {
+#     "Crohn's Disease",
+#     "Ulcerative Colitis",
+#     "Lung Cancer",
+#     "Lung Adenocarcinoma",
+#     "Breast Cancer",
+#     "Psoriasis",
+# }

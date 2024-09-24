@@ -296,7 +296,7 @@ if False:
 
 
 data_dir = Path("../data/test_1/")
-adata = sc.read(data_dir / "test_2.h5ad")
+adata = sc.read(data_dir / "test_1.h5ad")
 
 
 # config parameters
