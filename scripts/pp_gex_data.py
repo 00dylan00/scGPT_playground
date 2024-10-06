@@ -25,18 +25,25 @@ from typing import *
 import json
 
 # variables
-manual_parameters = { "diseases_of_interest_set": list({
-    "Colorectal Carcinoma",
-    "Breast Cancer",
-    "Prostate Cancer",
-    "Hepatocellular Carcinoma",
-    "Crohn's Disease",
-    "Duchenne Muscular Dystrophy",
-    "Multiple Sclerosis"
+# manual_parameters = { "diseases_of_interest_set": list({
+#     "Colorectal Carcinoma",
+#     "Breast Cancer",
+#     "Prostate Cancer",
+#     "Hepatocellular Carcinoma",
+#     "Crohn's Disease",
+#     "Multiple Sclerosis"
     
-}),
+# }),
+#     "library_strategies_of_interest_set": list({
+#         "Microarray"
+#     }),
+# }
+
+manual_parameters = { 
+    "dataset_exercise":"medium",                 
+    "diseases_of_interest_set": None,
     "library_strategies_of_interest_set": list({
-        "Microarray","RNA-Seq"
+        "Microarray"
     }),
 }
 
@@ -225,6 +232,76 @@ def get_dataset_to_batch(ids:List[str], df_info:pd.DataFrame)->Tuple[List[str], 
 
     return dataset_accessions, dataset_ids
 
+
+def get_diseases_n_datasets(df: pd.DataFrame, n: int = 10) -> List:
+    """Get Diseases With More Than n Datasets
+
+    Args:
+        - df(pd.DataFrame): DataFrame with the information
+        - diseases(List): List of diseases to filter
+        - n(int): Number of datasets to filter
+
+    Returns:
+        - List: List of diseases with more than n datasets
+    """
+    diseases_list = list()
+    dsaids_list = list()
+    # iterate over diseases
+    for disease in df["disease"].unique():
+        df_query = df.query(f'disease == "{disease}"')
+        if df_query["accession"].nunique() >= n:
+            diseases_list.append(disease)
+            dsaids_list.append(df_query["dsaid"].unique())
+
+    return diseases_list, dsaids_list
+
+
+def get_medium_dataset(df: pd.DataFrame, n: int = 10) -> pd.DataFrame:
+    """Get Medium Dataset
+
+    Args:
+        - df(pd.DataFrame): DataFrame with the information
+        - n(int): Number of datasets to filter
+
+    Returns:
+        - pd.DataFrame: DataFrame with the medium dataset
+    """
+    # load mappings dsaids -> MeSH terms
+    mesh_terms = pickle.load(
+        open(
+            "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/mesh_tree_terms.pkl",
+            "rb",
+        )
+    )
+
+    dsaid_2_mesh = {
+        k: v for k, v in zip(mesh_terms["dsaids"], mesh_terms["mesh_tree_terms"])
+    }
+
+    dsaids_with_mesh = [k for k, v in dsaid_2_mesh.items() if len(v) > 0]
+    
+    
+    # filter by nº of datasets
+    diseases_list, dsaids_list = get_diseases_n_datasets(df, n)
+
+    # filter by MeSH term presence
+    diseases_f_mesh = list()
+    dsaids_f_mesh = list()
+    for disease_i, dsaids_i in tqdm(zip(diseases_list, dsaids_list),total=len(diseases_list)):
+        
+        if np.isin(dsaids_i, dsaids_with_mesh).any():
+            diseases_f_mesh.append(disease_i)
+            for dsaid_j in dsaids_i:
+                if dsaid_j in dsaids_with_mesh:
+                    dsaids_f_mesh.append(dsaid_j)
+                else:
+                    logging.info("DSAID of a disease w/ other DSAID w/ MeSH terms - but it itself doesn't have MeSH terms")
+                    logging.info(f"{dsaid_j}, {disease_i}")
+                                    
+    logging.info(f"Nº of diseases {len(diseases_f_mesh)}/{len(diseases_list)}")             
+    logging.info(f"Nº of dsaids {len(dsaids_f_mesh)}/{len([x for sublist in dsaids_list for x in sublist])}")             
+    return diseases_f_mesh, dsaids_f_mesh
+
 # endregion
 
 # region 2. Load Data
@@ -235,42 +312,32 @@ library_strategies_of_interest_set = manual_parameters.get("library_strategies_o
 df_info = pd.read_csv(df_info_path)
 
 
+if manual_parameters.get("dataset"):
+    if manual_parameters["dataset"] == "small":
+        print("Small Dataset")
 
-if diseases_of_interest_set :
+    elif manual_parameters["dataset"] == "medium":
+        print("Medium Dataset")
+
+        # filter by library strategy
+        QUERY = f"library_strategy in @library_stratergies"
+        df_filtered = df_info.query(QUERY)
+
+        # get dsaids of interest
+        diseases_interest, dsaids_interest = get_medium_dataset(df_filtered, 10)
+
+        df = get_exp_prof(dsaids_interest)
+
+    elif manual_parameters["dataset"] == "large":
+        print("Large Dataset")
+
+# if specific diseases
+else:
     QUERY = "disease in @diseases_of_interest_set & library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
     dsaids_interest = df_info.query(QUERY)["dsaid"].to_list()
     # df = get_exp_prof(dsaids_interest)
     df = get_exp_prof(dsaids_interest)
 
-else:
-    QUERY = "library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
-    dsaids_interest = np.array(df_info.query(QUERY)["dsaid"].to_list())
-    size_df = len(pd.read_csv(large_df_path,usecols=["ID"]))
-    
-    logging.info(f"Reading merged dataframe {large_df_path}")
-
-    list_filtered_df = list()
-
-    for df_chunk in tqdm(pd.read_csv(large_df_path, chunksize=500), total=int(size_df/500)):
-        all_data_ids = df_chunk["ID"].to_list()
-        all_data_dsaids = np.array([id.split(";")[0] for id in all_data_ids])
-        
-        logging.debug(f"all_data_ids: {all_data_ids}")
-        logging.debug(f"all_data_dsaids: {all_data_dsaids}")
-        
-        mask = np.isin(all_data_dsaids,dsaids_interest)
-        logging.debug(f"mask {np.sum(mask)} : {mask}")
-        df_chunk_filtered = df_chunk[mask]
-        
-        logging.debug(f"df_chunk_filtered {df_chunk_filtered}")
-        
-        list_filtered_df.append(df_chunk_filtered)
-    
-    # merge filtered dataframes
-    df = pd.concat(list_filtered_df)    
-    if "Unnamed: 0" in df.columns:
-        df.drop(columns=["Unnamed: 0"], inplace=True)
-    
 logging.info(f"Nº of DSAIDs of interest: {len(dsaids_interest)}")
 
 
@@ -487,3 +554,34 @@ with open(os.path.join(output_folder,"parameters.json"), 'w') as json_file:
 #     "Breast Cancer",
 #     "Psoriasis",
 # }
+
+
+
+    #! LARGE DATASET - OLD
+    # QUERY = "library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
+    # dsaids_interest = np.array(df_info.query(QUERY)["dsaid"].to_list())
+    # size_df = len(pd.read_csv(large_df_path,usecols=["ID"]))
+    
+    # logging.info(f"Reading merged dataframe {large_df_path}")
+
+    # list_filtered_df = list()
+
+    # for df_chunk in tqdm(pd.read_csv(large_df_path, chunksize=500), total=int(size_df/500)):
+    #     all_data_ids = df_chunk["ID"].to_list()
+    #     all_data_dsaids = np.array([id.split(";")[0] for id in all_data_ids])
+        
+    #     logging.debug(f"all_data_ids: {all_data_ids}")
+    #     logging.debug(f"all_data_dsaids: {all_data_dsaids}")
+        
+    #     mask = np.isin(all_data_dsaids,dsaids_interest)
+    #     logging.debug(f"mask {np.sum(mask)} : {mask}")
+    #     df_chunk_filtered = df_chunk[mask]
+        
+    #     logging.debug(f"df_chunk_filtered {df_chunk_filtered}")
+        
+    #     list_filtered_df.append(df_chunk_filtered)
+    
+    # # merge filtered dataframes
+    # df = pd.concat(list_filtered_df)    
+    # if "Unnamed: 0" in df.columns:
+    #     df.drop(columns=["Unnamed: 0"], inplace=True)

@@ -47,6 +47,7 @@ from torchtext._torchtext import (
     Vocab as VocabPybind,
 )
 from sklearn.metrics import confusion_matrix
+from sklearn.model_selection import StratifiedKFold
 
 sys.path.insert(0, "../")
 import scgpt as scg
@@ -76,11 +77,12 @@ import psutil
 
 import pandas as pd
 from typing import *
-from sklearn.model_selection import StratifiedGroupKFold
+from sklearn.model_selection import StratifiedGroupKFold, KFold
 import json
 
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
+import argparse
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
@@ -94,17 +96,45 @@ logging.info(f"Is Cuda Available {str(torch.cuda.is_available())}")
 
 import torch
 print(torch.cuda.device_count())  # Check how many GPUs are available
+parser = argparse.ArgumentParser(description="Script for scGPT project")
 
+# Define arguments
+parser.add_argument('--data_path', type=str, required=True, help='Path to the data file')
+parser.add_argument('--max_seq_len', type=int, default=1000, help='Maximum sequence length')
+parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
+parser.add_argument('--gene_presence_pct', type=float, default=0.9, help='Gene presence percentage')
+parser.add_argument('--benchmark_data', action='store_true', help='Use benchmark data')
+parser.add_argument('--split_type', type=str, default="stratified", help='Type of gene filtering')
+parser.add_argument('--n_splits', type=int, default=3, help='Number of splits for cross-validation')
+parser.add_argument('--n_tested_splits', type=int, default=None, help='Number of tested splits')  
+parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs')
+parser.add_argument('--gene_filtering', type=str, default="top_presence", help='Type of gene filtering')
+    
+
+# Parse arguments
+args = parser.parse_args()
+
+if args.n_tested_splits is None:
+    args.n_tested_splits = args.n_splits
+
+
+# Use the arguments in your script
+print(f"Data path: {args.data_path}")
+print(f"Batch size: {args.batch_size}")
 
 # variables
 # data_path = "../data/test_1/test_2.h5ad"
 manual_parameters = {
-"data_path": "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-24-09-24-01/data.h5ad",
-"max_seq_len": 6500,
-"batch_size":6,
-"gene_presence_pct":0.1,
-"benchmark_data": False,
-"new_split" : True}
+"data_path": args.data_path,
+"max_seq_len": args.max_seq_len,
+"batch_size":args.batch_size,
+"gene_presence_pct":args.gene_presence_pct,
+"benchmark_data": args.benchmark_data,
+"split_type" : args.split_type,
+"n_splits": args.n_splits,
+"n_tested_splits": args.n_tested_splits,
+"epochs":args.epochs,
+"gene_filtering":args.gene_filtering}
 
 # functions
 def train(model: nn.Module, loader: DataLoader) -> None:
@@ -787,8 +817,6 @@ def log_gpu_memory_usage():
             logging.info(f"GPU {i} Memory Usage: {allocated:.2f} GB allocated, {cached:.2f} GB cached")
 
 
-
-
 def get_mask_genes(
     adata: AnnData,
     max_n_genes: int = 3501,
@@ -842,7 +870,7 @@ def get_mask_genes(
     return combined_mask
 
 
-def get_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
+def get_stratified_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
     """Get Test Split
     We will perform a split for those diseases which have more than one dataset.
 
@@ -899,25 +927,161 @@ def get_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
             "combination" in df_diseases_f1_test.columns
         ), "combination column not found in df_diseases_f1_test"
 
-        logging.info(
-            f"Nº of diseases in test split {i+1}: {len(df_diseases_f1_test['celltype'].unique())}"
-        )
-        logging.info(
-            f"Nº of datasets in test split {i+1}: {len(df_diseases_f1_test['dataset_id'].unique())}"
-        )
-
         # 3. Assign train and test labels
         obs_copy[f"test_split_{i+1}"] = (
             obs_copy["combination"].isin(df_diseases_f1_test["combination"]).astype(int)
         )
 
         logging.info(
-            f"Nº of samples in test split {i+1}: {obs_copy[f'test_split_{i+1}'].sum()}"
+            f"Nº of diseases in train split {i+1}: {obs_copy.iloc[train_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of diseases in test split {i+1}: {obs_copy.iloc[test_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in train split {i+1}: {obs_copy.iloc[train_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in test split {i+1}: {obs_copy.iloc[test_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in train split {i+1}: {obs_copy.iloc[train_idx]['ids'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in test split {i+1}: {obs_copy.iloc[test_idx]['ids'].nunique()}"
         )
 
     obs_copy.drop(columns=["combination"], inplace=True)
 
     return obs_copy
+
+
+def get_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
+    """Get Test Split
+    We will perform a split for those diseases which have more than one dataset.
+
+    Ther MUST not be any data-leakage between the train and test set - no shared datasets between the two sets.
+
+    Strategy:
+        1. Check diseases w/ 5+ datasets
+        2. Divide dataset into train and test w/ 4:1 ratio
+        3. Assign train and test to the respective datasets
+
+    """
+
+    obs_copy = obs.copy(deep=True)
+
+    all_diseases = obs_copy["celltype"].unique()
+
+    logging.info(f"Number of diseases: {len(all_diseases)}")
+
+    # 2. Divide dataset into train and test w/ 4:1 ratio
+    kf = KFold(n_splits=n_splits, shuffle=True)
+    for i, (train_idx, test_idx) in enumerate(
+        kf.split(
+            X=obs_copy["ids"],
+            y=obs_copy["celltype"],
+        )
+    ):
+
+        mask = np.zeros(len(obs_copy), dtype=bool)
+        mask[test_idx] = True
+
+        # 3. Assign train and test labels
+        obs_copy[f"test_split_{i+1}"] = mask
+
+        logging.info(
+            f"Nº of diseases in train split {i+1}: {obs_copy.iloc[train_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of diseases in test split {i+1}: {obs_copy.iloc[test_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in train split {i+1}: {obs_copy.iloc[train_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in test split {i+1}: {obs_copy.iloc[test_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in train split {i+1}: {obs_copy.iloc[train_idx]['ids'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in test split {i+1}: {obs_copy.iloc[test_idx]['ids'].nunique()}"
+        )
+
+    return obs_copy
+
+
+def get_test_split_common(obs: pd.DataFrame, n_splits=5) -> List[str]:
+    """Get Test Split
+    We will perform a split for those diseases which have more than one dataset.
+
+    Ther MUST not be any data-leakage between the train and test set - no shared datasets between the two sets.
+
+    Strategy:
+        1. Check diseases w/ 5+ datasets
+        2. Divide dataset into train and test w/ 4:1 ratio
+        3. Assign train and test to the respective datasets
+
+    """
+
+
+    obs_copy = obs.copy(deep=True)
+
+    combined_labels = (
+        adata.obs["celltype"].astype(str) + "_" + adata.obs["dataset_id"].astype(str)
+    )
+
+    combined_labels.unique()
+
+    kf = StratifiedKFold(n_splits=n_splits, shuffle=True)
+
+    for i, (train_idx, test_idx) in enumerate(
+        kf.split(X=adata.obs["ids"], y=combined_labels)
+    ):
+
+        mask = np.zeros(len(obs_copy), dtype=bool)
+        mask[test_idx] = True
+
+        # 3. Assign train and test labels
+        obs_copy[f"test_split_{i+1}"] = mask
+
+        logging.info(
+            f"Nº of diseases in train split {i+1}: {obs_copy.iloc[train_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of diseases in test split {i+1}: {obs_copy.iloc[test_idx]['celltype'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in train split {i+1}: {obs_copy.iloc[train_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of datasets in test split {i+1}: {obs_copy.iloc[test_idx]['dataset_id'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in train split {i+1}: {obs_copy.iloc[train_idx]['ids'].nunique()}"
+        )
+
+        logging.info(
+            f"Nº of samples in test split {i+1}: {obs_copy.iloc[test_idx]['ids'].nunique()}"
+        )
+
+    return obs_copy
+
 
 def get_old_test_split(adata: AnnData) -> np.array:
     """Get Old Test Split
@@ -985,7 +1149,8 @@ def get_folder_name():
     today = datetime.now().strftime("%y-%m-%d")
 
     # Step 2: Define the base output directory
-    base_output_dir = os.path.join("..", "outputs")
+    # base_output_dir = os.path.join("..", "outputs")
+    base_output_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs"
 
     # Step 3: Find the highest existing run number for today
     existing_runs = [
@@ -1051,7 +1216,10 @@ def get_top_k_most_present_genes(
         remaining_slots = k - np.sum(count_presence[sorted_indices[:k]] > min_presence)
         if len(equal_presence_indices) > remaining_slots:
             # Compute variance for all genes
-            gene_variance = np.std(adata.X, axis=0)
+            gene_variance = np.nanstd(adata.X, axis=0)
+            
+            # substitute nan values with -infinite values
+            gene_variance = np.nan_to_num(gene_variance, nan=-np.inf)
             
             # Sort equal presence genes by variance in descending order
             sorted_by_variance = equal_presence_indices[np.argsort(gene_variance[equal_presence_indices])[::-1]]
@@ -1069,6 +1237,141 @@ def get_top_k_most_present_genes(
     mask_top_k[top_k_indices] = True
 
     logging.info(f"Top {k} most present genes selected. - >= {min(count_presence[mask_top_k])}")
+
+    return mask_top_k
+
+
+def get_top_k_highest_variance_genes(
+    adata: AnnData,
+    k: int = 3501,
+) -> np.array:
+    """
+    Filters genes based on the top `k` genes with the highest variance across samples.
+
+    Parameters:
+    - adata: AnnData object containing gene expression data
+    - k: The number of top genes to retain based on their variance across samples
+
+    Returns:
+    - A boolean array (mask) indicating which genes to keep.
+    """
+    total_n_genes = adata.X.shape[1]
+    total_n_samples = adata.X.shape[0]
+
+    logging.info(f"Nº genes: {total_n_genes}, Nº samples: {total_n_samples}")
+
+    # Step 1: Calculate variance for each gene
+    gene_variance = np.nanstd(adata.X, axis=0)
+    
+    # substitute nan values with -infinite values
+    gene_variance = np.nan_to_num(gene_variance, nan=-np.inf)
+
+    # Step 2: Sort genes by variance in descending order
+    sorted_indices_by_variance = np.argsort(gene_variance)[::-1]
+
+    # Step 3: Select the top `k` genes with the highest variance
+    top_k_indices = sorted_indices_by_variance[:k]
+
+    # Step 4: Create a boolean mask for the top `k` genes
+    mask_top_k = np.zeros(total_n_genes, dtype=bool)
+    mask_top_k[top_k_indices] = True
+
+    logging.info(f"Top {k} highest variance genes selected.")
+
+    return mask_top_k
+
+def get_k_random_genes(
+    adata: AnnData,
+    k: int = 3501,
+    random_seed: int = None
+) -> np.array:
+    """
+    Randomly selects `k` genes from the gene expression data.
+
+    Parameters:
+    - adata: AnnData object containing gene expression data
+    - k: The number of random genes to select
+    - random_seed: An optional random seed for reproducibility
+
+    Returns:
+    - A boolean array (mask) indicating which genes were randomly selected.
+    """
+    total_n_genes = adata.X.shape[1]
+
+    # Ensure that k is not larger than the total number of genes
+    if k > total_n_genes:
+        raise ValueError(f"k cannot be larger than the total number of genes ({total_n_genes}).")
+
+    logging.info(f"Nº genes: {total_n_genes}, selecting {k} random genes")
+
+    # Set the random seed for reproducibility (if provided)
+    if random_seed is not None:
+        np.random.seed(random_seed)
+
+    # Step 1: Randomly select `k` indices from the total number of genes
+    random_indices = np.random.choice(total_n_genes, size=k, replace=False)
+
+    # Step 2: Create a boolean mask for the selected genes
+    mask_random_k = np.zeros(total_n_genes, dtype=bool)
+    mask_random_k[random_indices] = True
+
+    logging.info(f"{k} random genes selected.")
+
+    return mask_random_k
+
+def get_top_k_highest_variance_genes_with_presence(
+    adata: AnnData,
+    k: int = 3501,
+    presence_pct: float = 0.8
+) -> np.array:
+    """
+    Filters genes based on the top `k` genes with the highest variance across samples,
+    but only includes genes that have presence (non-NaN, non-zero values) in more than
+    a specified percentage of samples.
+
+    Parameters:
+    - adata: AnnData object containing gene expression data
+    - k: The number of top genes to retain based on their variance across samples
+    - presence_pct: The minimum percentage of samples a gene must be present in to be considered
+
+    Returns:
+    - A boolean array (mask) indicating which genes to keep.
+    """
+    total_n_genes = adata.X.shape[1]
+    total_n_samples = adata.X.shape[0]
+    
+    logging.info(f"Nº genes: {total_n_genes}, Nº samples: {total_n_samples}")
+
+    # Step 1: Calculate gene presence (non-NaN, non-zero values) across samples
+    count_presence = np.sum(~np.isnan(adata.X) & (adata.X != 0), axis=0)
+
+    # Step 2: Calculate the presence percentage for each gene
+    presence_threshold = total_n_samples * presence_pct
+    valid_genes_mask = count_presence >= presence_threshold
+
+    logging.info(f"Presence threshold set at {presence_threshold} samples (presence_pct = {presence_pct * 100}%)")
+    logging.info(f"{np.sum(valid_genes_mask)} genes meet the presence criterion")
+
+    # Step 3: Calculate variance for genes that meet the presence threshold
+    gene_variance = np.nanstd(adata.X, axis=0)
+
+    # substitute nan values with -infinite values
+    gene_variance = np.nan_to_num(gene_variance, nan=-np.inf)
+
+    # Step 4: Select the indices of genes that meet the presence threshold
+    valid_genes_variance = gene_variance[valid_genes_mask]
+
+    # Step 5: Sort the valid genes by variance in descending order
+    sorted_indices_by_variance = np.argsort(valid_genes_variance)[::-1]
+
+    # Step 6: Select the top `k` genes with the highest variance that meet the presence criterion
+    top_k_indices = np.where(valid_genes_mask)[0][sorted_indices_by_variance[:k]]
+
+    # Step 7: Create a boolean mask for the top `k` genes
+    mask_top_k = np.zeros(total_n_genes, dtype=bool)
+    mask_top_k[top_k_indices] = True
+
+    logging.info(f"Top {k} highest variance genes with presence above {presence_pct * 100}% selected.")
 
     return mask_top_k
 
@@ -1333,12 +1636,25 @@ adata.obs["celltype_id"] = celltype_id_labels
 
 
 
-mask_genes = get_top_k_most_present_genes(adata, 
-                  k=manual_parameters.get("max_seq_len"))
+if manual_parameters.get("gene_filtering") == "top_presence":
+    mask_genes = get_top_k_most_present_genes(adata, 
+                    k=manual_parameters.get("max_seq_len"))
+elif manual_parameters.get("gene_filtering") == "top_variance":
+    mask_genes = get_top_k_highest_variance_genes(adata, 
+                    k=manual_parameters.get("max_seq_len"))
+elif manual_parameters.get("gene_filtering") == "random":
+    mask_genes = get_k_random_genes(adata, 
+                    k=manual_parameters.get("max_seq_len"))
+elif manual_parameters.get("gene_filtering") == "top_variance_high_presence":
+    mask_genes = get_top_k_highest_variance_genes_with_presence(adata, 
+                    k=manual_parameters.get("max_seq_len"),
+                    presence_pct=manual_parameters.get("gene_presence_pct"),
+                    )
+
+
+
 
 logging.info(f"Combined mask {np.sum(mask_genes)} genes left")
-
-adata_orig = adata.copy()
 
 # mask the genes
 adata = adata[:, mask_genes]
@@ -1415,489 +1731,528 @@ preprocessor = Preprocessor(
 
 #! CHANGED
 #! TEST SPLIT FUNCTION
-if manual_parameters.get("benchmark_data"):
+# if manual_parameters.get("benchmark_data"):
 
-    adata_test = adata[adata.obs["str_batch"] == "1"]
-    adata = adata[adata.obs["str_batch"] == "0"]
+#     adata_test = adata[adata.obs["str_batch"] == "1"]
+#     adata = adata[adata.obs["str_batch"] == "0"]
+
+#     # added
+#     adata_test_raw = adata_test.copy()
+
+
+# else:
+if manual_parameters.get("split_type") == "stratified":
+    df_obs = adata.obs
+    new_obs = get_stratified_test_split(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
+    adata.obs = new_obs
+
+    # adata_test = adata[adata.obs["test_split_3"] == 1]
+    # adata = adata[adata.obs["test_split_3"] == 0]
+    # adata.obs["str_batch"] = adata.obs["test_split_3"].astype(int).astype(str)
+
+elif manual_parameters.get("split_type") == "non_stratified":
+    df_obs = adata.obs
+    new_obs = get_test_split(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
+    adata.obs = new_obs
+
+elif manual_parameters.get("split_type") == "common":
+    df_obs = adata.obs
+    new_obs = get_test_split_common(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
+    adata.obs = new_obs
+    
+    # mask = get_old_test_split(adata)
+    # adata_test = adata[mask]
+    # adata = adata[~mask]
+
+# store original data
+adata_orig = adata.copy()
+
+data_to_save = {
+    "split": list(),
+    "predictions_test": list(),
+    "labels_test": list(),
+    "results_test": list(),
+    "all_outputs_test": list(),
+    "predictions_train": list(),
+    "labels_train": list(),
+    "results_train": list(),
+    "all_outputs_train": list(),
+    "id2type": list(),
+    "adata_orig":adata_orig,
+}
+
+# store results
+
+for split in range(1,manual_parameters.get("n_tested_splits")+1):
+
+    torch.cuda.empty_cache()
+
+    adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1]
+    adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0]
+
+    # adata.obs["str_batch"] = adata.obs[f"test_split_{split}"].astype(int).astype(str)
+
+
+    # sys.exit(0)
 
     # added
     adata_test_raw = adata_test.copy()
 
-
-else:
-    if manual_parameters.get("new_split"):
-        df_obs = adata.obs
-        new_obs = get_test_split(obs=df_obs,n_splits=5)
-        adata.obs = new_obs
-        adata_test = adata[adata.obs["test_split_3"] == 1]
-        adata = adata[adata.obs["test_split_3"] == 0]
-        adata.obs["str_batch"] = adata.obs["test_split_1"].astype(int).astype(str)
-    else:
-        mask_old_split = get_old_test_split(adata)
-        adata_test = adata[mask_old_split]
-        adata = adata[~mask_old_split]
-
-# sys.exit(0)
-
-# added
-adata_test_raw = adata_test.copy()
-
-preprocessor(adata, batch_key=None)
-preprocessor(adata_test, batch_key=None)
+    preprocessor(adata, batch_key=None)
+    preprocessor(adata_test, batch_key=None)
 
 
-input_layer_key = {  # the values of this map coorespond to the keys in preprocessing
-    "normed_raw": "X_normed",
-    "log1p": "X_normed",
-    "binned": "X_binned",
-}[input_style]
-all_counts = (
-    adata.layers[input_layer_key].A
-    if issparse(adata.layers[input_layer_key])
-    else adata.layers[input_layer_key]
-)
-genes = adata.var["gene_name"].tolist()
-
-celltypes_labels = adata.obs["celltype_id"].tolist()  # make sure count from 0
-celltypes_labels = np.array(celltypes_labels)
-
-batch_ids = adata.obs["batch_id"].tolist()
-num_batch_types = len(set(batch_ids))
-batch_ids = np.array(batch_ids)
-
-(
-    train_data,
-    valid_data,
-    train_celltype_labels,
-    valid_celltype_labels,
-    train_batch_labels,
-    valid_batch_labels,
-) = train_test_split(
-    all_counts, celltypes_labels, batch_ids, test_size=0.1, shuffle=True
-)
-
-Counter(celltypes_labels)
-
-
-if config.load_model is None:
-    vocab = Vocab(
-        VocabPybind(genes + special_tokens, None)
-    )  # bidirectional lookup [gene <-> int]
-vocab.set_default_index(vocab["<pad>"])
-gene_ids = np.array(vocab(genes), dtype=int)
-
-
-tokenized_train = tokenize_and_pad_batch(
-    train_data,
-    gene_ids,
-    max_len=manual_parameters.get("max_seq_len"),
-    vocab=vocab,
-    pad_token=pad_token,
-    pad_value=pad_value,
-    append_cls=True,  # append <cls> token at the beginning
-    include_zero_gene=include_zero_gene,
-)
-tokenized_valid = tokenize_and_pad_batch(
-    valid_data,
-    gene_ids,
-    max_len=manual_parameters.get("max_seq_len"),
-    vocab=vocab,
-    pad_token=pad_token,
-    pad_value=pad_value,
-    append_cls=True,
-    include_zero_gene=include_zero_gene,
-)
-logger.info(
-    f"train set number of samples: {tokenized_train['genes'].shape[0]}, "
-    f"\n\t feature length: {tokenized_train['genes'].shape[1]}"
-)
-logger.info(
-    f"valid set number of samples: {tokenized_valid['genes'].shape[0]}, "
-    f"\n\t feature length: {tokenized_valid['genes'].shape[1]}"
-)
-
-# endregion
-
-#region 3. Load the pre-trained scGPT model
-
-
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-ntokens = len(vocab)  # size of vocabulary
-model = TransformerModel(
-    ntokens,
-    embsize,
-    nhead,
-    d_hid,
-    nlayers,
-    nlayers_cls=3,
-    n_cls=num_types if CLS else 1,
-    vocab=vocab,
-    dropout=dropout,
-    pad_token=pad_token,
-    pad_value=pad_value,
-    do_mvc=MVC,
-    do_dab=DAB,
-    use_batch_labels=INPUT_BATCH_LABELS,
-    num_batch_labels=num_batch_types,
-    domain_spec_batchnorm=config.DSBN,
-    input_emb_style=input_emb_style,
-    n_input_bins=n_input_bins,
-    cell_emb_style=cell_emb_style,
-    mvc_decoder_style=mvc_decoder_style,
-    ecs_threshold=ecs_threshold,
-    explicit_zero_prob=explicit_zero_prob,
-    use_fast_transformer=fast_transformer,
-    fast_transformer_backend=fast_transformer_backend,
-    pre_norm=config.pre_norm,
-)
-if config.load_model is not None:
-    try:
-        model.load_state_dict(torch.load(model_file))
-        logger.info(f"Loading all model params from {model_file}")
-    except:
-        # only load params that are in the model and match the size
-        model_dict = model.state_dict()
-        pretrained_dict = torch.load(model_file)
-        pretrained_dict = {
-            k: v
-            for k, v in pretrained_dict.items()
-            if k in model_dict and v.shape == model_dict[k].shape
-        }
-        for k, v in pretrained_dict.items():
-            # logger.info(f"Loading params {k} with shape {v.shape}")
-            pass
-        model_dict.update(pretrained_dict)
-        model.load_state_dict(model_dict)
-
-pre_freeze_param_count = sum(
-    dict(
-        (p.data_ptr(), p.numel()) for p in model.parameters() if p.requires_grad
-    ).values()
-)
-
-# Freeze all pre-decoder weights
-for name, para in model.named_parameters():
-    # print("-" * 20)
-    # print(f"name: {name}")
-    if config.freeze and "encoder" in name and "transformer_encoder" not in name:
-        # if config.freeze and "encoder" in name:
-        # print(f"freezing weights for: {name}")
-        para.requires_grad = False
-
-post_freeze_param_count = sum(
-    dict(
-        (p.data_ptr(), p.numel()) for p in model.parameters() if p.requires_grad
-    ).values()
-)
-
-logger.info(f"Total Pre freeze Params {(pre_freeze_param_count )}")
-logger.info(f"Total Post freeze Params {(post_freeze_param_count )}")
-wandb.log(
-    {
-        "info/pre_freeze_param_count": pre_freeze_param_count,
-        "info/post_freeze_param_count": post_freeze_param_count,
-    },
-)
-
-model.to(device)
-wandb.watch(model)
-
-if ADV:
-    discriminator = AdversarialDiscriminator(
-        d_model=embsize,
-        n_cls=num_batch_types,
-    ).to(device)
-
-
-criterion = masked_mse_loss
-criterion_cls = nn.CrossEntropyLoss()
-criterion_dab = nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(
-    model.parameters(), lr=lr, eps=1e-4 if config.amp else 1e-8
-)
-scheduler = torch.optim.lr_scheduler.StepLR(
-    optimizer, schedule_interval, gamma=config.schedule_ratio
-)
-if DAB_separate_optim:
-    optimizer_dab = torch.optim.Adam(model.parameters(), lr=lr)
-    scheduler_dab = torch.optim.lr_scheduler.StepLR(
-        optimizer_dab, schedule_interval, gamma=config.schedule_ratio
+    input_layer_key = {  # the values of this map coorespond to the keys in preprocessing
+        "normed_raw": "X_normed",
+        "log1p": "X_normed",
+        "binned": "X_binned",
+    }[input_style]
+    all_counts = (
+        adata.layers[input_layer_key].A
+        if issparse(adata.layers[input_layer_key])
+        else adata.layers[input_layer_key]
     )
-if ADV:
-    criterion_adv = nn.CrossEntropyLoss()  # consider using label smoothing
-    optimizer_E = torch.optim.Adam(model.parameters(), lr=lr_ADV)
-    scheduler_E = torch.optim.lr_scheduler.StepLR(
-        optimizer_E, schedule_interval, gamma=config.schedule_ratio
-    )
-    optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=lr_ADV)
-    scheduler_D = torch.optim.lr_scheduler.StepLR(
-        optimizer_D, schedule_interval, gamma=config.schedule_ratio
+    genes = adata.var["gene_name"].tolist()
+
+    celltypes_labels = adata.obs["celltype_id"].tolist()  # make sure count from 0
+    celltypes_labels = np.array(celltypes_labels)
+
+    batch_ids = adata.obs["batch_id"].tolist()
+    num_batch_types = len(set(batch_ids))
+    batch_ids = np.array(batch_ids)
+
+    (
+        train_data,
+        valid_data,
+        train_celltype_labels,
+        valid_celltype_labels,
+        train_batch_labels,
+        valid_batch_labels,
+    ) = train_test_split(
+        all_counts, celltypes_labels, batch_ids, test_size=0.1, shuffle=True
     )
 
-scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
+    Counter(celltypes_labels)
 
 
-#endregion
+    if config.load_model is None:
+        vocab = Vocab(
+            VocabPybind(genes + special_tokens, None)
+        )  # bidirectional lookup [gene <-> int]
+    vocab.set_default_index(vocab["<pad>"])
+    gene_ids = np.array(vocab(genes), dtype=int)
 
 
-
-
-#region 4. Finetune scGPT with task-specific objectives
-
-if torch.cuda.is_available():
-    print(torch.cuda.current_device())
-    print(torch.cuda.get_device_name(torch.cuda.current_device()))
-    torch.cuda.empty_cache()
-
-
-else:
-    print("CUDA is not available")
-
-
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-os.environ["TORCH_USE_CUDA_DSA"] = "1"
-
-
-
-best_val_loss = float("inf")
-best_avg_bio = 0.0
-best_model = None
-define_wandb_metrcis()
-
-for epoch in range(1, epochs + 1):
-    epoch_start_time = time.time()
-    # train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=per_seq_batch_sample)
-    train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=False)
-    train_loader = prepare_dataloader(
-        train_data_pt,
-        batch_size=batch_size,
-        shuffle=False,
-        intra_domain_shuffle=True,
-        drop_last=False,
+    tokenized_train = tokenize_and_pad_batch(
+        train_data,
+        gene_ids,
+        max_len=manual_parameters.get("max_seq_len"),
+        vocab=vocab,
+        pad_token=pad_token,
+        pad_value=pad_value,
+        append_cls=True,  # append <cls> token at the beginning
+        include_zero_gene=include_zero_gene,
     )
-    valid_loader = prepare_dataloader(
-        valid_data_pt,
-        batch_size=eval_batch_size,
-        shuffle=False,
-        intra_domain_shuffle=False,
-        drop_last=False,
+    tokenized_valid = tokenize_and_pad_batch(
+        valid_data,
+        gene_ids,
+        max_len=manual_parameters.get("max_seq_len"),
+        vocab=vocab,
+        pad_token=pad_token,
+        pad_value=pad_value,
+        append_cls=True,
+        include_zero_gene=include_zero_gene,
+    )
+    logger.info(
+        f"train set number of samples: {tokenized_train['genes'].shape[0]}, "
+        f"\n\t feature length: {tokenized_train['genes'].shape[1]}"
+    )
+    logger.info(
+        f"valid set number of samples: {tokenized_valid['genes'].shape[0]}, "
+        f"\n\t feature length: {tokenized_valid['genes'].shape[1]}"
     )
 
-    if config.do_train:
-        train(
-            model,
-            loader=train_loader,
+    # endregion
+
+    #region 3. Load the pre-trained scGPT model
+
+
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    ntokens = len(vocab)  # size of vocabulary
+    model = TransformerModel(
+        ntokens,
+        embsize,
+        nhead,
+        d_hid,
+        nlayers,
+        nlayers_cls=3,
+        n_cls=num_types if CLS else 1,
+        vocab=vocab,
+        dropout=dropout,
+        pad_token=pad_token,
+        pad_value=pad_value,
+        do_mvc=MVC,
+        do_dab=DAB,
+        use_batch_labels=INPUT_BATCH_LABELS,
+        num_batch_labels=num_batch_types,
+        domain_spec_batchnorm=config.DSBN,
+        input_emb_style=input_emb_style,
+        n_input_bins=n_input_bins,
+        cell_emb_style=cell_emb_style,
+        mvc_decoder_style=mvc_decoder_style,
+        ecs_threshold=ecs_threshold,
+        explicit_zero_prob=explicit_zero_prob,
+        use_fast_transformer=fast_transformer,
+        fast_transformer_backend=fast_transformer_backend,
+        pre_norm=config.pre_norm,
+    )
+    if config.load_model is not None:
+        try:
+            model.load_state_dict(torch.load(model_file))
+            logger.info(f"Loading all model params from {model_file}")
+        except:
+            # only load params that are in the model and match the size
+            model_dict = model.state_dict()
+            pretrained_dict = torch.load(model_file)
+            pretrained_dict = {
+                k: v
+                for k, v in pretrained_dict.items()
+                if k in model_dict and v.shape == model_dict[k].shape
+            }
+            for k, v in pretrained_dict.items():
+                # logger.info(f"Loading params {k} with shape {v.shape}")
+                pass
+            model_dict.update(pretrained_dict)
+            model.load_state_dict(model_dict)
+
+    pre_freeze_param_count = sum(
+        dict(
+            (p.data_ptr(), p.numel()) for p in model.parameters() if p.requires_grad
+        ).values()
+    )
+
+    # Freeze all pre-decoder weights
+    for name, para in model.named_parameters():
+        # print("-" * 20)
+        # print(f"name: {name}")
+        if config.freeze and "encoder" in name and "transformer_encoder" not in name:
+            # if config.freeze and "encoder" in name:
+            # print(f"freezing weights for: {name}")
+            para.requires_grad = False
+
+    post_freeze_param_count = sum(
+        dict(
+            (p.data_ptr(), p.numel()) for p in model.parameters() if p.requires_grad
+        ).values()
+    )
+
+    logger.info(f"Total Pre freeze Params {(pre_freeze_param_count )}")
+    logger.info(f"Total Post freeze Params {(post_freeze_param_count )}")
+    wandb.log(
+        {
+            "info/pre_freeze_param_count": pre_freeze_param_count,
+            "info/post_freeze_param_count": post_freeze_param_count,
+        },
+    )
+
+    model.to(device)
+    wandb.watch(model)
+
+    if ADV:
+        discriminator = AdversarialDiscriminator(
+            d_model=embsize,
+            n_cls=num_batch_types,
+        ).to(device)
+
+
+    criterion = masked_mse_loss
+    criterion_cls = nn.CrossEntropyLoss()
+    criterion_dab = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=lr, eps=1e-4 if config.amp else 1e-8
+    )
+    scheduler = torch.optim.lr_scheduler.StepLR(
+        optimizer, schedule_interval, gamma=config.schedule_ratio
+    )
+    if DAB_separate_optim:
+        optimizer_dab = torch.optim.Adam(model.parameters(), lr=lr)
+        scheduler_dab = torch.optim.lr_scheduler.StepLR(
+            optimizer_dab, schedule_interval, gamma=config.schedule_ratio
         )
+    if ADV:
+        criterion_adv = nn.CrossEntropyLoss()  # consider using label smoothing
+        optimizer_E = torch.optim.Adam(model.parameters(), lr=lr_ADV)
+        scheduler_E = torch.optim.lr_scheduler.StepLR(
+            optimizer_E, schedule_interval, gamma=config.schedule_ratio
+        )
+        optimizer_D = torch.optim.Adam(discriminator.parameters(), lr=lr_ADV)
+        scheduler_D = torch.optim.lr_scheduler.StepLR(
+            optimizer_D, schedule_interval, gamma=config.schedule_ratio
+        )
+
+    scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
+
+
+    #endregion
+
+
+
+
+    #region 4. Finetune scGPT with task-specific objectives
+
+    if torch.cuda.is_available():
+        print(torch.cuda.current_device())
+        print(torch.cuda.get_device_name(torch.cuda.current_device()))
+        torch.cuda.empty_cache()
+
+
+    else:
+        print("CUDA is not available")
+
+
+    os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+    os.environ["TORCH_USE_CUDA_DSA"] = "1"
+
+
+
+    best_val_loss = float("inf")
+    best_avg_bio = 0.0
+    best_model = None
+    define_wandb_metrcis()
+
+
+    epochs = manual_parameters.get("epochs")
+
+    for epoch in range(1, epochs + 1):
+        epoch_start_time = time.time()
+        # train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=per_seq_batch_sample)
+        train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=False)
+        train_loader = prepare_dataloader(
+            train_data_pt,
+            batch_size=batch_size,
+            shuffle=False,
+            intra_domain_shuffle=True,
+            drop_last=False,
+        )
+        valid_loader = prepare_dataloader(
+            valid_data_pt,
+            batch_size=eval_batch_size,
+            shuffle=False,
+            intra_domain_shuffle=False,
+            drop_last=False,
+        )
+
+        if config.do_train:
+            train(
+                model,
+                loader=train_loader,
+            )
+        val_loss, val_err = evaluate(
+            model,
+            loader=valid_loader,
+        )
+        elapsed = time.time() - epoch_start_time
+        logger.info("-" * 89)
+        logger.info(
+            f"| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | "
+            f"valid loss/mse {val_loss:5.4f} | err {val_err:5.4f}"
+        )
+        logger.info("-" * 89)
+
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            best_model = copy.deepcopy(model)
+            best_model_epoch = epoch
+            logger.info(f"Best model with score {best_val_loss:5.4f}")
+
+        scheduler.step()
+        if DAB_separate_optim:
+            scheduler_dab.step()
+        if ADV:
+            scheduler_D.step()
+            scheduler_E.step()
+
+        #! FOR DEBUGGING
+        # break
+
     val_loss, val_err = evaluate(
         model,
         loader=valid_loader,
     )
-    elapsed = time.time() - epoch_start_time
-    logger.info("-" * 89)
-    logger.info(
-        f"| end of epoch {epoch:3d} | time: {elapsed:5.2f}s | "
-        f"valid loss/mse {val_loss:5.4f} | err {val_err:5.4f}"
-    )
-    logger.info("-" * 89)
-
-    if val_loss < best_val_loss:
-        best_val_loss = val_loss
-        best_model = copy.deepcopy(model)
-        best_model_epoch = epoch
-        logger.info(f"Best model with score {best_val_loss:5.4f}")
-
-    scheduler.step()
-    if DAB_separate_optim:
-        scheduler_dab.step()
-    if ADV:
-        scheduler_D.step()
-        scheduler_E.step()
-
-    #! FOR DEBUGGING
-    # break
-
-val_loss, val_err = evaluate(
-    model,
-    loader=valid_loader,
-)
 
 
-# ## Step 5: Inference with fine-tuned scGPT model
-# In the cell-type annotation task, the fine-tuned scGPT predicts cell-type labels for query set as inference. The model performance is evaluated on standard classificaton metrics. Here we visualize the predicted labels over the scGPT cell embeddings, and present the confusion matrix for detailed classification performance on the cell-group level.
+    # ## Step 5: Inference with fine-tuned scGPT model
+    # In the cell-type annotation task, the fine-tuned scGPT predicts cell-type labels for query set as inference. The model performance is evaluated on standard classificaton metrics. Here we visualize the predicted labels over the scGPT cell embeddings, and present the confusion matrix for detailed classification performance on the cell-group level.
 
 
-predictions, labels, results = test(best_model, adata_test)
+    predictions, labels, results = test(best_model, adata_test)
 
 
-print(Counter(labels), Counter(predictions))
+    print(Counter(labels), Counter(predictions))
 
 
-# get rid of nans
-adata_test_raw.X = np.where(np.isnan(adata_test_raw.X), 0, adata_test_raw.X)
+    # # get rid of nans
+    # adata_test_raw.X = np.where(np.isnan(adata_test_raw.X), 0, adata_test_raw.X)
 
 
-# Check if PCA is computed; if not, compute it
-if "X_pca" not in adata_test_raw.obsm:
-    sc.pp.pca(adata_test_raw)
+    # # Check if PCA is computed; if not, compute it
+    # if "X_pca" not in adata_test_raw.obsm:
+    #     sc.pp.pca(adata_test_raw)
 
-# Compute neighbors and UMAP
-if "X_umap" not in adata_test_raw.obsm:
-    sc.pp.neighbors(
-        adata_test_raw, n_neighbors=15, use_rep="X_pca"
-    )  # Adjust parameters as needed
-    sc.tl.umap(adata_test_raw)
+    # # Compute neighbors and UMAP
+    # if "X_umap" not in adata_test_raw.obsm:
+    #     sc.pp.neighbors(
+    #         adata_test_raw, n_neighbors=15, use_rep="X_pca"
+    #     )  # Adjust parameters as needed
+    #     sc.tl.umap(adata_test_raw)
 
 
 
 
 
-adata_test_raw.obs["predictions"] = [id2type[p] for p in predictions]
+    # adata_test_raw.obs["predictions"] = [id2type[p] for p in predictions]
 
-# plot
-palette_ = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-palette_ = (
-    plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-)
-palette_ = {c: palette_[i] for i, c in enumerate(celltypes)}
+    # # plot
+    # palette_ = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    # palette_ = (
+    #     plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    #     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    #     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
+    # )
+    # palette_ = {c: palette_[i] for i, c in enumerate(celltypes)}
 
-with plt.rc_context({"figure.figsize": (6, 6), "figure.dpi": (300)}):
-    sc.pl.umap(
-        adata_test_raw, color=["celltype", "predictions"], palette=palette_, show=False
-    )
-    plt.savefig(save_dir / "results.png", dpi=300)
+    # with plt.rc_context({"figure.figsize": (6, 6), "figure.dpi": (300)}):
+    #     sc.pl.umap(
+    #         adata_test_raw, color=["celltype", "predictions"], palette=palette_, show=False
+    #     )
+    #     plt.savefig(save_dir / "results.png", dpi=300)
 
-save_dict = {
-    "predictions": predictions,
-    "labels": labels,
-    "results": results,
-    "id_maps": id2type,
-}
-with open(save_dir / "results.pkl", "wb") as f:
-    pickle.dump(save_dict, f)
+    # save_dict = {
+    #     "predictions": predictions,
+    #     "labels": labels,
+    #     "results": results,
+    #     "id_maps": id2type,
+    # }
+    # with open(save_dir / "results.pkl", "wb") as f:
+    #     pickle.dump(save_dict, f)
 
-results["test/cell_umap"] = wandb.Image(
-    str(save_dir / "results.png"),
-    caption=f"predictions macro f1 {results['test/macro_f1']:.3f}",
-)
-wandb.log(results)
-
-
-celltypes = list(celltypes)
-for i in set([id2type[p] for p in predictions]):
-    if i not in celltypes:
-        celltypes.remove(i)
-
-print(len(labels), len(predictions))
-cm = confusion_matrix(labels, predictions)
-cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
-
-# sorted celltypes by the order of the confusion matrix
-sorted_celltypes = list()
-for i in sorted(list(set(labels))):
-    sorted_celltypes.append(id2type[i])
-
-cm = pd.DataFrame(
-    cm, index=sorted_celltypes[: cm.shape[0]], columns=sorted_celltypes[: cm.shape[1]]
-)
-
-plt.figure(figsize=(10, 10))
-sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
-plt.savefig(save_dir / "confusion_matrix.png", dpi=300)
-
-results["test/confusion_matrix"] = wandb.Image(
-    str(save_dir / "confusion_matrix.png"),
-    caption=f"confusion matrix",
-)
+    # results["test/cell_umap"] = wandb.Image(
+    #     str(save_dir / "results.png"),
+    #     caption=f"predictions macro f1 {results['test/macro_f1']:.3f}",
+    # )
+    # wandb.log(results)
 
 
+    # celltypes = list(celltypes)
+    # for i in set([id2type[p] for p in predictions]):
+    #     if i not in celltypes:
+    #         celltypes.remove(i)
 
-# save the model into the save_dir
-torch.save(best_model.state_dict(), save_dir / "model.pt")
+    # print(len(labels), len(predictions))
+    # cm = confusion_matrix(labels, predictions)
+    # cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
 
-## Evaluate the model on the train set
+    # # sorted celltypes by the order of the confusion matrix
+    # sorted_celltypes = list()
+    # for i in sorted(list(set(labels))):
+    #     sorted_celltypes.append(id2type[i])
 
-predictions_train, labels_train, results_train = test(best_model, adata)
+    # cm = pd.DataFrame(
+    #     cm, index=sorted_celltypes[: cm.shape[0]], columns=sorted_celltypes[: cm.shape[1]]
+    # )
 
+    # plt.figure(figsize=(10, 10))
+    # sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
+    # plt.savefig(save_dir / "confusion_matrix.png", dpi=300)
 
-# ### Evaluate results on train
-
-logging.info("region 4")
-log_cpu_memory_usage()
-log_gpu_memory_usage()
-
-#endregion
-
-#region 5. Inference with fine-tuned scGPT model
-adata_train_raw = adata.copy()
-
-
-# get predictions
-# test inference
-(
-    predictions_test,
-    labels_test,
-    results_test,
-    all_outputs_test,
-) = test_2(best_model, adata_test)
-
-logging.info(f"Results Test: {results_test}")
+    # results["test/confusion_matrix"] = wandb.Image(
+    #     str(save_dir / "confusion_matrix.png"),
+    #     caption=f"confusion matrix",
+    # )
 
 
 
-# train inference
-(
-    predictions_train,
-    labels_train,
-    results_train,
-    all_outputs_train,
-) = test_2(best_model, adata)
+    # save the model into the save_dir
+    # torch.save(best_model.state_dict(), save_dir / "model.pt")
+
+    ## Evaluate the model on the train set
+
+    predictions_train, labels_train, results_train = test(best_model, adata)
+
+
+    # ### Evaluate results on train
+
+    logging.info("region 4")
+    log_cpu_memory_usage()
+    log_gpu_memory_usage()
+
+    #endregion
+
+    #region 5. Inference with fine-tuned scGPT model
+    adata_train_raw = adata.copy()
+
+
+    # get predictions
+    # test inference
+    (
+        predictions_test,
+        labels_test,
+        results_test,
+        all_outputs_test,
+    ) = test_2(best_model, adata_test)
+
+    logging.info(f"Results Test: {results_test}")
 
 
 
-
-# if available_device is not None:
-#     logging.info(f"Switching model to available device found: {available_device}")
-
-#     best_model.to(available_device)
-
-# else:
-#     logging.info("No available device found, using the default device")
-#     sys.exit(1)
+    # train inference
+    (
+        predictions_train,
+        labels_train,
+        results_train,
+        all_outputs_train,
+    ) = test_2(best_model, adata)
 
 
 
 
-logging.info("region 5")
-log_cpu_memory_usage()
-log_gpu_memory_usage()
+    # if available_device is not None:
+    #     logging.info(f"Switching model to available device found: {available_device}")
 
-#endregion
+    #     best_model.to(available_device)
+
+    # else:
+    #     logging.info("No available device found, using the default device")
+    #     sys.exit(1)
 
 
+    logging.info("region 5")
+    log_cpu_memory_usage()
+    log_gpu_memory_usage()
 
-#region 6. Save output
+    #endregion
+
+
+    #region 6. Save output
+    # Prepare a dictionary of all variables to be saved
+    data_to_save["split"].append(split)
+    data_to_save["predictions_test"].append(predictions_test)
+    data_to_save["labels_test"].append(labels_test)
+    data_to_save["results_test"].append(results_test)
+    data_to_save["all_outputs_test"].append(all_outputs_test)
+    data_to_save["predictions_train"].append(predictions_train)
+    data_to_save["labels_train"].append(labels_train)
+    data_to_save["results_train"].append(results_train)
+    data_to_save["all_outputs_train"].append(all_outputs_train)
+    data_to_save["id2type"].append(id2type)
+
 
 # Generate the output directory
 output_dir = get_folder_name()
 
-# Prepare a dictionary of all variables to be saved
-data_to_save = {
-    "predictions_test": predictions_test,
-    "labels_test": labels_test,
-    "results_test": results_test,
-    "all_outputs_test": all_outputs_test,
-    "predictions_train": predictions_train,
-    "labels_train": labels_train,
-    "results_train": results_train,
-    "all_outputs_train": all_outputs_train,
-    "adata_train": adata,
-    "adata_test": adata_test,
-    "id2type": id2type,
-}
+
 
 # Save each item in the dictionary to a pickle file
 for filename, data in data_to_save.items():
@@ -1918,180 +2273,3 @@ log_gpu_memory_usage()
 # Write parameters to a JSON file
 with open(os.path.join(output_dir,"parameters.json"), 'w') as json_file:
     json.dump(manual_parameters, json_file, indent=4)
-
-
-#! ORIGINAL CODE-BLOCKS
-# #region 5. Inference with fine-tuned scGPT model
-
-# adata_train_raw = adata.copy()
-
-# # get predictions
-# predictions, labels, results = test(best_model, adata_train_raw)
-
-
-# # get rid of nans
-# adata_train_raw.X = np.where(np.isnan(adata_train_raw.X), 0, adata_train_raw.X)
-
-
-# logging.info(f"adata train shape {adata_train_raw.X.shape}")
-
-
-
-# # Check if PCA is computed; if not, compute it
-# if "X_pca" not in adata_train_raw.obsm:
-#     sc.pp.pca(adata_train_raw)
-
-# # Compute neighbors and UMAP
-# if "X_umap" not in adata_train_raw.obsm:
-#     sc.pp.neighbors(
-#         adata_train_raw, n_neighbors=15, use_rep="X_pca"
-#     )  # Adjust parameters as needed
-#     sc.tl.umap(adata_train_raw)
-# adata_train_raw.obs["predictions"] = [id2type[p] for p in predictions]
-
-
-
-
-
-# # plot
-# palette_ = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-# palette_ = (
-#     plt.rcParams["axes.prop_cycle"].by_key()["color"]
-#     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-#     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-# )
-# palette_ = {c: palette_[i] for i, c in enumerate(celltypes)}
-
-# with plt.rc_context({"figure.figsize": (6, 4), "figure.dpi": (300)}):
-#     sc.pl.umap(
-#         adata_train_raw,
-#         color=["celltype", "predictions"],
-#         palette=palette_,
-#         show=False,
-#     )
-#     plt.savefig(save_dir / "results.train.png", dpi=300)
-
-# save_dict = {
-#     "predictions": predictions,
-#     "labels": labels,
-#     "results": results,
-#     "id_maps": id2type,
-# }
-# with open(save_dir / "results.pkl", "wb") as f:
-#     pickle.dump(save_dict, f)
-
-# results["test/cell_umap"] = wandb.Image(
-#     str(save_dir / "results.png"),
-#     caption=f"predictions macro f1 {results['test/macro_f1']:.3f}",
-# )
-# wandb.log(results)
-
-
-# celltypes = list(celltypes)
-# for i in set([id2type[p] for p in predictions]):
-#     if i not in celltypes:
-#         celltypes.remove(i)
-
-# print(len(labels), len(predictions))
-
-# cm = confusion_matrix(labels, predictions)
-# cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
-
-# # sorted celltypes by the order of the confusion matrix
-# sorted_celltypes = list()
-# for i in sorted(list(set(labels))):
-#     sorted_celltypes.append(id2type[i])
-
-# cm = pd.DataFrame(
-#     cm, index=sorted_celltypes[: cm.shape[0]], columns=sorted_celltypes[: cm.shape[1]]
-# )
-# plt.figure(figsize=(10, 10))
-# sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
-# plt.savefig(save_dir / "confusion_matrix.png", dpi=300)
-
-# results["test/confusion_matrix"] = wandb.Image(
-#     str(save_dir / "confusion_matrix.png"),
-#     caption=f"confusion matrix",
-# )
-
-
-# scg.tasks.embed_data(adata_train_raw, "save/dev_test_1-Jul30-16-04/", gene_col="index")
-
-#endregion
-
-# # ## Testing Area
-
-
-# (
-#     predictions_2,
-#     labels_2,
-#     results_2,
-#     all_outputs,
-# ) = test_2(best_model, adata_test)
-
-
-# print(results_2)
-
-
-# np.concatenate(
-#     (all_outputs[0]["cell_emb"].cpu(), all_outputs[0]["cell_emb"].cpu()), axis=0
-# ).shape
-
-
-
-
-# cell_emb = generate_matrix(all_outputs)
-
-
-
-# # umap plot of cell embeddings
-# import umap
-# import matplotlib.pyplot as plt
-
-# list_labels = adata_train_raw.obs["celltype"]
-
-# labels = list(set(list_labels))
-
-# irb_colors = [
-#     "#ffd81cff",
-#     "#f6972dff",
-#     "#f2612dff",
-#     "#574270ff",
-#     "#00589bff",
-#     "#002f58ff",
-# ]
-
-# # Create UMAP embeddings
-# reducer = umap.UMAP(n_neighbors=5, min_dist=0.3, random_state=42)
-# X_test_umap = reducer.fit_transform(cell_emb)
-
-# color_map = {label: color for label, color in zip(labels, irb_colors)}
-# plt.savefig(save_dir / "umap_truelabels.png", dpi=300)
-# plt.close()
-
-
-
-
-
-# import matplotlib.pyplot as plt
-
-# fig, ax = plt.subplots(figsize=(10, 5))
-
-# # UMAP colored by true labels
-# for label in labels:
-#     idx = list_labels == label
-#     ax.scatter(
-#         X_test_umap[idx, 0],
-#         X_test_umap[idx, 1],
-#         c=color_map[label],
-#         label=label,
-#         s=35,
-#         alpha=0.5,
-#     )
-# ax.set_title("UMAP - scGPT embeddings Colored by True Labels")
-# ax.legend()
-# ax.set_xlabel("UMAP 1")
-# ax.set_ylabel("UMAP 2")
-
-# plt.savefig(save_dir / "umap_true_labels.png", dpi=300)
-
