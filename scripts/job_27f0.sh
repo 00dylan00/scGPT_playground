@@ -8,12 +8,7 @@
 
 #SBATCH --partition=sbnb_cpu_zen3
 
-
-
-
-
 cd /aloy/home/ddalton/projects/scGPT_playground/scripts
-
 
 # for DB servers connection
 export SINGULARITYENV_LD_LIBRARY_PATH=$LD_LIBRARY_PATH

@@ -42,9 +42,7 @@ import json
 manual_parameters = { 
     "dataset_exercise":"medium",                 
     "diseases_of_interest_set": None,
-    "library_strategies_of_interest_set": list({
-        "Microarray"
-    }),
+    "library_strategies_of_interest_set": list({"RNA-Seq", "Microarray"}),
 }
 
 # library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
@@ -312,15 +310,15 @@ library_strategies_of_interest_set = manual_parameters.get("library_strategies_o
 df_info = pd.read_csv(df_info_path)
 
 
-if manual_parameters.get("dataset"):
-    if manual_parameters["dataset"] == "small":
+if manual_parameters.get("dataset_exercise"):
+    if manual_parameters["dataset_exercise"] == "small":
         print("Small Dataset")
 
-    elif manual_parameters["dataset"] == "medium":
+    elif manual_parameters["dataset_exercise"] == "medium":
         print("Medium Dataset")
 
         # filter by library strategy
-        QUERY = f"library_strategy in @library_stratergies"
+        QUERY = f"library_strategy in @library_strategies_of_interest_set"
         df_filtered = df_info.query(QUERY)
 
         # get dsaids of interest
@@ -328,7 +326,7 @@ if manual_parameters.get("dataset"):
 
         df = get_exp_prof(dsaids_interest)
 
-    elif manual_parameters["dataset"] == "large":
+    elif manual_parameters["dataset_exercise"] == "large":
         print("Large Dataset")
 
 # if specific diseases

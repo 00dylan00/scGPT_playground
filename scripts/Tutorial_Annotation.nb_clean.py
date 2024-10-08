@@ -98,6 +98,8 @@ import torch
 print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
+
+
 # Define arguments
 parser.add_argument('--data_path', type=str, required=True, help='Path to the data file')
 parser.add_argument('--max_seq_len', type=int, default=1000, help='Maximum sequence length')
@@ -109,10 +111,13 @@ parser.add_argument('--n_splits', type=int, default=3, help='Number of splits fo
 parser.add_argument('--n_tested_splits', type=int, default=None, help='Number of tested splits')  
 parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs')
 parser.add_argument('--gene_filtering', type=str, default="top_presence", help='Type of gene filtering')
-    
+
 
 # Parse arguments
 args = parser.parse_args()
+
+print(args)
+
 
 if args.n_tested_splits is None:
     args.n_tested_splits = args.n_splits
@@ -134,7 +139,8 @@ manual_parameters = {
 "n_splits": args.n_splits,
 "n_tested_splits": args.n_tested_splits,
 "epochs":args.epochs,
-"gene_filtering":args.gene_filtering}
+"gene_filtering":args.gene_filtering,
+"sample_presence_pct": 0.3,}
 
 # functions
 def train(model: nn.Module, loader: DataLoader) -> None:
@@ -870,7 +876,7 @@ def get_mask_genes(
     return combined_mask
 
 
-def get_stratified_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
+def get_stratified_test_split(obs: pd.DataFrame, n_splits=3) -> List[str]:
     """Get Test Split
     We will perform a split for those diseases which have more than one dataset.
 
@@ -896,21 +902,21 @@ def get_stratified_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
 
     diseases_f1 = set()  # diseases filter 1
 
-    # 1. Check diseases w/ 5+ datasets
+    # 1. Check diseases w/ n_splits+ datasets
     all_diseases = obs_copy["celltype"].unique()
     for diseases in all_diseases:
         QUERY = f'celltype == "{diseases}"'
         _df_query = obs_copy.query(QUERY)
-        if len(_df_query["dataset_id"].unique()) >= 5:
+        if len(_df_query["dataset_id"].unique()) >= n_splits:
             diseases_f1.add(diseases)
 
-    logging.info(f"Number of diseases with 5+ datasets: {len(diseases_f1)}")
+    logging.info(f"Number of diseases with {n_splits}+ datasets: {len(diseases_f1)}")
 
-    # 2. Divide dataset into train and test w/ 4:1 ratio
+    # 2. Divide dataset into train and test to n_splits
     QUERY = "celltype in @diseases_f1"
     df_diseases_f1 = obs_copy.query(QUERY)
 
-    sgkf = StratifiedGroupKFold(n_splits=n_splits, shuffle=False)
+    sgkf = StratifiedGroupKFold(n_splits=n_splits, shuffle=True, random_state=42)
     for i, (train_idx, test_idx) in enumerate(
         sgkf.split(
             X=df_diseases_f1["ids"],
@@ -921,6 +927,7 @@ def get_stratified_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
 
         # get which disease & datasets are in the test
         df_diseases_f1_test = df_diseases_f1.iloc[test_idx]
+        df_diseases_f1_train = df_diseases_f1.iloc[train_idx]
 
         assert "combination" in obs_copy.columns, "combination column not found in obs"
         assert (
@@ -955,6 +962,16 @@ def get_stratified_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
         logging.info(
             f"Nº of samples in test split {i+1}: {obs_copy.iloc[test_idx]['ids'].nunique()}"
         )
+
+        # assert there is no overlap
+        train_dataset_ids = set(df_diseases_f1_train["dataset_id"])
+        test_dataset_ids = set(df_diseases_f1_test["dataset_id"])
+
+        overlap = train_dataset_ids.intersection(test_dataset_ids)
+ 
+
+        assert len(overlap) == 0, f"Overlap found in dataset_ids between train and test in split {i+1}: {overlap}"
+
 
     obs_copy.drop(columns=["combination"], inplace=True)
 
@@ -1604,38 +1621,6 @@ id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories
 adata.obs["celltype_id"] = celltype_id_labels
 
 
-
-# presence = 0.95  # gene presence in samples
-# variance = 45  # gene variance in top %
-
-# # filter out the genes with lowest presence
-# thr_presence = adata.X.shape[0] * presence
-
-# mask_presence = np.sum(~np.isnan(adata.X), axis=0) > thr_presence
-
-# logging.info(f"Presence thr {thr_presence}, {np.sum(mask_presence)} genes left")
-
-
-# # filter out the genes with lowest standard deviation
-# gene_std = np.nanstd(adata.X, axis=0)
-# gene_std = gene_std[~np.isnan(gene_std)]
-# thr_std = np.percentile(gene_std, variance)
-
-# mask_variance = np.nanstd(adata.X, axis=0) > thr_std
-
-
-# logging.info(f"Variance thr {thr_std:.2f}, {np.sum(mask_variance)} genes left")
-
-# # combine mask
-# mask_genes = mask_presence & mask_variance
-
-
-# mask_genes = get_mask_genes(adata, 
-#                   max_n_genes=manual_parameters.get("max_seq_len"), 
-#                   gene_presence_pct=manual_parameters.get("gene_presence_pct"))
-
-
-
 if manual_parameters.get("gene_filtering") == "top_presence":
     mask_genes = get_top_k_most_present_genes(adata, 
                     k=manual_parameters.get("max_seq_len"))
@@ -1661,11 +1646,14 @@ adata = adata[:, mask_genes]
 
 
 # mask samples
-non_nan_percentage = np.sum(~np.isnan(adata.X), axis=1) / adata.X.shape[1]
+# non_nan_percentage = np.sum(~np.isnan(adata.X), axis=1) / adata.X.shape[1]
+non_zero_non_nan_mask = ~np.isnan(adata.X) & ~(adata.X == 0)
+
+non_zero_non_nan_mask_pct = np.sum(non_zero_non_nan_mask, axis=1) / adata.X.shape[1]
 
 # mask samples that have less than 30% non-NaN values
-mask_samples = non_nan_percentage >= 0.30
-logging.info(f"Masking {np.sum(~mask_samples)} samples with less than 30% non-NaN values")
+mask_samples = non_zero_non_nan_mask_pct >= manual_parameters.get("sample_presence_pct")
+logging.info(f"Filtering out {np.sum(~mask_samples)} / {len(mask_samples)} samples with less than 30% non-NaN values")
 
 # apply the mask to the AnnData object
 adata = adata[mask_samples, :]
@@ -1780,6 +1768,10 @@ data_to_save = {
     "id2type": list(),
     "adata_orig":adata_orig,
 }
+
+
+#! TEST RUN
+# sys.exit(0)
 
 # store results
 
