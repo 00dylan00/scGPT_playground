@@ -25,6 +25,7 @@ from typing import *
 import warnings
 import pandas as pd
 from datetime import datetime
+from scanpy.pp import combat
 
 # from . import asyn
 import pickle
@@ -107,11 +108,17 @@ parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
 parser.add_argument('--gene_presence_pct', type=float, default=0.9, help='Gene presence percentage')
 parser.add_argument('--benchmark_data', action='store_true', help='Use benchmark data')
 parser.add_argument('--split_type', type=str, default="stratified", help='Type of gene filtering')
+parser.add_argument('--val_split_type', type=str, default="random", help='Type of gene filtering')
 parser.add_argument('--n_splits', type=int, default=3, help='Number of splits for cross-validation')
 parser.add_argument('--n_tested_splits', type=int, default=None, help='Number of tested splits')  
-parser.add_argument('--epochs', type=int, default=5, help='Number of training epochs')
+parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
 parser.add_argument('--gene_filtering', type=str, default="top_presence", help='Type of gene filtering')
-
+parser.add_argument('--DAB', type=bool, default=False, help="Domain Adversarial Back Propagation")
+parser.add_argument('--ADV', type=bool, default=False, help="Include Adversarial Training")
+parser.add_argument('--ECS', type=bool, default=False, help="Include ECS")
+parser.add_argument('--INPUT_BATCH_LABELS', type=bool, default=False, help="Include Batch Labels in the Input for the Encoder/Model")
+parser.add_argument('--do_combat', type=bool, default=True, help="Combat Batch Effect Normalization")
+parser.add_argument('--ontology', type=str, default="do", help='Type of ontology')
 
 # Parse arguments
 args = parser.parse_args()
@@ -136,11 +143,20 @@ manual_parameters = {
 "gene_presence_pct":args.gene_presence_pct,
 "benchmark_data": args.benchmark_data,
 "split_type" : args.split_type,
+"val_split_type": args.val_split_type,
 "n_splits": args.n_splits,
 "n_tested_splits": args.n_tested_splits,
 "epochs":args.epochs,
 "gene_filtering":args.gene_filtering,
-"sample_presence_pct": 0.3,}
+"sample_presence_pct": 0.3,
+"DAB":args.DAB,
+"ADV":args.ADV,
+"ECS":args.ECS,
+"INPUT_BATCH_LABELS":args.INPUT_BATCH_LABELS,
+"do_combat":args.do_combat,
+"ontology": args.ontology}
+
+print(manual_parameters)
 
 # functions
 def train(model: nn.Module, loader: DataLoader) -> None:
@@ -235,14 +251,24 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 loss = loss + loss_ecs
                 metrics_to_log.update({"train/ecs": loss_ecs.item()})
             if DAB:
+
+                loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
+
+
+
                 # try weighting and separate optimizer
                 loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
                 loss = loss + dab_weight * loss_dab
                 metrics_to_log.update({"train/dab": loss_dab.item()})
 
+        # clears the previous gradients from the model's parameters
+        # necessary bc PyTorch accumulates gradients by default
         model.zero_grad()
+
+        # the actual backpropagation
         scaler.scale(loss).backward()
         scaler.unscale_(optimizer)
+
         with warnings.catch_warnings(record=True) as w:
             warnings.filterwarnings("always")
             torch.nn.utils.clip_grad_norm_(
@@ -258,6 +284,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 )
         scaler.step(optimizer)
         scaler.update()
+
 
         if ADV:
             # rerun the model for adversarial training
@@ -396,6 +423,7 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
             batch_labels = batch_data["batch_labels"].to(device)
             celltype_labels = batch_data["celltype_labels"].to(device)
 
+
             src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
             with torch.cuda.amp.autocast(enabled=config.amp):
                 output_dict = model(
@@ -417,6 +445,7 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
                 loss = criterion_cls(output_values, celltype_labels)
 
                 if DAB:
+
                     loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
 
             total_loss += loss.item() * len(input_gene_ids)
@@ -580,6 +609,9 @@ def test(model: nn.Module, adata: DataLoader) -> float:
 
     batch_ids = adata.obs["batch_id"].tolist()
     batch_ids = np.array(batch_ids)
+
+
+
 
     tokenized_test = tokenize_and_pad_batch(
         all_counts,
@@ -1061,10 +1093,10 @@ def get_test_split_common(obs: pd.DataFrame, n_splits=5) -> List[str]:
 
     combined_labels.unique()
 
-    kf = StratifiedKFold(n_splits=n_splits, shuffle=True)
+    skf = StratifiedKFold(n_splits=n_splits, shuffle=True)
 
     for i, (train_idx, test_idx) in enumerate(
-        kf.split(X=adata.obs["ids"], y=combined_labels)
+        skf.split(X=adata.obs["ids"], y=combined_labels)
     ):
 
         mask = np.zeros(len(obs_copy), dtype=bool)
@@ -1392,6 +1424,38 @@ def get_top_k_highest_variance_genes_with_presence(
 
     return mask_top_k
 
+def perform_combat_correction(adata) -> AnnData:
+    """
+    Perform ComBat batch correction on the input AnnData object.
+
+    Parameters:
+    - adata: AnnData
+        The AnnData object containing the expression data and batch information.
+
+    Returns:
+    - AnnData
+        The AnnData object with batch-corrected expression data.
+    """
+    logging.info("Performing batch correction using ComBat.")
+
+    # Impute NaN values with 0 for ComBat compatibility
+    imputed_X = adata.X.copy()
+    mask_nan = np.isnan(imputed_X)  # Identify original NaN positions
+    imputed_X[mask_nan] = 0
+
+    # Temporarily replace `adata.X` with imputed values
+    adata.X = imputed_X
+
+    # Apply ComBat for batch correction
+    combat(adata, key="batch_id")
+
+    # Restore original NaN values in the batch-corrected matrix
+    adata.X[mask_nan] = np.nan
+
+    logging.info("Batch correction completed.")
+
+    return adata
+
 
 #endregion
 
@@ -1470,19 +1534,19 @@ n_bins = config.n_bins
 
 # input/output representation
 input_style = "binned"  # "normed_raw", "log1p", or "binned"
-output_style = "binned"  # "normed_raw", "log1p", or "binned"
+output_style = "binned"  # "normed_raw", "log1p", or "binned"manual_parameters.ADV
 
 # settings for training
 MLM = False  # whether to use masked language modeling, currently it is always on.
 CLS = True  # celltype classification objective
-ADV = False  # Adversarial training for batch correction
+ADV = manual_parameters.get("ADV")  # Adversarial training for batch correction
 CCE = False  # Contrastive cell embedding objective
 MVC = config.MVC  # Masked value prediction for cell embedding
 ECS = config.ecs_thres > 0  # Elastic cell similarity objective
-DAB = False  # Domain adaptation by reverse backpropagation, set to 2 for separate optimizer
-INPUT_BATCH_LABELS = False  # TODO: have these help MLM and MVC, while not to classifier
+DAB = manual_parameters.get("DAB")  # Domain adaptation by reverse backpropagation, set to 2 for separate optimizer
+INPUT_BATCH_LABELS = manual_parameters.get("INPUT_BATCH_LABELS")  # TODO: have these help MLM and MVC, while not to classifier
 input_emb_style = "continuous"  # "category" or "continuous" or "scaling"
-cell_emb_style = "cls"  # "avg-pool" or "w-pool" or "cls"
+cell_emb_style = "cls"  # "avg-pool" or "w-pool" or "cls"       
 adv_E_delay_epochs = 0  # delay adversarial training on encoder for a few epochs
 adv_D_delay_epochs = 0
 mvc_decoder_style = "inner product"
@@ -1607,6 +1671,15 @@ if False:
 # adata = sc.read(data_dir / "test_2.h5ad")
 adata = sc.read(manual_parameters.get("data_path"))
 
+print("adata loaded")
+print(adata.X)
+
+# mesh_disease should be the celltype
+# adata.obs["celltype"] = adata.obs["celltype"].astype("category")
+if manual_parameters.get("ontology") == "mesh":
+    adata.obs["celltype"] = adata.obs["mesh_disease"].astype("category")
+elif manual_parameters.get("ontology") == "do":
+    adata.obs["celltype"] = adata.obs["do_term"].astype("category")
 
 # config parameters
 data_is_raw = True
@@ -1661,6 +1734,8 @@ adata = adata[mask_samples, :]
 
 #! COMMENTED
 # adata.obs["str_batch"] = adata.obs["train_test"].astype(int).astype(str)
+print("adata after filtering samples")
+print(adata.X)
 
 if config.load_model is not None:
     model_dir = Path(config.load_model)
@@ -1743,7 +1818,7 @@ elif manual_parameters.get("split_type") == "non_stratified":
     new_obs = get_test_split(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
     adata.obs = new_obs
 
-elif manual_parameters.get("split_type") == "common":
+elif manual_parameters.get("split_type") == "mixed":
     df_obs = adata.obs
     new_obs = get_test_split_common(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
     adata.obs = new_obs
@@ -1755,44 +1830,99 @@ elif manual_parameters.get("split_type") == "common":
 # store original data
 adata_orig = adata.copy()
 
+# dictionary to store the results
 data_to_save = {
     "split": list(),
     "predictions_test": list(),
     "labels_test": list(),
     "results_test": list(),
     "all_outputs_test": list(),
+    "predictions_valid": list(),
+    "labels_valid": list(),
+    "results_valid": list(),
+    "all_outputs_valid": list(),
     "predictions_train": list(),
     "labels_train": list(),
     "results_train": list(),
     "all_outputs_train": list(),
     "id2type": list(),
     "adata_orig":adata_orig,
+    "train_indices": list(),
+    "valid_indices": list(),
 }
 
-
-#! TEST RUN
-# sys.exit(0)
-
-# store results
+# Generate the output directory
+output_dir = get_folder_name()
 
 for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     torch.cuda.empty_cache()
 
-    adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1]
-    adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0]
+    #! ADDED - BATCH CORRECTION OPTION
+    if manual_parameters.get("do_combat"):
+        # preprocess & batch correct
+        preprocessor(adata, batch_key=None)        
+        
+        # If we have samples from 1 single batch - combat will return NaN values for all
+        # we tackle this by removing samples with a single batch id
+        # remove samples from batch_id with only one sample
+        print(f"Shape of adata before preprocessing: {adata.shape}")
+        batch_counts = dict(adata.obs['batch_id'].value_counts())
+        _low_count_batches = [k for k, v in batch_counts.items() if v < 2]
+        mask = adata.obs['batch_id'].isin(_low_count_batches)
+        adata = adata[~mask].copy()
+        print(f"Removed {len(_low_count_batches)} batches with less than 2 samples")
+        print(f"Shape of _adata after removing low count batches: {adata.shape}")
+        
+        adata = perform_combat_correction(adata)
 
-    # adata.obs["str_batch"] = adata.obs[f"test_split_{split}"].astype(int).astype(str)
+
+        
+        print("adata after preprocessing and batch correction")
+        print(adata.X)
+
+        batch_ids = adata.obs["batch_id"].tolist()
+        num_batch_types = len(set(batch_ids))
+        batch_ids = np.array(batch_ids)
+
+        """Re-map batch ids so it matches the max value of batches
+        """
+        _remap_dict = {k: i for i, k in enumerate(sorted(set(batch_ids)))}
+        batch_ids = np.array([_remap_dict[b] for b in batch_ids], dtype=int)
+        adata.obs["batch_id"] = batch_ids  # update the batch ids in adata.obs
+
+        # seperate the test and train data
+        adata_test = adata[adata.obs[f"test_split_{split}"] == 1]
+        adata = adata[adata.obs[f"test_split_{split}"] == 0]
+
+        print("adata_test after preprocessing and batch correction")
+        print(adata_test.X)
+
+    else:
+
+        batch_ids = adata.obs["batch_id"].tolist()
+        num_batch_types = len(set(batch_ids))
+        batch_ids = np.array(batch_ids)
+
+        """Re-map batch ids so it matches the max value of batches
+        """
+        _remap_dict = {k: i for i, k in enumerate(sorted(set(batch_ids)))}
+        batch_ids = np.array([_remap_dict[b] for b in batch_ids], dtype=int)
+        adata.obs["batch_id"] = batch_ids  # update the batch ids in adata.obs
+
+        # seperate data
+        adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1]
+        adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0]
+
+        # added
+        adata_test_raw = adata_test.copy()
+
+        # batch correct - same as in original tutorial
+        preprocessor(adata, batch_key=None)
+        preprocessor(adata_test, batch_key=None)
 
 
-    # sys.exit(0)
-
-    # added
-    adata_test_raw = adata_test.copy()
-
-    preprocessor(adata, batch_key=None)
-    preprocessor(adata_test, batch_key=None)
-
+    #! ASSESS MAX VALUES AFTER PP
 
     input_layer_key = {  # the values of this map coorespond to the keys in preprocessing
         "normed_raw": "X_normed",
@@ -1809,22 +1939,27 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     celltypes_labels = adata.obs["celltype_id"].tolist()  # make sure count from 0
     celltypes_labels = np.array(celltypes_labels)
 
-    batch_ids = adata.obs["batch_id"].tolist()
-    num_batch_types = len(set(batch_ids))
-    batch_ids = np.array(batch_ids)
 
-    (
-        train_data,
-        valid_data,
-        train_celltype_labels,
-        valid_celltype_labels,
-        train_batch_labels,
-        valid_batch_labels,
-    ) = train_test_split(
-        all_counts, celltypes_labels, batch_ids, test_size=0.1, shuffle=True
+    # Create indices for the entire dataset
+    all_indices = np.arange(len(all_counts))
+
+    # Split to get indices only
+    train_idx, valid_idx = train_test_split(
+        np.arange(len(all_counts)), test_size=0.1, shuffle=True, stratify=celltypes_labels
     )
 
-    Counter(celltypes_labels)
+    # Use indices to split the data manually
+    train_data = all_counts[train_idx]
+    valid_data = all_counts[valid_idx]
+
+    train_celltype_labels = celltypes_labels[train_idx]
+    valid_celltype_labels = celltypes_labels[valid_idx]
+
+    train_batch_labels = batch_ids[train_idx]
+    valid_batch_labels = batch_ids[valid_idx]
+
+    train_indices = all_indices[train_idx]
+    valid_indices = all_indices[valid_idx]
 
 
     if config.load_model is None:
@@ -1900,6 +2035,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         fast_transformer_backend=fast_transformer_backend,
         pre_norm=config.pre_norm,
     )
+
+
+    # print("\n[INFO] Model parameters and config at initialization:\n")
+    # for name, param in model.named_parameters():
+    #     print(f"{name:60} shape: {tuple(param.shape)} requires_grad: {param.requires_grad}")
+    # sys.exit(0)
+
     if config.load_model is not None:
         try:
             model.load_state_dict(torch.load(model_file))
@@ -2036,6 +2178,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
             drop_last=False,
         )
 
+        print(">>> Finished remapping batch labels")
+        print(f"Total unique remapped batch labels: {adata.obs['batch_id'].nunique()}")
+        print(f"Range of remapped batch labels: {adata.obs['batch_id'].min()} to {adata.obs['batch_id'].max()}")
+        print(">>> Sample batch labels after remapping:", adata.obs['batch_id'].value_counts().head())
+
+
+
         if config.do_train:
             train(
                 model,
@@ -2066,6 +2215,7 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
             scheduler_D.step()
             scheduler_E.step()
 
+
         #! FOR DEBUGGING
         # break
 
@@ -2084,90 +2234,6 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     print(Counter(labels), Counter(predictions))
 
-
-    # # get rid of nans
-    # adata_test_raw.X = np.where(np.isnan(adata_test_raw.X), 0, adata_test_raw.X)
-
-
-    # # Check if PCA is computed; if not, compute it
-    # if "X_pca" not in adata_test_raw.obsm:
-    #     sc.pp.pca(adata_test_raw)
-
-    # # Compute neighbors and UMAP
-    # if "X_umap" not in adata_test_raw.obsm:
-    #     sc.pp.neighbors(
-    #         adata_test_raw, n_neighbors=15, use_rep="X_pca"
-    #     )  # Adjust parameters as needed
-    #     sc.tl.umap(adata_test_raw)
-
-
-
-
-
-    # adata_test_raw.obs["predictions"] = [id2type[p] for p in predictions]
-
-    # # plot
-    # palette_ = plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    # palette_ = (
-    #     plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    #     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    #     + plt.rcParams["axes.prop_cycle"].by_key()["color"]
-    # )
-    # palette_ = {c: palette_[i] for i, c in enumerate(celltypes)}
-
-    # with plt.rc_context({"figure.figsize": (6, 6), "figure.dpi": (300)}):
-    #     sc.pl.umap(
-    #         adata_test_raw, color=["celltype", "predictions"], palette=palette_, show=False
-    #     )
-    #     plt.savefig(save_dir / "results.png", dpi=300)
-
-    # save_dict = {
-    #     "predictions": predictions,
-    #     "labels": labels,
-    #     "results": results,
-    #     "id_maps": id2type,
-    # }
-    # with open(save_dir / "results.pkl", "wb") as f:
-    #     pickle.dump(save_dict, f)
-
-    # results["test/cell_umap"] = wandb.Image(
-    #     str(save_dir / "results.png"),
-    #     caption=f"predictions macro f1 {results['test/macro_f1']:.3f}",
-    # )
-    # wandb.log(results)
-
-
-    # celltypes = list(celltypes)
-    # for i in set([id2type[p] for p in predictions]):
-    #     if i not in celltypes:
-    #         celltypes.remove(i)
-
-    # print(len(labels), len(predictions))
-    # cm = confusion_matrix(labels, predictions)
-    # cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
-
-    # # sorted celltypes by the order of the confusion matrix
-    # sorted_celltypes = list()
-    # for i in sorted(list(set(labels))):
-    #     sorted_celltypes.append(id2type[i])
-
-    # cm = pd.DataFrame(
-    #     cm, index=sorted_celltypes[: cm.shape[0]], columns=sorted_celltypes[: cm.shape[1]]
-    # )
-
-    # plt.figure(figsize=(10, 10))
-    # sns.heatmap(cm, annot=True, fmt=".1f", cmap="Blues")
-    # plt.savefig(save_dir / "confusion_matrix.png", dpi=300)
-
-    # results["test/confusion_matrix"] = wandb.Image(
-    #     str(save_dir / "confusion_matrix.png"),
-    #     caption=f"confusion matrix",
-    # )
-
-
-
-    # save the model into the save_dir
-    # torch.save(best_model.state_dict(), save_dir / "model.pt")
 
     ## Evaluate the model on the train set
 
@@ -2198,26 +2264,39 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     logging.info(f"Results Test: {results_test}")
 
 
+    # # train inference
+    # (
+    #     predictions_train,
+    #     labels_train,
+    #     results_train,
+    #     all_outputs_train,
+    # ) = test_2(best_model, adata)
 
-    # train inference
+
+    # Assume train_indices and valid_indices have been loaded for the current split
+    train_adata = adata[train_indices, :]  # Subset adata for training samples
+    valid_adata = adata[valid_indices, :]  # Subset adata for validation samples
+    
+    print("train_adata shape:", train_adata.shape)
+    print(train_adata.X)
+
+    # Perform inference on train and validation sets
+    # Train inference
     (
         predictions_train,
         labels_train,
         results_train,
         all_outputs_train,
-    ) = test_2(best_model, adata)
+    ) = test_2(best_model, train_adata)
 
+    # Validation inference
+    (
+        predictions_valid,
+        labels_valid,
+        results_valid,
+        all_outputs_valid,
+    ) = test_2(best_model, valid_adata)
 
-
-
-    # if available_device is not None:
-    #     logging.info(f"Switching model to available device found: {available_device}")
-
-    #     best_model.to(available_device)
-
-    # else:
-    #     logging.info("No available device found, using the default device")
-    #     sys.exit(1)
 
 
     logging.info("region 5")
@@ -2234,6 +2313,10 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     data_to_save["labels_test"].append(labels_test)
     data_to_save["results_test"].append(results_test)
     data_to_save["all_outputs_test"].append(all_outputs_test)
+    data_to_save["predictions_valid"].append(predictions_valid)
+    data_to_save["labels_valid"].append(labels_valid)
+    data_to_save["results_valid"].append(results_valid)
+    data_to_save["all_outputs_valid"].append(all_outputs_valid)
     data_to_save["predictions_train"].append(predictions_train)
     data_to_save["labels_train"].append(labels_train)
     data_to_save["results_train"].append(results_train)
@@ -2241,9 +2324,24 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     data_to_save["id2type"].append(id2type)
 
 
-# Generate the output directory
-output_dir = get_folder_name()
+    # Save the train/valid indices for this split
+    data_to_save[f"train_indices"].append(train_indices.tolist())
+    data_to_save[f"valid_indices"].append(valid_indices.tolist())
 
+
+    # Store processed adata objects
+    data_to_save[f"adata_train_{split}"] = train_adata
+    data_to_save[f"adata_valid_{split}"] = valid_adata
+    data_to_save[f"adata_test_{split}"] = adata_test
+
+    print(adata_train_raw.X)
+
+    print(train_adata.X)
+
+    # save best model
+    torch.save(best_model, os.path.join(output_dir, f"model_{split}.pt"))
+
+    break
 
 
 # Save each item in the dictionary to a pickle file
@@ -2265,3 +2363,22 @@ log_gpu_memory_usage()
 # Write parameters to a JSON file
 with open(os.path.join(output_dir,"parameters.json"), 'w') as json_file:
     json.dump(manual_parameters, json_file, indent=4)
+
+
+# save vocab
+vocab_file = os.path.join(output_dir, "vocab.json")
+vocab.save_json(vocab_file)
+
+
+# save model config
+model_config_file = os.path.join(output_dir, "args.json")
+
+model_configs = {
+    "embsize": embsize,
+    "nheads": nhead,
+    "d_hid": d_hid,
+    "nlayers": nlayers,
+    # "n_layers_cls": n_layers_cls
+}
+with open(model_config_file, "w") as f:
+    json.dump(model_configs, f, indent=4)
