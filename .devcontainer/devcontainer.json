@@ -1,12 +1,12 @@
 {
   "name": "scGPT Dev",
-  "image": "scgpt-cuda121",
+  "build": {
+    "dockerfile": "../docker/Dockerfile"
+  },
   "runArgs": [
     "--gpus", "all",
-    "-u", "17447:1003"
+    "-u", "17447:1003",
+    "-v", "/home/ddalton/scgpt_playground:/workspace/scgpt"
   ],
-  "workspaceFolder": "/workspace/scGPT",
-  "mounts": [
-    "source=/aloy/home/ddalton/projects/scGPT_playground,target=/workspace/scGPT,type=bind"
-  ]
+  "workspaceFolder": "/workspace/scgpt"
 }
