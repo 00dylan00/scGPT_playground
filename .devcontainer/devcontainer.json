@@ -6,7 +6,6 @@
   "runArgs": [
     "--gpus", "all",
     "-u", "17447:1003",
-    "-e", "HOME=/workspace/scgpt",
     "-v", "/home/ddalton/scgpt_playground:/workspace/scgpt"
   ],
   "workspaceFolder": "/workspace/scgpt"
