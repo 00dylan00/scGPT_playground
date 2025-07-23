@@ -1,12 +1,19 @@
 {
   "name": "scGPT Dev",
-  "build": {
-    "dockerfile": "../docker/Dockerfile"
-  },
-  "runArgs": [
-    "--gpus", "all",
-    "-u", "17447:1003",
-    "-v", "/home/ddalton/scgpt_playground:/workspace/scgpt"
+  "image": "scgpt-dev",
+  "workspaceFolder": "/workspace/notebooks",
+  "runArgs": ["--gpus", "all"],
+  "mounts": [
+    "source=/home/ddalton/projects/scGPT_playground,target=/workspace/notebooks,type=bind",
+    "source=/aloy/home/ddalton/git_clones/scGPT,target=/workspace/scGPT,type=bind"
   ],
-  "workspaceFolder": "/workspace/scgpt"
+  "postCreateCommand": "pip install -e /workspace/scGPT && pip install 'flash-attn<1.0.5'",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-toolsai.jupyter"
+      ]
+    }
+  }
 }
