@@ -688,6 +688,8 @@ model = TransformerModel(
     pad_value=pad_value,
     do_mvc=MVC,
     do_dab=DAB,
+    #! NEW ADDED 
+    output_attentions=True,
     use_batch_labels=INPUT_BATCH_LABELS,
     num_batch_labels=num_batch_types,
     domain_spec_batchnorm=config.DSBN,
