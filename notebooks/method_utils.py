@@ -194,3 +194,16 @@ def clean_multilabel_vectors(Y_multilabel:np.ndarray, nodes:np.ndarray,)->tuple[
     cleaned_nodes = np.array(nodes)[mask_keep]
 
     return cleaned_Y, cleaned_nodes
+
+def get_processed_ids()-> list:
+    """Get processed ids
+    Returns:
+        list: list of processed ids
+    """
+    data_path = os.path.join(
+        "/aloy/home/ddalton/projects/disease_signatures",
+        "data",
+        "DiSignAtlas",
+        "dsa_diff_download.processed",
+    )
+    return [f.split("_")[0] for f in os.listdir(data_path)]

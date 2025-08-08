@@ -49,6 +49,7 @@ from torchtext._torchtext import (
 )
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
 sys.path.insert(0, "../")
 sys.path.insert(0, "/aloy/home/ddalton/git_clones/scGPT")
@@ -202,6 +203,8 @@ def train(model: nn.Module, loader: DataLoader) -> None:
     total_error = 0.0
     start_time = time.time()
 
+    _loss = list()
+    _error_rate = list()
     num_batches = len(loader)
     for batch, batch_data in enumerate(loader):
         input_gene_ids = batch_data["gene_ids"].to(device)
@@ -209,7 +212,8 @@ def train(model: nn.Module, loader: DataLoader) -> None:
         target_values = batch_data["target_values"].to(device)
         batch_labels = batch_data["batch_labels"].to(device)
         celltype_labels = batch_data["celltype_labels"].to(device)
-        disease_multilabel = batch_data["class_multilabel"].to(device).float()
+        if CLS_MULTILABEL:
+            disease_multilabel = batch_data["class_multilabel"].to(device).float()
 
         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
         with torch.cuda.amp.autocast(enabled=config.amp):
@@ -244,7 +248,6 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 loss = loss + loss_zero_log_prob
                 metrics_to_log.update({"train/nzlp": loss_zero_log_prob.item()})
             if CLS:
-                print(f"CLS is {CLS}")
                 loss_cls = criterion_cls(output_dict["cls_output"], celltype_labels)
                 loss = loss + loss_cls
                 metrics_to_log.update({"train/cls": loss_cls.item()})
@@ -259,6 +262,14 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 loss_cls_multilabel = criterion_cls_multilabel(output_dict["cls_output"], disease_multilabel)
                 loss = loss + loss_cls_multilabel
                 metrics_to_log.update({"train/cls_multilabel": loss_cls_multilabel.item()})
+
+                # error rate is 1 - accuracy
+                _preds = torch.sigmoid(output_dict["cls_output"].detach()).cpu().numpy()
+                _preds_bin = (_preds > 0.5).astype(int)
+                _true = disease_multilabel.cpu().numpy()
+                samplewise_acc = (_preds_bin == _true).mean(axis=1).mean()
+                error_rate = 1- samplewise_acc 
+
             if CCE:
                 loss_cce = 10 * output_dict["loss_cce"]
                 loss = loss + loss_cce
@@ -363,8 +374,11 @@ def train(model: nn.Module, loader: DataLoader) -> None:
         total_mvc_zero_log_prob += (
             loss_mvc_zero_log_prob.item() if MVC and explicit_zero_prob else 0.0
         )
-        if CLS: 
-            total_error += error_rate
+        
+        _loss.append(loss.item())
+        _error_rate.append(1 - error_rate)
+
+        total_error += error_rate
         if batch % log_interval == 0 and batch > 0:
             lr = scheduler.get_last_lr()[0]
             ms_per_batch = (time.time() - start_time) * 1000 / log_interval
@@ -421,6 +435,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
             total_error = 0
             start_time = time.time()
 
+    return np.mean(_loss), np.mean(_error_rate)
 
 def define_wandb_metrcis():
     wandb.define_metric("valid/mse", summary="min", step_metric="epoch")
@@ -479,11 +494,25 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
                     loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
 
             total_loss += loss.item() * len(input_gene_ids)
-            accuracy = (output_values.argmax(1) == celltype_labels).sum().item()
-            total_error += (1 - accuracy / len(input_gene_ids)) * len(input_gene_ids)
             total_dab += loss_dab.item() * len(input_gene_ids) if DAB else 0.0
             total_num += len(input_gene_ids)
-            preds = output_values.argmax(1).cpu().numpy()
+
+            if CLS:
+                # Standard single-label accuracy
+                accuracy = (output_values.argmax(1) == celltype_labels).sum().item()
+                total_error += (1 - accuracy / len(input_gene_ids)) * len(input_gene_ids)
+                preds = output_values.argmax(1).cpu().numpy()
+
+            elif CLS_MULTILABEL:
+                # Multilabel: compute sigmoid + threshold
+                preds = torch.sigmoid(output_values).cpu().numpy()
+                preds_bin = (preds > 0.5).astype(int)
+                true = disease_multilabel.cpu().numpy()
+
+                # Sample-wise accuracy: proportion of labels correctly predicted
+                samplewise_acc = (preds_bin == true).mean(axis=1).mean()
+                total_error += (1 - samplewise_acc) * len(input_gene_ids)
+
             predictions.append(preds)
 
     wandb.log(
@@ -703,14 +732,29 @@ def test(model: nn.Module, adata: DataLoader) -> float:
         loader=test_loader,
         return_raw=True,
     )
-    
-    # compute accuracy, precision, recall, f1
-    from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-    accuracy = accuracy_score(celltypes_labels, predictions)
-    precision = precision_score(celltypes_labels, predictions, average="macro")
-    recall = recall_score(celltypes_labels, predictions, average="macro")
-    macro_f1 = f1_score(celltypes_labels, predictions, average="macro")
+    if CLS:
+        # compute accuracy, precision, recall, f1
+        accuracy = accuracy_score(celltypes_labels, predictions)
+        precision = precision_score(celltypes_labels, predictions, average="macro")
+        recall = recall_score(celltypes_labels, predictions, average="macro")
+        macro_f1 = f1_score(celltypes_labels, predictions, average="macro")
+
+    elif CLS_MULTILABEL:
+        # compute accuracy, precision, recall, f1
+        predictions_bin = (predictions > 0.5).astype(int)
+        print("predictions_bin", predictions_bin)
+        print("disease_multilabels", disease_multilabels)
+        accuracy = accuracy_score(disease_multilabels, predictions_bin)
+        precision = precision_score(disease_multilabels, predictions_bin, average="macro")
+        recall = recall_score(disease_multilabels, predictions_bin, average="macro")
+        macro_f1 = f1_score(disease_multilabels, predictions_bin, average="macro")
+
+        # computer average precision & auroc
+        from sklearn.metrics import average_precision_score, roc_auc_score
+        avg_precision = average_precision_score(disease_multilabels, predictions, average="macro")
+        auroc = roc_auc_score(disease_multilabels, predictions, average="macro")
+        print(f"Average Precision: {avg_precision:.3f}, AUROC: {auroc:.3f}")
 
     logger.info(
         f"Accuracy: {accuracy:.3f}, Precision: {precision:.3f}, Recall: {recall:.3f}, "
@@ -770,6 +814,7 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
     }
     if CLS_MULTILABEL:
         test_data_pt["class_multilabel"] = torch.from_numpy(disease_multilabels).float()
+
     test_loader = DataLoader(
         dataset=SeqDataset(test_data_pt),
         batch_size=eval_batch_size,
@@ -797,16 +842,16 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
     elif CLS_MULTILABEL:
         # compute accuracy, precision, recall, f1
         predictions_bin = (predictions > 0.5).astype(int)
-        accuracy = accuracy_score(celltypes_labels, predictions_bin)
-        precision = precision_score(celltypes_labels, predictions_bin, average="macro")
-        recall = recall_score(celltypes_labels, predictions_bin, average="macro")
-        macro_f1 = f1_score(celltypes_labels, predictions_bin, average="macro")
+        accuracy = accuracy_score(disease_multilabels, predictions_bin)
+        precision = precision_score(disease_multilabels, predictions_bin, average="macro")
+        recall = recall_score(disease_multilabels, predictions_bin, average="macro")
+        macro_f1 = f1_score(disease_multilabels, predictions_bin, average="macro")
 
 
         # computer average precision & auroc
         from sklearn.metrics import average_precision_score, roc_auc_score
-        avg_precision = average_precision_score(celltypes_labels, predictions, average="macro")
-        auroc = roc_auc_score(celltypes_labels, predictions, average="macro")
+        avg_precision = average_precision_score(disease_multilabels, predictions, average="macro")
+        auroc = roc_auc_score(disease_multilabels, predictions, average="macro")
         print(f"Average Precision: {avg_precision:.3f}, AUROC: {auroc:.3f}")
 
     logger.info(
@@ -857,7 +902,7 @@ def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, retur
                     batch_labels=(
                         batch_labels if INPUT_BATCH_LABELS or config.DSBN else None
                     ),
-                    CLS=CLS,  # evaluation does not need CLS or CCE
+                    CLS=(CLS or CLS_MULTILABEL),  # evaluation does not need CLS or CCE
                     CCE=False,
                     MVC=False,
                     ECS=False,
@@ -1672,7 +1717,6 @@ eval_batch_size = batch_size
 
 epochs = config.epochs
 schedule_interval = 1
-print(f"CLS is {CLS}")
 # settings for the model
 # fast_transformer = config.fast_transformer
 use_fast_transformer = manual_parameters.get("use_fast_transformer")   # if using output_attentions not use fast_transformer 
@@ -1859,7 +1903,10 @@ if CLS_MULTILABEL:
     doid_2_ic = mu.get_sanchez_ic(do_g)
 
     # get nodes
-    _class_nodes = mu.get_lvl1_nodes(do_g)
+    # _class_nodes = mu.get_lvl1_nodes(do_g)
+    # _class_nodes = mu.get_n_lowest_ic_nodes(doid_2_ic, 50)
+    # benchmark class nodes - use the sames as in the single classifier benchmark
+    _class_nodes = adata.obs["do_id"].unique().tolist()
 
     # Generate multilabel vectors for level 1 nodes
     Y_multilabel, _class_nodes = mu.generate_multilabel_vectors(adata, do_g, _class_nodes)
@@ -2000,12 +2047,23 @@ data_to_save = {
     "adata_orig":adata_orig,
     "train_indices": list(),
     "valid_indices": list(),
+    "d_metrics": dict(),
 }
 
 # Generate the output directory
 output_dir = get_folder_name()
+d_metrics = dict()
 
 for split in range(1,manual_parameters.get("n_tested_splits")+1):
+
+    d_metrics[f"epoch_{split+1}"] = {"train_loss": list(),
+                        "valid_loss": list(),
+                        "train_acc": list(),
+                        "valid_acc": list(),
+                        "train_err": list(),
+                        "valid_err": list(),
+                        "test_err": list(),
+                        }
 
     torch.cuda.empty_cache()
 
@@ -2346,10 +2404,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         print(f"CLS is {CLS}")
 
         if config.do_train:
-            train(
+            # train
+            train_loss, train_err = train(
                 model,
                 loader=train_loader,
             )
+
+        # validation
         val_loss, val_err = evaluate(
             model,
             loader=valid_loader,
@@ -2361,6 +2422,15 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
             f"valid loss/mse {val_loss:5.4f} | err {val_err:5.4f}"
         )
         logger.info("-" * 89)
+
+        d_metrics[f"epoch_{split+1}"]["train_loss"].append(train_loss)
+        d_metrics[f"epoch_{split+1}"]["valid_loss"].append(val_loss)
+        d_metrics[f"epoch_{split+1}"]["train_err"].append(train_err)
+        d_metrics[f"epoch_{split+1}"]["valid_err"].append(val_err)
+        d_metrics[f"epoch_{split+1}"]["train_acc"].append(1 - train_err)
+        d_metrics[f"epoch_{split+1}"]["valid_acc"].append(1 - val_err)      
+
+
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
@@ -2379,19 +2449,11 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         #! FOR DEBUGGING
         # break
 
-    val_loss, val_err = evaluate(
-        model,
-        loader=valid_loader,
-    )
-
-
     # ## Step 5: Inference with fine-tuned scGPT model
     # In the cell-type annotation task, the fine-tuned scGPT predicts cell-type labels for query set as inference. The model performance is evaluated on standard classificaton metrics. Here we visualize the predicted labels over the scGPT cell embeddings, and present the confusion matrix for detailed classification performance on the cell-group level.
 
+    # test split
     predictions, labels, results = test(best_model, adata_test)
-
-
-    print(Counter(labels), Counter(predictions))
 
 
     ## Evaluate the model on the train set
@@ -2484,6 +2546,7 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     data_to_save["results_train"].append(results_train)
     data_to_save["all_outputs_train"].append(all_outputs_train)
     data_to_save["id2type"].append(id2type)
+    data_to_save["metrics_epochs"] = d_metrics
 
 
     # Save the train/valid indices for this split
@@ -2496,21 +2559,32 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     data_to_save[f"adata_valid_{split}"] = valid_adata
     data_to_save[f"adata_test_{split}"] = adata_test
 
-    print(adata_train_raw.X)
-
-    print(train_adata.X)
-
     # save best model
     torch.save(best_model, os.path.join(output_dir, f"model_{split}.pt"))
 
     break
 
-
 # Save each item in the dictionary to a pickle file
 for filename, data in data_to_save.items():
     if filename.startswith("adata"):
-        file_path = os.path.join(output_dir, f"{filename}.h5ad")
-        data.write(file_path)
+        if CLS_MULTILABEL:
+            # we have to remove multilabel daata so it does not cause issues
+            _d_multilabel = mu.get_multilabel_dict_from_adata(data)
+            # save to pickle
+            _file_path_pkl = os.path.join(output_dir, f"{filename}.multilabels.pkl")
+            with open(_file_path_pkl, "wb") as f:
+                pickle.dump(_d_multilabel, f)
+
+            # remove the columns corresponding to multilabels
+            data.obs.drop(columns=["class_multilabel_doid", "class_multilabel_name", "class_multilabel"], inplace=True)
+            
+            # save
+            file_path = os.path.join(output_dir, f"{filename}.h5ad")
+            data.write(file_path)
+        
+        else: 
+            file_path = os.path.join(output_dir, f"{filename}.h5ad")
+            data.write(file_path)
     else:
         file_path = os.path.join(output_dir, f"{filename}.pkl")
         with open(file_path, "wb") as f:
