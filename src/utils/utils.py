@@ -1,3 +1,4 @@
+# imports
 import os
 import obonet
 import networkx as nx
@@ -7,8 +8,9 @@ import numpy as np
 import scanpy as sc
 from typing import *
 import pandas as pd
-import logging
+import logging, pickle
 logging.basicConfig(level=logging.INFO)
+
 def load_do_graph():
     """Load the Disease Ontology graph from the OBO file."""
     do_obl_data_path = os.path.join(
@@ -22,7 +24,7 @@ def load_do_graph():
     do_graph = do_graph.reverse()   # reverse so leafs are at the bottom  
     return do_graph
 
-def load_dsaid_df()->pd.DataFrame:
+def load_dsa_info()->pd.DataFrame:
     """
     Load the DSAID information DataFrame.
     """
@@ -78,39 +80,6 @@ def get_sanchez_ic(do_G: nx.DiGraph) -> dict:
         do_sanchez_ic[node] = ic
 
     return do_sanchez_ic
-
-def get_folder_name(base_output_dir:str)->str:
-    """Get Folder Name
-    Args:
-        - output_path (str): Output folder
-    Returns:
-        - output_dir (str): Output directory
-    """
-    # Step 1: Generate today's date string
-    today = datetime.now().strftime("%y-%m-%d")
-
-    # Step 2: Find the highest existing run number for today
-    existing_runs = [
-        d for d in os.listdir(base_output_dir)
-        if os.path.isdir(os.path.join(base_output_dir, d)) and d.startswith(f"pp_data-{today}")
-    ]
-
-    # Extract numbers from existing runs and find the max
-    existing_numbers = [
-        int(d.split("-")[-1]) for d in existing_runs if d.split("-")[-1].isdigit()
-    ]
-
-    # Calculate the next run number
-    next_run_number = max(existing_numbers, default=0) + 1
-
-    # Step 3: Create the directory name with zero-padded run number
-    output_dir = os.path.join(base_output_dir, f"pp_data-{today}-{next_run_number:02d}")
-
-    # Step 4: Create the directory
-    os.makedirs(output_dir, exist_ok=True)
-
-    print(f"Output directory created: {output_dir}")
-    return output_dir
 
 def add_multilabel_to_adata(adata: sc.AnnData, Y_multilabel_50: np.ndarray, Y_multilabel_50_doid: list, Y_multilabel_50_name: list) -> sc.AnnData:
     """Add multilabel vectors to AnnData object."""
@@ -274,7 +243,7 @@ def get_dsaid_2_doid_mapping()-> dict:
     # load external links
     with open(external_links_data_path, "rb") as f:
         external_links = pickle.load(f)
-    print(f"Loaded {len(external_links["dsaids"])} DiSignAtlas metadata (external links)")
+    print(f"Loaded {len(external_links['dsaids'])} DiSignAtlas metadata (external links)")
 
     # get DOID for each dsa
     dsaids_2_doids = {}
@@ -289,14 +258,14 @@ def get_dsaid_2_doid_mapping()-> dict:
 
     return dsaids_2_doids
 
-def get_clean_set_dsaids():
+def get_clean_set_dsaids(library_strategy: Optional[List[str]] = ["RNA-Seq", "Microarray"]) -> set:
     """
     Get clean set of DSAIDs - Human, RNA-seq & with info
     """
     # variables
     pct_thr = 0.5
     
-    df_data_info = load_dsaid_df()
+    df_data_info = load_dsa_info()
     print(f"Loaded Nº DSAIDs: {len(df_data_info)}")
 
     # Filter Human species
@@ -304,7 +273,7 @@ def get_clean_set_dsaids():
     print(f"Filter Human Species Nº DSAIDs: {len(df_data_info)}")
 
     # Filter RNA-seq & Microarray
-    df_data_info = df_data_info[df_data_info["library_strategy"].isin(["RNA-Seq", "Microarray"])]
+    df_data_info = df_data_info[df_data_info["library_strategy"].isin(library_strategy)]
     print(f"Filter RNA-seq & Microarray Nº DSAIDs: {len(df_data_info)}")
 
     # Filter DSAIDs with info
@@ -335,20 +304,20 @@ def get_clean_set_dsaids():
     print(f"Filter to enough Human protein coding genes Nº DSAIDs: {len(df_data_info)}")
     return set(df_data_info["dsaid"].unique())
 
-def get_doids_with_umls()-> List:
+def get_doids_with_umls(library_strategy: Optional[List[str]] = ["RNA-Seq", "Microarray"])-> List:
     """
     Get a set of DO IDs that have UMLS codes associated with them.
     """
 
     # first get clean set of DSAIDs
-    clean_dsaids = get_clean_set_dsaids()
+    clean_dsaids = get_clean_set_dsaids(library_strategy)
 
     # load DO graph
     do_graph = load_do_graph()
 
     # get mapping from DSAID to DOID    
     umls_2_doid = get_umls_2_doid_mapping(do_graph)
-    df_data_info = load_dsaid_df()
+    df_data_info = load_dsa_info()
 
     # filter by clean dsaids
     df_data_info = df_data_info[df_data_info["dsaid"].isin(clean_dsaids)]
@@ -364,3 +333,52 @@ def get_doids_with_umls()-> List:
 
     return df_data_info["dsaid"].unique().tolist()
 
+def generate_output_folder_dir():
+    # Step 1: Generate today's date string
+    today = datetime.now().strftime("%y-%m-%d")
+
+    # Step 2: Define the base output directory
+    # base_output_dir = os.path.join("..", "outputs")
+    base_output_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs"
+
+    # Step 3: Find the highest existing run number for today
+    existing_runs = [
+        d for d in os.listdir(base_output_dir)
+        if os.path.isdir(os.path.join(base_output_dir, d)) and d.startswith(f"run-{today}")
+    ]
+
+    # Extract numbers from existing runs and find the max
+    existing_numbers = [
+        int(d.split("-")[-1]) for d in existing_runs if d.split("-")[-1].isdigit()
+    ]
+
+    # Calculate the next run number
+    next_run_number = max(existing_numbers, default=0) + 1
+
+    # Step 4: Create the directory name with zero-padded run number
+    output_dir = os.path.join(base_output_dir, f"run-{today}-{next_run_number:02d}")
+
+    # Step 5: Create the directory
+    os.makedirs(output_dir, exist_ok=True)
+
+    print(f"Output directory created: {output_dir}")
+    return output_dir
+
+def load_df_do_pairs()->pd.DataFrame:
+    """Load Disease Pairs"""
+    similarity_file = "/aloy/home/ddalton/projects/BQ_diseases/outputs/do_similarity_results.pkl"
+    results = pickle.load(open(similarity_file, "rb"))
+
+    return pd.DataFrame(
+        results,
+        columns=[
+            "do1",
+            "do2",
+            "pair_sorted",
+            "resnik",
+            "lin",
+            "jiang",
+            "mica_node",
+            "shortest_path_length"
+        ]
+    )

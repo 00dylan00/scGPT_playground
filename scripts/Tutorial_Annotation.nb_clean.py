@@ -1595,6 +1595,46 @@ def perform_combat_correction(adata) -> AnnData:
 
     return adata
 
+def get_pos_weight(y:np.array, max_cap=50.0, min_cap=1.0) -> torch.Tensor:
+    """
+    Compute positive weights for BCEWithLogitsLoss based on class imbalance.
+    
+    Args:
+        y (torch.Tensor): Binary labels of shape (N, num_classes).
+        max_cap (float): Maximum cap for the weights to avoid extreme imbalance.
+        
+    Returns:
+        torch.Tensor: Positive weights for each class.
+    """
+    # convert numpy to torch tensor if needed
+    if isinstance(y, np.ndarray):
+        y = torch.tensor(y, dtype=torch.float32)
+
+    # Count positives and negatives per label
+    pos_counts = y.sum(dim=0)                  # (#labels,)
+    neg_counts = y.shape[0] - pos_counts       # (#labels,)
+
+    # Compute pos_weight = negatives / positives
+    pos_weight = neg_counts / pos_counts.clamp(min=1)  # avoid division by zero
+
+
+
+    # Cap the values to avoid extreme imbalance exploding gradients
+    pos_weight = pos_weight.clamp(max=max_cap, min=min_cap)  
+
+    return pos_weight
+
+def early_stop_step(val_loss, model, state, patience):
+    # state is a dict you keep outside: {"best": inf, "wait": 0, "best_weights": None}
+    if val_loss < state["best"]:
+        state["best"] = val_loss
+        state["wait"] = 0
+        state["best_weights"] = model.state_dict()
+        return False  # don't stop
+    else:
+        state["wait"] += 1
+        return state["wait"] >= patience  # True => stop
+
 
 #endregion
 
@@ -1712,11 +1752,12 @@ lr_ADV = 1e-3  # learning rate for discriminator, used when ADV is True
 #! changing batch_size
 batch_size = manual_parameters.get("batch_size")
 eval_batch_size = batch_size
+
 # batch_size = config.batch_size
 # eval_batch_size = config.batch_size
-
 epochs = config.epochs
 schedule_interval = 1
+
 # settings for the model
 # fast_transformer = config.fast_transformer
 use_fast_transformer = manual_parameters.get("use_fast_transformer")   # if using output_attentions not use fast_transformer 
@@ -1920,10 +1961,18 @@ if CLS_MULTILABEL:
     mu.check_multilabel_vector(Y_multilabel, _class_nodes, do_g)
 
     # get doids and class names
-    Y_multilabel_lvl1_doid, Y_multilabel_lvl1_name = mu.get_multilabel_data(Y_multilabel, _class_nodes, do_g)
+    Y_multilabel_doid, Y_multilabel_name = mu.get_multilabel_data(Y_multilabel, _class_nodes, do_g)
 
     # add multilabel vectors to adata
-    adata.obs = mu.add_multilabel_to_adata(adata, Y_multilabel, Y_multilabel_lvl1_doid, Y_multilabel_lvl1_name)
+    #! Note: we can add and extract arrays from the data frame - but not save them !
+    adata.obs = mu.add_multilabel_to_adata(adata, Y_multilabel, Y_multilabel_doid, Y_multilabel_name)
+
+    print(f"Nº of times each class appears in the multilabel vector:\n{np.sum(Y_multilabel, axis=0)}")
+    
+    # compute pos_weight for BCEWithLogitsLoss
+    pos_weight = get_pos_weight(Y_multilabel)
+    print(f"Generated poitional weights for BCEWithLogitsLoss with shape {pos_weight.shape}")
+    print(f"Positional weights:\n{pos_weight}")
 
     # modify the nº of classes
     num_types = len(_class_nodes)
@@ -2319,7 +2368,8 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     criterion = masked_mse_loss
     criterion_cls = nn.CrossEntropyLoss()
-    criterion_cls_multilabel = nn.BCEWithLogitsLoss()
+    if CLS_MULTILABEL:
+        criterion_cls_multilabel = nn.BCEWithLogitsLoss(pos_weight=pos_weight, reduction='mean')
     criterion_dab = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         model.parameters(), lr=lr, eps=1e-4 if config.amp else 1e-8
@@ -2375,7 +2425,7 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
 
     epochs = manual_parameters.get("epochs")
-
+    patience = 5
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()
         # train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=per_seq_batch_sample)
@@ -2437,6 +2487,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
             best_model = copy.deepcopy(model)
             best_model_epoch = epoch
             logger.info(f"Best model with score {best_val_loss:5.4f}")
+        else: 
+            logger.info("Validation loss did not improve.") 
+            logger.info(f"Current best model score: {best_val_loss:5.4f} at epoch {best_model_epoch}")
+            wait+=1
+            if wait >= patience:
+                print("early stop")
+                break
 
         scheduler.step()
         if DAB_separate_optim:
