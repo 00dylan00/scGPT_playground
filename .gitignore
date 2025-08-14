@@ -4,5 +4,9 @@
 /notebooks/save/*
 /notebooks/wandb/*
 /scripts/config
-/scripts/*/
+/scripts/logs
+/scripts/save
+/scripts/wandb
+/scripts/cli/save
+/scripts/cli/wandb
 /scripts/*.sh
