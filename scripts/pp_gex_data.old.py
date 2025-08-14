@@ -24,23 +24,22 @@ import pickle
 from typing import *
 import json
 import xml.etree.ElementTree as ET
-import xml.etree.ElementTree as ET
 import random
+sys.path.append("..")
+from notebooks import method_utils as mu
+from tqdm.contrib.concurrent import process_map
+from typing import *
+from tqdm import tqdm
+import os
+import pandas as pd
+import numpy as np
+import networkx as nx
+import logging
+import json
+import sys
+import pickle
+import obonet
 
-# variables
-# manual_parameters = { "diseases_of_interest_set": list({
-#     "Colorectal Carcinoma",
-#     "Breast Cancer",
-#     "Prostate Cancer",
-#     "Hepatocellular Carcinoma",
-#     "Crohn's Disease",
-#     "Multiple Sclerosis"
-    
-# }),
-#     "library_strategies_of_interest_set": list({
-#         "Microarray"
-#     }),
-# }
 
 manual_parameters = { 
     "dataset_exercise":"doid_dataset",                 
@@ -48,13 +47,7 @@ manual_parameters = {
     "library_strategies_of_interest_set": list({"RNA-Seq", "Microarray"}),
 }
 
-# library_strategies_of_interest_set = {"RNA-Seq", "Microarray"}
-
-
-# example_data_path = (
-#     "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/DSA00123.csv"
-# )
-
+# variables
 df_info_path = os.path.join(
     "/aloy",
     "home",
@@ -701,20 +694,6 @@ def get_data_leakage_dataset(
 
     return df_final
 
-from tqdm.contrib.concurrent import process_map
-from typing import *
-from tqdm import tqdm
-import os
-import pandas as pd
-import numpy as np
-import networkx as nx
-import logging
-import json
-import sys
-import pickle
-import obonet
-
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
@@ -1086,8 +1065,6 @@ for dsaid, external_link in zip(
 QUERY = f"library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
 df_filtered = df_info.query(QUERY)
 
-sys.exit(1)
-
 if manual_parameters.get("dataset_exercise"):
     if manual_parameters["dataset_exercise"] == "small":
         print("Small Dataset")
@@ -1130,8 +1107,13 @@ if manual_parameters.get("dataset_exercise"):
         human_entrez_protein_coding_ids = get_human_entrez_protein_coding_ids()
         dsaids_interest = get_dataset_do()
         df = get_exp_prof(dsaids_interest)
+    elif manual_parameters["dataset_exercise"] == "umls":
+        print("UMLS Dataset")
 
-
+        # get dsaids of interest
+        dsaids_interest = mu.get_doids_with_umls()
+        
+        df = get_exp_prof(dsaids_interest)
 
 # if specific diseases
 else:
@@ -1232,6 +1214,30 @@ if manual_parameters.get("ontology") == "mesh_id":
     adata.obs["mesh_id"] = mesh_id
     adata.obs["mesh_disease"] = mesh_disease
 
+elif (manual_parameters.get("ontology") == "doid") & (manual_parameters.get("dataset_exercise") == "umls"):
+    # create dataframe with mapping UMLS & DOID
+    _df_info = mu.load_dsaid_df()
+    _df_info_filtered = _df_info[_df_info["dsaid"].isin(dsaids)]    
+    
+    _do_g = mu.load_do_graph()
+    _uml_2_doid = mu.get_umls_2_doid_mapping(_do_g)
+    
+    _df_info_filtered["doid"] = _df_info_filtered["diseaseid"].apply(
+        lambda x: _uml_2_doid[x]
+    )
+
+    # map to dsaids -> doids
+    dsaid_2_doids = dict(zip(_df_info_filtered["dsaid"], _df_info_filtered["doid"]))
+    
+    # store mappings
+    doid_study = [dsaid_2_doids.get(id)[0] for id in dsaids]
+    doid_disease, doid_id = get_doid_disease(ids, dsaid_2_doids)
+    adata.obs["doid_study"] = doid_study
+    adata.obs["doid_id"] = doid_id
+    adata.obs["doid_disease"] = doid_disease
+
+
+
 elif manual_parameters.get("ontology") == "doid":
     # get doid ids
     doid_study = [dsaid_2_doids.get(id)[0] for id in dsaids]
@@ -1239,6 +1245,8 @@ elif manual_parameters.get("ontology") == "doid":
     adata.obs["doid_study"] = doid_study
     adata.obs["doid_id"] = doid_id
     adata.obs["doid_disease"] = doid_disease
+
+
 
 # save to output file
 output_folder = get_folder_name(base_output_dir)
@@ -1319,85 +1327,3 @@ with open(os.path.join(output_folder,"parameters.json"), 'w') as json_file:
 
 
 # endregion
-
-
-
-
-# diseases_of_interest_set = {"Influenza", "Colorectal Carcinoma", "Asthma"}
-# diseases_of_interest_set = None
-# diseases_of_interest_set = {"Huntington's Disease", "Alzheimer's Disease", 'Asthma', 'COVID-19',
-#        'Influenza', "Parkinson's Disease", 'Systemic Lupus Erythematosus',
-#        'Obesity', 'Hepatocellular Carcinoma', "Crohn's Disease",
-#        'Ulcerative Colitis', 'Sepsis', 'Breast Cancer', 'Psoriasis',
-#        'Schizophrenia', 'Multiple Sclerosis', 'Amyotrophic Lateral Sclerosis',
-#        'Tuberculosis', 'Chronic Obstructive Pulmonary Disease',
-#        'Rheumatoid Arthritis', 'Idiopathic Pulmonary Fibrosis',
-#        'Colorectal Carcinoma', 'Type 1 Diabetes',
-#        'Non-Alcoholic Steatohepatitis', 'Melanoma', 'Diabetes',
-#        'Myocardial Infarction', 'Acute Myeloid Leukemia (Aml-M2)', 'Colitis',
-#        'Prostate Cancer'}
-
-# diseases_of_interest_set = {'Acute-On-Chronic Liver Failure',
-#  "Barrett's Esophagus",
-#  "Behcet's Disease",
-#  'Chronic Rhinosinusitis',
-#  'Cornelia De Lange Syndrome',
-#  'Coronary Artery Disease',
-#  'Diabetes',
-#  'Diabetic Kidney Disease',
-#  'Follicular Lymphoma',
-#  'Glioblastoma Multiforme',
-#  'Hepatitis B',
-#  'Hutchinson-Gilford Progeria Syndrome',
-#  'Hypertension',
-#  'Multiple System Atrophy',
-#  'Pneumonia',
-#  'Primary Myelofibrosis',
-#  'Spinal Muscular Atrophy',
-#  'Squamous Cell Carcinoma',
-#  'Steatosis',
-#  'Type 2 Diabetes Mellitus'}
-
-# diseases_of_interest_set 
-# = {'Breast Cancer', 'Colorectal Carcinoma', 'Influenza'}
-# diseases_of_interest_set = {'Control', 'Lung Adenocarcinoma', 'Breast Cancer', 'Psoriasis', 'Ulcerative Colitis', "Crohn's Disease", 'Lung Cancer'}
-
-# diseases_of_interest_set = {
-#     "Crohn's Disease",
-#     "Ulcerative Colitis",
-#     "Lung Cancer",
-#     "Lung Adenocarcinoma",
-#     "Breast Cancer",
-#     "Psoriasis",
-# }
-
-
-
-    #! LARGE DATASET - OLD
-    # QUERY = "library_strategy in @library_strategies_of_interest_set & organism == 'Homo sapiens'"
-    # dsaids_interest = np.array(df_info.query(QUERY)["dsaid"].to_list())
-    # size_df = len(pd.read_csv(large_df_path,usecols=["ID"]))
-    
-    # logging.info(f"Reading merged dataframe {large_df_path}")
-
-    # list_filtered_df = list()
-
-    # for df_chunk in tqdm(pd.read_csv(large_df_path, chunksize=500), total=int(size_df/500)):
-    #     all_data_ids = df_chunk["ID"].to_list()
-    #     all_data_dsaids = np.array([id.split(";")[0] for id in all_data_ids])
-        
-    #     logging.debug(f"all_data_ids: {all_data_ids}")
-    #     logging.debug(f"all_data_dsaids: {all_data_dsaids}")
-        
-    #     mask = np.isin(all_data_dsaids,dsaids_interest)
-    #     logging.debug(f"mask {np.sum(mask)} : {mask}")
-    #     df_chunk_filtered = df_chunk[mask]
-        
-    #     logging.debug(f"df_chunk_filtered {df_chunk_filtered}")
-        
-    #     list_filtered_df.append(df_chunk_filtered)
-    
-    # # merge filtered dataframes
-    # df = pd.concat(list_filtered_df)    
-    # if "Unnamed: 0" in df.columns:
-    #     df.drop(columns=["Unnamed: 0"], inplace=True)

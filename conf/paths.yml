@@ -1,0 +1,5 @@
+# data_dir: data/raw
+# interim_dir: data/interim
+# outputs_dir: outputs
+# model_ckpt: save/scGPT_human
+# seed: 42

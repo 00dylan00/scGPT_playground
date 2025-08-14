@@ -5,3 +5,4 @@
 /notebooks/wandb/*
 /scripts/config
 /scripts/*/
+/scripts/*.sh
