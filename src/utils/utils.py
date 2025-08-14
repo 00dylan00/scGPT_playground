@@ -3,7 +3,7 @@ import os
 import obonet
 import networkx as nx
 import math
-import datetime
+from datetime import datetime
 import numpy as np
 import scanpy as sc
 from typing import *
@@ -146,23 +146,30 @@ def generate_multilabel_vectors(adata:sc.AnnData, do_g:nx.graph, nodes:list)->tu
     """Generate multilabel vectors for the given AnnData object based on the Disease Ontology graph."""
     from sklearn.preprocessing import MultiLabelBinarizer
 
-    # Prepare sorted level 1 node list for consistent column order
+    # define class nodes
     nodes = sorted(nodes)
 
-    # For each sample, collect level 1 ancestors
-    sample_level1_labels = []
+    # For each sample, collect all ancestors
+    # then assess if they are in the class nodes
+    sample_class_nodes = []
     for doid in adata.obs["do_id"]:
 
+        if doid.lower() == "Control":
+            # If the sample is a control, assign a single class node as Control
+            #! IMPORTANT - WE MIGHT WANT TO CHANGE THIS TO BE A STRATIFIED CONTRO + DATASET LABEL
+            sample_class_nodes.append(["Control"])
+            continue
+        
         ancestors = nx.ancestors(do_g, doid)
         ancestors.add(doid) # include itself just in case
 
-        # Keep only those in level 1
-        top_level_matches = [n for n in ancestors if n in nodes]
-        sample_level1_labels.append(top_level_matches)
+        # Keep only those in class nodes
+        _present_class_nodes = list(ancestors.intersection(nodes))
+        sample_class_nodes.append(_present_class_nodes)
 
     # Fit MultiLabelBinarizer on the fixed level 1 vocabulary
     mlb = MultiLabelBinarizer(classes=nodes)
-    Y_multilabel = mlb.fit_transform(sample_level1_labels)
+    Y_multilabel = mlb.fit_transform(sample_class_nodes)
 
     return Y_multilabel, np.array(nodes)
 
@@ -274,7 +281,7 @@ def get_clean_set_dsaids(library_strategy: Optional[List[str]] = ["RNA-Seq", "Mi
 
     # Filter RNA-seq & Microarray
     df_data_info = df_data_info[df_data_info["library_strategy"].isin(library_strategy)]
-    print(f"Filter RNA-seq & Microarray Nº DSAIDs: {len(df_data_info)}")
+    print(f"Filter {library_strategy} Nº DSAIDs: {len(df_data_info)}")
 
     # Filter DSAIDs with info
     _processed_dsaids = get_processed_ids()

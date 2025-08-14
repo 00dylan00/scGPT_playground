@@ -5,6 +5,7 @@ import os
 import numpy as np
 import anndata as ad, yaml
 from typing import *
+from tqdm.contrib.concurrent import thread_map, process_map
 
 def convert_to_adata(df:pd.DataFrame, normalize:bool)-> sc.AnnData:
     """Convert DataFrame to AnnData"""
@@ -37,20 +38,20 @@ def convert_to_adata(df:pd.DataFrame, normalize:bool)-> sc.AnnData:
     return adata
 
 
-def get_exp_prof_adata(dsaids_interest, normalize:bool=False):
-    """Get Expression Profiles"""
-    # variables
-    file_dir = "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/"
-    first = True
-    for dsaid in tqdm(dsaids_interest):
-        _df = pd.read_csv(os.path.join(file_dir, f"{dsaid}.csv"))
-        _adata = convert_to_adata(_df, normalize)
-        if first:
-            adata_merged = _adata
-            first = False
-        else:
-            adata_merged = ad.concat([adata_merged, _adata], join='outer', axis=0)
-    return adata_merged
+# def get_exp_prof_adata(dsaids_interest, normalize:bool=False):
+#     """Get Expression Profiles"""
+#     # variables
+#     file_dir = "/aloy/home/ddalton/projects/disease_signatures/data/DiSignAtlas/tmp/"
+#     first = True
+#     for dsaid in tqdm(dsaids_interest):
+#         _df = pd.read_csv(os.path.join(file_dir, f"{dsaid}.csv"))
+#         _adata = convert_to_adata(_df, normalize)
+#         if first:
+#             adata_merged = _adata
+#             first = False
+#         else:
+#             adata_merged = ad.concat([adata_merged, _adata], join='outer', axis=0)
+#     return adata_merged
 
 def load_ncbi_gene_ids()->pd.DataFrame:
     yml_path = "/aloy/home/ddalton/projects/disease_signatures/conf/paths.yml"
@@ -168,25 +169,57 @@ def normalize_log2CPM(df:pd.DataFrame)->pd.DataFrame:
     return df_normalized
 
 
-def get_processed_exp_prof(dsaids_interest, genes:list=None, normalize:str=None):
-    """Get Expression Profiles"""
-    # check if genes are provided if not generat
+# def get_processed_exp_prof(dsaids_interest, genes:list=None, normalize:str=None):
+#     """Get Expression Profiles"""
+#     # check if genes are provided if not generat
+#     if genes is None:
+#         genes = get_human_protein_coding_genes()
+
+#     df_merged = pd.DataFrame(columns=["ID"] + list(genes))
+#     for dsaid in tqdm(dsaids_interest):
+#         try:
+#             _df = load_processed_data(dsaid)
+#             _df = transpose_df_expr(_df)
+#             if normalize == "log2CPM":
+#                 _df = normalize_log2CPM(_df)
+#             elif normalize == "CPM":
+#                 _df = normalize_CPM(_df)
+#             df_merged = pd.concat([df_merged, _df], axis=0, join="outer", ignore_index=True)
+#         except Exception as e:
+#             print(f"Error processing DSAID {dsaid}: {e}")
+#     return df_merged
+
+from functools import partial
+from tqdm.contrib.concurrent import process_map
+
+def _load_one_processed(dsaid: str, normalize: str, cols):
+    try:
+        df = load_processed_data(dsaid)
+        df = transpose_df_expr(df)
+        if normalize == "log2CPM":
+            df = normalize_log2CPM(df)
+        elif normalize == "CPM":
+            df = normalize_CPM(df)
+        return df.reindex(columns=cols)
+    except Exception as e:
+        print(f"[warn] DSAID {dsaid}: {e}")
+        return None
+
+
+def get_processed_exp_prof(dsaids_interest, genes: list = None, normalize: str = None):
     if genes is None:
         genes = get_human_protein_coding_genes()
+    cols = ["ID"] + list(genes)
 
-    df_merged = pd.DataFrame(columns=["ID"] + list(genes))
-    for dsaid in tqdm(dsaids_interest):
-        try:
-            _df = load_processed_data(dsaid)
-            _df = transpose_df_expr(_df)
-            if normalize == "log2CPM":
-                _df = normalize_log2CPM(_df)
-            elif normalize == "CPM":
-                _df = normalize_CPM(_df)
-            df_merged = pd.concat([df_merged, _df], axis=0, join="outer", ignore_index=True)
-        except Exception as e:
-            print(f"Error processing DSAID {dsaid}: {e}")
-    return df_merged
+    worker = partial(_load_one_processed, normalize=normalize, cols=cols)
+
+    n_workers = max(1, (os.cpu_count() or 1) - 1)  # optional: leave 1 core free
+    frames = process_map(worker, dsaids_interest,
+                         max_workers=n_workers, chunksize=1, desc="Processing")
+
+    frames = [f for f in frames if f is not None]
+    return pd.concat(frames, axis=0, ignore_index=True, copy=False) if frames else pd.DataFrame(columns=cols)
+
 
 def get_doid_disease(ids:List[str], doid_2_term:dict, dsaid_2_doid:dict)->List[str]:
     """Get DOID Disease
@@ -333,3 +366,43 @@ def get_dataset(ids:List[str],df_info:pd.DataFrame)->List[str]:
     dsaid_2_dataset = dict(zip(df_info["dsaid"], df_info["accession"]))
     datasets = [str(dsaid_2_dataset[dsaid]) for dsaid in dsaids]
     return datasets
+
+def clean_dsaids_qc(df_info:pd.DataFrame, disease_label:str="diseaseid", n_samples:int=2, n_dt:int=2):
+    # count n samples per dsaid for both control and disease
+    print(f"Nº dsaids: {len(df_info)}\tNº unique diseases: {df_info[disease_label].nunique()}")
+    
+    # filter datasets with at least n_samples in both control and disease
+    df_info = df_info[(df_info['n_cases']>= 2) & (df_info['n_controls'] >= 2)]
+    print(f"Filter Datasets w/ Samples +{n_samples}\tNº dsaids: {len(df_info)}\tNº unique diseases: {df_info[disease_label].nunique()}")
+
+
+    # filter groups (diseases) with at least n_dt datasets
+    _diseases_passed = [k for k, v in dict(df_info.groupby(disease_label)['accession'].nunique()).items() if v>=n_dt ]
+    df_info = df_info[df_info[disease_label].isin(_diseases_passed)]    
+    print(f"Filter Diseases w/ Datasets +{n_dt}\tNº dsaids: {len(df_info)}\tNº unique diseases: {df_info[disease_label].nunique()}")
+
+    return df_info
+
+def add_sample_counts(ids:str, df_info:pd.DataFrame) -> pd.DataFrame:
+    dsaids = [x.split(".")[0] for x in ids]
+    condition = [x.split(".")[2] for x in ids]
+
+    # filter down df_info to only dsaids w/ info
+    df_info = df_info[df_info["dsaid"].isin(dsaids)]
+
+    # loop through dsaids and counts
+    d_counts = dict()
+    for i in range(len(dsaids)):
+        if dsaids[i] not in d_counts:
+            d_counts[dsaids[i]] = {"n_cases": 0, "n_controls": 0}
+        if condition[i].lower() == "control":
+            d_counts[dsaids[i]]["n_controls"] += 1
+        else:
+            d_counts[dsaids[i]]["n_cases"] += 1
+    
+    # return control and case counts in correponding order
+    df_info = df_info.copy()
+    df_info["n_cases"] = df_info["dsaid"].map(lambda x: d_counts[x]["n_cases"])
+    df_info["n_controls"] = df_info["dsaid"].map(lambda x: d_counts[x]["n_controls"])
+
+    return df_info
