@@ -9,7 +9,7 @@ Structure:
     6. Save output
 """
 
-#region 0. Imports, Variables & Functions
+# region 0. Imports, Variables & Functions
 
 import copy, json, os
 from pathlib import Path
@@ -17,8 +17,12 @@ import shutil, sys, time
 from typing import *
 import warnings, pandas as pd
 from datetime import datetime
+import sys
+
+sys.path.append("/aloy/home/ddalton/projects/scGPT_playground/")
 from scanpy.pp import combat
 from sklearn.metrics import average_precision_score, roc_auc_score
+
 # from . import asyn
 import pickle
 import torch
@@ -46,6 +50,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 sys.path.insert(0, "../")
 sys.path.insert(0, "/aloy/home/ddalton/git_clones/scGPT")
 import scgpt as scg
+
 print(f"scGPT version: {scg.__file__}")
 
 from scgpt.model import TransformerModel, AdversarialDiscriminator
@@ -78,8 +83,8 @@ import json
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import confusion_matrix
 import argparse
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
 sc.set_figure_params(figsize=(6, 6))
@@ -90,38 +95,73 @@ logging.info(f"Is Cuda Available {str(torch.cuda.is_available())}")
 
 
 import torch
+
 print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 
-
 # Define arguments
-parser.add_argument('--data_path', type=str, required=True, help='Path to the data file')
-parser.add_argument('--max_seq_len', type=int, default=1000, help='Maximum sequence length')
-parser.add_argument('--batch_size', type=int, default=32, help='Batch size')
-parser.add_argument('--gene_presence_pct', type=float, default=0.9, help='Gene presence percentage')
-parser.add_argument('--split_type', type=str, default="stratified", help='Type of gene filtering')
-parser.add_argument('--val_split_type', type=str, default="random", help='Type of gene filtering')
-parser.add_argument('--n_splits', type=int, default=10, help='Number of splits for cross-validation')   # old parameter - now refers to split ratio 1:9 test in case of 10!
-parser.add_argument('--n_tested_splits', type=int, default=None, help='Number of tested splits')  
-parser.add_argument('--epochs', type=int, default=50, help='Number of training epochs')
-parser.add_argument('--gene_filtering', type=str, default="top_presence", help='Type of gene filtering')
-parser.add_argument('--ecs_thres', type=float, default=0.0, help="Include ecs_thres")
-parser.add_argument('--dab_weight', type=float, default=0.0, help="Include dab_weight")
-parser.add_argument('--ontology', type=str, default="do", help='Type of ontology')
+parser.add_argument(
+    "--data_path", type=str, required=True, help="Path to the data file"
+)
+parser.add_argument(
+    "--max_seq_len", type=int, default=1000, help="Maximum sequence length"
+)
+parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
+parser.add_argument(
+    "--gene_presence_pct", type=float, default=0.9, help="Gene presence percentage"
+)
+parser.add_argument(
+    "--split_type", type=str, default="stratified", help="Type of gene filtering"
+)
+parser.add_argument(
+    "--val_split_type", type=str, default="random", help="Type of gene filtering"
+)
+parser.add_argument(
+    "--n_splits", type=int, default=10, help="Number of splits for cross-validation"
+)  # old parameter - now refers to split ratio 1:9 test in case of 10!
+parser.add_argument(
+    "--n_tested_splits", type=int, default=None, help="Number of tested splits"
+)
+parser.add_argument("--epochs", type=int, default=50, help="Number of training epochs")
+parser.add_argument(
+    "--gene_filtering", type=str, default="top_presence", help="Type of gene filtering"
+)
+parser.add_argument("--ecs_thres", type=float, default=0.0, help="Include ecs_thres")
+parser.add_argument("--dab_weight", type=float, default=0.0, help="Include dab_weight")
+parser.add_argument("--ontology", type=str, default="do", help="Type of ontology")
 
 # booleans can be a pain in the ass with parser
-parser.add_argument('--benchmark_data', type=eval, default=False, help='Use benchmark data')
-parser.add_argument('--MLM', type=eval, default=False, help="Include MLM")
-parser.add_argument('--CLS', type=eval, default=True, help="Include CLS")
-parser.add_argument('--CLS_multilabel', type=eval, default=True, help="Include CLS for multilabel")
-parser.add_argument('--CCE', type=eval, default=False, help="Include CCE")
-parser.add_argument('--DAB', type=eval, default=False, help="Domain Adversarial Back Propagation")
-parser.add_argument('--ADV', type=eval, default=False, help="Include Adversarial Training")
-parser.add_argument('--use_fast_transformer', type=eval, default=True, help="Use fast transformer")
-parser.add_argument('--output_attentions', type=eval, default=False, help="Output attention scores")
-parser.add_argument('--INPUT_BATCH_LABELS', type=eval, default=False, help="Use batch labels in model input")
-parser.add_argument('--do_combat', type=eval, default=False, help="Apply ComBat batch correction")
+parser.add_argument(
+    "--benchmark_data", type=eval, default=False, help="Use benchmark data"
+)
+parser.add_argument("--MLM", type=eval, default=False, help="Include MLM")
+parser.add_argument("--CLS", type=eval, default=True, help="Include CLS")
+parser.add_argument(
+    "--CLS_multilabel", type=eval, default=True, help="Include CLS for multilabel"
+)
+parser.add_argument("--CCE", type=eval, default=False, help="Include CCE")
+parser.add_argument(
+    "--DAB", type=eval, default=False, help="Domain Adversarial Back Propagation"
+)
+parser.add_argument(
+    "--ADV", type=eval, default=False, help="Include Adversarial Training"
+)
+parser.add_argument(
+    "--use_fast_transformer", type=eval, default=True, help="Use fast transformer"
+)
+parser.add_argument(
+    "--output_attentions", type=eval, default=False, help="Output attention scores"
+)
+parser.add_argument(
+    "--INPUT_BATCH_LABELS",
+    type=eval,
+    default=False,
+    help="Use batch labels in model input",
+)
+parser.add_argument(
+    "--do_combat", type=eval, default=False, help="Apply ComBat batch correction"
+)
 
 
 # Parse arguments
@@ -141,35 +181,37 @@ print(f"Batch size: {args.batch_size}")
 # variables
 # data_path = "../data/test_1/test_2.h5ad"
 manual_parameters = {
-"data_path": args.data_path,
-"max_seq_len": args.max_seq_len,
-"batch_size":args.batch_size,
-"gene_presence_pct":args.gene_presence_pct,
-"benchmark_data": args.benchmark_data,
-"split_type" : args.split_type,
-"val_split_type": args.val_split_type,
-"n_splits": args.n_splits,
-"n_tested_splits": args.n_tested_splits,
-"epochs":args.epochs,
-"gene_filtering":args.gene_filtering,
-"sample_presence_pct": 0.3,
-"MLM":args.MLM,
-"CLS": args.CLS,
-"CLS_multilabel": args.CLS_multilabel,
-"DAB":args.DAB,
-"ADV":args.ADV,
-"CCE":args.CCE,
-"ecs_thres": args.ecs_thres,
-"dab_weight": args.dab_weight,
-"use_fast_transformer":args.use_fast_transformer,
-"output_attentions":args.output_attentions,
-"INPUT_BATCH_LABELS":args.INPUT_BATCH_LABELS,
-"do_combat":args.do_combat,
-"ontology": args.ontology}
+    "data_path": args.data_path,
+    "max_seq_len": args.max_seq_len,
+    "batch_size": args.batch_size,
+    "gene_presence_pct": args.gene_presence_pct,
+    "benchmark_data": args.benchmark_data,
+    "split_type": args.split_type,
+    "val_split_type": args.val_split_type,
+    "n_splits": args.n_splits,
+    "n_tested_splits": args.n_tested_splits,
+    "epochs": args.epochs,
+    "gene_filtering": args.gene_filtering,
+    "sample_presence_pct": 0.3,
+    "MLM": args.MLM,
+    "CLS": args.CLS,
+    "CLS_multilabel": args.CLS_multilabel,
+    "DAB": args.DAB,
+    "ADV": args.ADV,
+    "CCE": args.CCE,
+    "ecs_thres": args.ecs_thres,
+    "dab_weight": args.dab_weight,
+    "use_fast_transformer": args.use_fast_transformer,
+    "output_attentions": args.output_attentions,
+    "INPUT_BATCH_LABELS": args.INPUT_BATCH_LABELS,
+    "do_combat": args.do_combat,
+    "ontology": args.ontology,
+}
 
 
-for k,v in manual_parameters.items():
+for k, v in manual_parameters.items():
     print(f"{k}: {v}")
+
 
 # functions
 def train(model: nn.Module, loader: DataLoader) -> None:
@@ -249,16 +291,20 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 ) / celltype_labels.size(0)
 
             if CLS_MULTILABEL:
-                loss_cls_multilabel = criterion_cls_multilabel(output_dict["cls_output"], disease_multilabel)
+                loss_cls_multilabel = criterion_cls_multilabel(
+                    output_dict["cls_output"], disease_multilabel
+                )
                 loss = loss + loss_cls_multilabel
-                metrics_to_log.update({"train/cls_multilabel": loss_cls_multilabel.item()})
+                metrics_to_log.update(
+                    {"train/cls_multilabel": loss_cls_multilabel.item()}
+                )
 
                 # error rate is 1 - accuracy
                 _preds = torch.sigmoid(output_dict["cls_output"].detach()).cpu().numpy()
                 _preds_bin = (_preds > 0.5).astype(int)
                 _true = disease_multilabel.cpu().numpy()
                 samplewise_acc = (_preds_bin == _true).mean(axis=1).mean()
-                error_rate = 1- samplewise_acc 
+                error_rate = 1 - samplewise_acc
 
             if CCE:
                 loss_cce = 10 * output_dict["loss_cce"]
@@ -309,7 +355,6 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 )
         scaler.step(optimizer)
         scaler.update()
-
 
         if ADV:
             # rerun the model for adversarial training
@@ -364,7 +409,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
         total_mvc_zero_log_prob += (
             loss_mvc_zero_log_prob.item() if MVC and explicit_zero_prob else 0.0
         )
-        
+
         _loss.append(loss.item())
         _error_rate.append(1 - error_rate)
 
@@ -427,6 +472,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
 
     return np.mean(_loss), np.mean(_error_rate)
 
+
 def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> float:
     """
     Evaluate the model on the evaluation data.
@@ -444,7 +490,7 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
             target_values = batch_data["target_values"].to(device)
             batch_labels = batch_data["batch_labels"].to(device)
             celltype_labels = batch_data["celltype_labels"].to(device)
-            
+
             if CLS_MULTILABEL:
                 disease_multilabel = batch_data["class_multilabel"].to(device).float()
 
@@ -482,7 +528,9 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
             if CLS:
                 # Standard single-label accuracy
                 accuracy = (output_values.argmax(1) == celltype_labels).sum().item()
-                total_error += (1 - accuracy / len(input_gene_ids)) * len(input_gene_ids)
+                total_error += (1 - accuracy / len(input_gene_ids)) * len(
+                    input_gene_ids
+                )
                 preds = output_values.argmax(1).cpu().numpy()
 
             elif CLS_MULTILABEL:
@@ -512,6 +560,7 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
 
     return total_loss / total_num, total_error / total_num
 
+
 def test(model: nn.Module, adata: DataLoader) -> float:
     all_counts = (
         adata.layers[input_layer_key].A
@@ -522,15 +571,12 @@ def test(model: nn.Module, adata: DataLoader) -> float:
     celltypes_labels = adata.obs["celltype_id"].tolist()  # make sure count from 0
     celltypes_labels = np.array(celltypes_labels)
 
-
-
     batch_ids = adata.obs["batch_id"].tolist()
     batch_ids = np.array(batch_ids)
 
     if CLS_MULTILABEL:
-        d_y_multilabel= u.get_multilabel_dict_from_adata(adata)
+        d_y_multilabel = u.get_multilabel_dict_from_adata(adata)
         disease_multilabels = np.array(d_y_multilabel["Y_multilabel"])
-
 
     tokenized_test = tokenize_and_pad_batch(
         all_counts,
@@ -589,13 +635,19 @@ def test(model: nn.Module, adata: DataLoader) -> float:
         print("predictions_bin", predictions_bin)
         print("disease_multilabels", disease_multilabels)
         accuracy = accuracy_score(disease_multilabels, predictions_bin)
-        precision = precision_score(disease_multilabels, predictions_bin, average="macro")
+        precision = precision_score(
+            disease_multilabels, predictions_bin, average="macro"
+        )
         recall = recall_score(disease_multilabels, predictions_bin, average="macro")
         macro_f1 = f1_score(disease_multilabels, predictions_bin, average="macro")
 
         # computer average precision & auroc
-        avg_precision = average_precision_score(disease_multilabels, predictions, average="macro")
-        auroc = roc_auc_score(disease_multilabels, predictions, average="macro")
+        avg_precision = average_precision_score(
+            disease_multilabels, predictions, average="macro"
+        )
+        auroc = roc_auc_score(
+            disease_multilabels, predictions, average="micro"
+        )  #! CHANGED BC SOMETIMES COMPLAINS
         print(f"Average Precision: {avg_precision:.3f}, AUROC: {auroc:.3f}")
 
     logger.info(
@@ -612,6 +664,7 @@ def test(model: nn.Module, adata: DataLoader) -> float:
 
     return predictions, celltypes_labels, results
 
+
 def test_2(model: nn.Module, adata: DataLoader) -> float:
     all_counts = (
         adata.layers[input_layer_key].A
@@ -626,7 +679,7 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
     batch_ids = np.array(batch_ids)
 
     if CLS_MULTILABEL:
-        d_y_multilabel= u.get_multilabel_dict_from_adata(adata)
+        d_y_multilabel = u.get_multilabel_dict_from_adata(adata)
         disease_multilabels = np.array(d_y_multilabel["Y_multilabel"])
 
     tokenized_test = tokenize_and_pad_batch(
@@ -685,15 +738,21 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
         # compute accuracy, precision, recall, f1
         predictions_bin = (predictions > 0.5).astype(int)
         accuracy = accuracy_score(disease_multilabels, predictions_bin)
-        precision = precision_score(disease_multilabels, predictions_bin, average="macro")
+        precision = precision_score(
+            disease_multilabels, predictions_bin, average="macro"
+        )
         recall = recall_score(disease_multilabels, predictions_bin, average="macro")
         macro_f1 = f1_score(disease_multilabels, predictions_bin, average="macro")
 
-
         # computer average precision & auroc
         from sklearn.metrics import average_precision_score, roc_auc_score
-        avg_precision = average_precision_score(disease_multilabels, predictions, average="macro")
-        auroc = roc_auc_score(disease_multilabels, predictions, average="macro")
+
+        avg_precision = average_precision_score(
+            disease_multilabels, predictions, average="macro"
+        )
+        auroc = roc_auc_score(
+            disease_multilabels, predictions, average="micro"
+        )  #! CHANGED BC SOMETIMES COMPLAINS
         print(f"Average Precision: {avg_precision:.3f}, AUROC: {auroc:.3f}")
 
     logger.info(
@@ -710,7 +769,10 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
 
     return predictions, celltypes_labels, results, all_outputs
 
-def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, return_raw: bool = False) -> float:
+
+def evaluate_2(
+    model: nn.Module, loader: DataLoader, device: torch.device, return_raw: bool = False
+) -> float:
     """
     Evaluate the model on the evaluation data.
     """
@@ -728,7 +790,7 @@ def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, retur
             target_values = batch_data["target_values"].to(device)
             batch_labels = batch_data["batch_labels"].to(device)
             celltype_labels = batch_data["celltype_labels"].to(device)
-            
+
             if CLS_MULTILABEL:
                 disease_multilabel = batch_data["class_multilabel"].to(device).float()
 
@@ -770,7 +832,9 @@ def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, retur
             if CLS:
                 # Standard single-label accuracy
                 accuracy = (output_values.argmax(1) == celltype_labels).sum().item()
-                total_error += (1 - accuracy / len(input_gene_ids)) * len(input_gene_ids)
+                total_error += (1 - accuracy / len(input_gene_ids)) * len(
+                    input_gene_ids
+                )
                 preds = output_values.argmax(1).cpu().numpy()
 
             elif CLS_MULTILABEL:
@@ -786,8 +850,11 @@ def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, retur
             predictions.append(preds)
 
             # convert everythin to cpu !
-            output_dict = {key: value.cpu() if isinstance(value, torch.Tensor) else value for key, value in output_dict.items()}
-            
+            output_dict = {
+                key: value.cpu() if isinstance(value, torch.Tensor) else value
+                for key, value in output_dict.items()
+            }
+
             all_outputs.append(output_dict)
             torch.cuda.empty_cache()
 
@@ -805,6 +872,7 @@ def evaluate_2(model: nn.Module, loader: DataLoader, device: torch.device, retur
         return np.concatenate(predictions, axis=0), all_outputs
 
     return total_loss / total_num, total_error / total_num, all_outputs
+
 
 def prepare_data(sort_seq_batch=False) -> Tuple[Dict[str, torch.Tensor]]:
     masked_values_train = random_mask_value(
@@ -842,8 +910,12 @@ def prepare_data(sort_seq_batch=False) -> Tuple[Dict[str, torch.Tensor]]:
 
     if CLS_MULTILABEL:
         # 👇👇👇 Add this for multilabel
-        tensor_class_multilabel_train = torch.from_numpy(train_disease_multilabels).float()
-        tensor_class_multilabel_valid = torch.from_numpy(valid_disease_multilabels).float()
+        tensor_class_multilabel_train = torch.from_numpy(
+            train_disease_multilabels
+        ).float()
+        tensor_class_multilabel_valid = torch.from_numpy(
+            valid_disease_multilabels
+        ).float()
 
     if sort_seq_batch:  # TODO: update to random pick seq source in each traning batch
         train_sort_ids = np.argsort(train_batch_labels)
@@ -852,7 +924,7 @@ def prepare_data(sort_seq_batch=False) -> Tuple[Dict[str, torch.Tensor]]:
         target_values_train = target_values_train[train_sort_ids]
         tensor_batch_labels_train = tensor_batch_labels_train[train_sort_ids]
         tensor_celltype_labels_train = tensor_celltype_labels_train[train_sort_ids]
-    
+
         valid_sort_ids = np.argsort(valid_batch_labels)
         input_gene_ids_valid = input_gene_ids_valid[valid_sort_ids]
         input_values_valid = input_values_valid[valid_sort_ids]
@@ -861,8 +933,12 @@ def prepare_data(sort_seq_batch=False) -> Tuple[Dict[str, torch.Tensor]]:
         tensor_celltype_labels_valid = tensor_celltype_labels_valid[valid_sort_ids]
 
         if CLS_MULTILABEL:
-            tensor_class_multilabel_train = tensor_class_multilabel_train[train_sort_ids]
-            tensor_class_multilabel_valid = tensor_class_multilabel_valid[valid_sort_ids]
+            tensor_class_multilabel_train = tensor_class_multilabel_train[
+                train_sort_ids
+            ]
+            tensor_class_multilabel_valid = tensor_class_multilabel_valid[
+                valid_sort_ids
+            ]
 
     train_data_pt = {
         "gene_ids": input_gene_ids_train,
@@ -885,6 +961,7 @@ def prepare_data(sort_seq_batch=False) -> Tuple[Dict[str, torch.Tensor]]:
 
     return train_data_pt, valid_data_pt
 
+
 class SeqDataset(Dataset):
     def __init__(self, data: Dict[str, torch.Tensor]):
         self.data = data
@@ -894,6 +971,7 @@ class SeqDataset(Dataset):
 
     def __getitem__(self, idx):
         return {k: v[idx] for k, v in self.data.items()}
+
 
 def prepare_dataloader(
     data_pt: Dict[str, torch.Tensor],
@@ -938,16 +1016,18 @@ def prepare_dataloader(
         pin_memory=True,
     )
     return data_loader
-#endregion
 
-#region 1. Specify hyper-parameter setup for integration task
+
+# endregion
+
+# region 1. Specify hyper-parameter setup for integration task
 
 hyperparameter_defaults = dict(
     seed=0,
     dataset_name="test_1",
     do_train=True,
     # load_model="../save/scGPT_human",
-    load_model = "/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human",
+    load_model="/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human",
     mask_ratio=0.0,
     epochs=10,
     n_bins=51,
@@ -971,14 +1051,15 @@ hyperparameter_defaults = dict(
 )
 
 
-
 # Load the config file
-with open('/aloy/home/ddalton/projects/scGPT_playground/scripts/config/wandb.json', 'r') as f:
+with open(
+    "/aloy/home/ddalton/projects/scGPT_playground/scripts/config/wandb.json", "r"
+) as f:
     api_config = json.load(f)
 
 # Use the Wandb API key from the config file
-if 'wandb_api_key' in api_config:
-    os.environ['WANDB_API_KEY'] = api_config['wandb_api_key']
+if "wandb_api_key" in api_config:
+    os.environ["WANDB_API_KEY"] = api_config["wandb_api_key"]
 
 # Log in to Wandb using the API key
 wandb.login()
@@ -1018,24 +1099,32 @@ print("original ecs threshold", config.ecs_thres)
 print("original dab weight", config.dab_weight)
 
 # settings for training
-MLM = manual_parameters.get("MLM")  # whether to use masked language modeling, currently it is always on.
+MLM = manual_parameters.get(
+    "MLM"
+)  # whether to use masked language modeling, currently it is always on.
 CLS = manual_parameters.get("CLS")  # celltype classification objective
-CLS_MULTILABEL = manual_parameters.get("CLS_multilabel")  # celltype classification objective, multilabel
+CLS_MULTILABEL = manual_parameters.get(
+    "CLS_multilabel"
+)  # celltype classification objective, multilabel
 ADV = manual_parameters.get("ADV")  # Adversarial training for batch correction
 CCE = manual_parameters.get("CCE")  # Contrastive cell embedding objective
 MVC = config.MVC  # Masked value prediction for cell embedding
 # ECS = config.ecs_thres > 0  # Elastic cell similarity objective
 ECS = manual_parameters.get("ecs_thres") > 0  # Elastic cell similarity objective
-DAB = manual_parameters.get("DAB")  # Domain adaptation by reverse backpropagation, set to 2 for separate optimizer
-INPUT_BATCH_LABELS = manual_parameters.get("INPUT_BATCH_LABELS")  # TODO: have these help MLM and MVC, while not to classifier
+DAB = manual_parameters.get(
+    "DAB"
+)  # Domain adaptation by reverse backpropagation, set to 2 for separate optimizer
+INPUT_BATCH_LABELS = manual_parameters.get(
+    "INPUT_BATCH_LABELS"
+)  # TODO: have these help MLM and MVC, while not to classifier
 input_emb_style = "continuous"  # "category" or "continuous" or "scaling"
-cell_emb_style = "cls"  # "avg-pool" or "w-pool" or "cls"       
+cell_emb_style = "cls"  # "avg-pool" or "w-pool" or "cls"
 adv_E_delay_epochs = 0  # delay adversarial training on encoder for a few epochs
 adv_D_delay_epochs = 0
 mvc_decoder_style = "inner product"
 ecs_threshold = manual_parameters.get("ecs_thres")
 # dab_weight = config.dab_weight
-dab_weight = manual_parameters.get("dab_weight") 
+dab_weight = manual_parameters.get("dab_weight")
 
 explicit_zero_prob = MLM and include_zero_gene  # whether explicit bernoulli for zeros
 do_sample_in_train = False and explicit_zero_prob  # sample the bernoulli in training
@@ -1052,8 +1141,10 @@ schedule_interval = 1
 
 # settings for the model
 # fast_transformer = config.fast_transformer
-use_fast_transformer = manual_parameters.get("use_fast_transformer")   # if using output_attentions not use fast_transformer 
-                                                                    # and vice versa
+use_fast_transformer = manual_parameters.get(
+    "use_fast_transformer"
+)  # if using output_attentions not use fast_transformer
+# and vice versa
 
 fast_transformer_backend = "flash"  # "linear" or "flash"
 embsize = config.layer_size  # embedding dimension
@@ -1102,9 +1193,9 @@ print(f"save to {save_dir}")
 logger = scg.logger
 scg.utils.add_file_handler(logger, save_dir / "run.log")
 
-#endregion
+# endregion
 
-#region 2. Load and pre-process data
+# region 2. Load and pre-process data
 
 # We follow the standard scGPT data pre-processing pipelines for the cell-type annotation task. Note that since now we have two datasets at hand (i.e., reference and query data), the same pre-prpocessing steps need to be applied to both of them.
 # load data
@@ -1140,21 +1231,21 @@ filter_gene_by_counts = False
 
 # gene filtering
 if manual_parameters.get("gene_filtering") == "top_presence":
-    mask_genes = tr_h.get_top_k_most_present_genes(adata, 
-                    k=manual_parameters.get("max_seq_len"))
+    mask_genes = tr_h.get_top_k_most_present_genes(
+        adata, k=manual_parameters.get("max_seq_len")
+    )
 elif manual_parameters.get("gene_filtering") == "top_variance":
-    mask_genes = tr_h.get_top_k_highest_variance_genes(adata, 
-                    k=manual_parameters.get("max_seq_len"))
+    mask_genes = tr_h.get_top_k_highest_variance_genes(
+        adata, k=manual_parameters.get("max_seq_len")
+    )
 elif manual_parameters.get("gene_filtering") == "random":
-    mask_genes = tr_h.get_k_random_genes(adata, 
-                    k=manual_parameters.get("max_seq_len"))
+    mask_genes = tr_h.get_k_random_genes(adata, k=manual_parameters.get("max_seq_len"))
 elif manual_parameters.get("gene_filtering") == "top_variance_high_presence":
-    mask_genes = tr_h.get_top_k_highest_variance_genes_with_presence(adata, 
-                    k=manual_parameters.get("max_seq_len"),
-                    presence_pct=manual_parameters.get("gene_presence_pct"),
-                    )
-
-
+    mask_genes = tr_h.get_top_k_highest_variance_genes_with_presence(
+        adata,
+        k=manual_parameters.get("max_seq_len"),
+        presence_pct=manual_parameters.get("gene_presence_pct"),
+    )
 
 
 logging.info(f"Combined mask {np.sum(mask_genes)} genes left")
@@ -1171,11 +1262,12 @@ non_zero_non_nan_mask_pct = np.sum(non_zero_non_nan_mask, axis=1) / adata.X.shap
 
 # mask samples that have less than 30% non-NaN values
 mask_samples = non_zero_non_nan_mask_pct >= manual_parameters.get("sample_presence_pct")
-logging.info(f"Filtering out {np.sum(~mask_samples)} / {len(mask_samples)} samples with less than 30% non-NaN values")
+logging.info(
+    f"Filtering out {np.sum(~mask_samples)} / {len(mask_samples)} samples with less than 30% non-NaN values"
+)
 
 # apply the mask to the AnnData object
 adata = adata[mask_samples, :]
-
 
 
 # set up the preprocessor, use the args to config the workflow
@@ -1194,9 +1286,8 @@ preprocessor = Preprocessor(
 )
 
 
-
 #! ADDED
-if CLS_MULTILABEL: 
+if CLS_MULTILABEL:
     """If CLS multilabel genearte new celltype_id labels - this will be used
     to generate multilabel classification loss!
     """
@@ -1218,19 +1309,21 @@ if CLS_MULTILABEL:
     #     binning="X_binned"                 # leave None unless your model *requires* bins
     # )
 
-
     try:
         import obonet
     except ImportError:
         import subprocess
+
         print("obonet not found. Installing locally...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "--user", "obonet"])
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "--user", "obonet"]
+        )
         import obonet
 
     # imports
     sys.path.append("../../")
     from src.utils import utils as u
-    
+
     # get Disease Ontology graph
     do_g = u.load_do_graph()
 
@@ -1240,35 +1333,53 @@ if CLS_MULTILABEL:
     #! IMPORTANT - FIX CONTROL CLASS
 
     # get nodes
-    # _class_nodes = u.get_lvl1_nodes(do_g)
-    _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
+    _class_nodes = u.get_lvl1_nodes(do_g)
+    # _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
     # benchmark class nodes - use the sames as in the single classifier benchmark
     # _class_nodes = adata.obs["do_id"].unique().tolist()
 
     # Generate multilabel vectors for level 1 nodes
-    Y_multilabel, _class_nodes = u.generate_multilabel_vectors(adata, do_g, _class_nodes)
-    print(f"Generated multilabel vectors for level 1 nodes with shape {Y_multilabel.shape}")
+    Y_multilabel, _class_nodes = u.generate_multilabel_vectors(
+        adata, do_g, _class_nodes
+    )
+    print(
+        f"Generated multilabel vectors for level 1 nodes with shape {Y_multilabel.shape}"
+    )
 
     # Clean multilabel vectors by removing nodes with no samples
     Y_multilabel, _class_nodes = u.clean_multilabel_vectors(Y_multilabel, _class_nodes)
-    print(f"Cleaned multilabel vectors for top 50 nodes with shape {Y_multilabel.shape}")
+    print(
+        f"Cleaned multilabel vectors for top 50 nodes with shape {Y_multilabel.shape}"
+    )
 
     # Check the multilabel vector for level 1 nodes
     u.check_multilabel_vector(Y_multilabel, _class_nodes, do_g)
 
     # get doids and class names
-    Y_multilabel_doid, Y_multilabel_name = u.get_multilabel_data(Y_multilabel, _class_nodes, do_g)
+    Y_multilabel_doid, Y_multilabel_name = u.get_multilabel_data(
+        Y_multilabel, _class_nodes, do_g
+    )
 
     # add multilabel vectors to adata
     #! Note: we can add and extract arrays from the data frame - but not save them !
-    adata.obs = u.add_multilabel_to_adata(adata, Y_multilabel, Y_multilabel_doid, Y_multilabel_name)
+    adata.obs = u.add_multilabel_to_adata(
+        adata, Y_multilabel, Y_multilabel_doid, Y_multilabel_name
+    )
 
-    print(f"Nº of times each class appears in the multilabel vector:\n{np.sum(Y_multilabel, axis=0)}")
-    
+    print(
+        f"Nº of times each class appears in the multilabel vector:\n{np.sum(Y_multilabel, axis=0)}"
+    )
+
     # compute pos_weight for BCEWithLogitsLoss
-    pos_weight = tr_h.get_pos_weight(Y_multilabel)
-    print(f"Generated poitional weights for BCEWithLogitsLoss with shape {pos_weight.shape}")
-    print(f"Positional weights:\n{pos_weight}")
+    pos_weight = None
+    if True:
+        pos_weight = tr_h.get_pos_weight(Y_multilabel)
+        print(
+            f"Generated poitional weights for BCEWithLogitsLoss with shape {pos_weight.shape}"
+        )
+        print(f"Positional weights:\n{pos_weight}")
+        device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        pos_weight = pos_weight.to(device) if pos_weight is not None else None
 
     # modify the nº of classes
     num_types = len(_class_nodes)
@@ -1315,10 +1426,13 @@ if config.load_model is not None:
 if manual_parameters.get("split_type") == "stratified":
     # split
     df_obs = adata.obs
-    new_obs = tr_h.split_stratified(obs=df_obs,y_label="celltype",
-                                    group_label="dataset_id",
-                                    split_size=manual_parameters.get("n_splits"),
-                                    seed=manual_parameters.get("seed"))
+    new_obs = tr_h.split_stratified(
+        df=df_obs,
+        y_label="celltype",
+        group_label="dataset_id",
+        split_size=manual_parameters.get("n_splits"),
+        seed=manual_parameters.get("seed"),
+    )
     tr_h.report_split(new_obs)
 
     # update observations with new column split
@@ -1326,12 +1440,16 @@ if manual_parameters.get("split_type") == "stratified":
 
 elif manual_parameters.get("split_type") == "non_stratified":
     df_obs = adata.obs
-    new_obs = tr_h.get_test_split(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
+    new_obs = tr_h.get_test_split(
+        obs=df_obs, n_splits=manual_parameters.get("n_splits")
+    )
     adata.obs = new_obs
 
 elif manual_parameters.get("split_type") == "mixed":
     df_obs = adata.obs
-    new_obs = tr_h.get_test_split_common(obs=df_obs,n_splits=manual_parameters.get("n_splits"))
+    new_obs = tr_h.get_test_split_common(
+        obs=df_obs, n_splits=manual_parameters.get("n_splits")
+    )
     adata.obs = new_obs
 
 # store original data
@@ -1353,7 +1471,7 @@ data_to_save = {
     "results_train": list(),
     "all_outputs_train": list(),
     "id2type": list(),
-    "adata_orig":adata_orig,
+    "adata_orig": adata_orig,
     "train_indices": list(),
     "valid_indices": list(),
     "d_metrics": dict(),
@@ -1363,16 +1481,17 @@ data_to_save = {
 output_dir = u.generate_output_folder_dir()
 d_metrics = dict()
 
-for split in range(1,manual_parameters.get("n_tested_splits")+1):
+for split in range(1, manual_parameters.get("n_tested_splits") + 1):
 
-    d_metrics[f"split_{split}"] = {"train_loss": list(),
-                        "valid_loss": list(),
-                        "train_acc": list(),
-                        "valid_acc": list(),
-                        "train_err": list(),
-                        "valid_err": list(),
-                        "test_err": list(),
-                        }
+    d_metrics[f"split_{split}"] = {
+        "train_loss": list(),
+        "valid_loss": list(),
+        "train_acc": list(),
+        "valid_acc": list(),
+        "train_err": list(),
+        "valid_err": list(),
+        "test_err": list(),
+    }
 
     torch.cuda.empty_cache()
 
@@ -1380,19 +1499,19 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     #! ASSUMING GAUSSIAN DISTRIBUTION IN USE OF COMBAT! REVISE!
     if manual_parameters.get("do_combat"):
         # preprocess & batch correct
-        preprocessor(adata, batch_key=None)        
-        
+        preprocessor(adata, batch_key=None)
+
         # If we have samples from 1 single batch - combat will return NaN values for all
         # we tackle this by removing samples with a single batch id
         # remove samples from batch_id with only one sample
         print(f"Shape of adata before preprocessing: {adata.shape}")
-        batch_counts = dict(adata.obs['batch_id'].value_counts())
+        batch_counts = dict(adata.obs["batch_id"].value_counts())
         _low_count_batches = [k for k, v in batch_counts.items() if v < 2]
-        mask = adata.obs['batch_id'].isin(_low_count_batches)
+        mask = adata.obs["batch_id"].isin(_low_count_batches)
         adata = adata[~mask].copy()
         print(f"Removed {len(_low_count_batches)} batches with less than 2 samples")
         print(f"Shape of _adata after removing low count batches: {adata.shape}")
-        
+
         adata = tr_h.perform_combat_correction(adata)
         print("adata after preprocessing and batch correction")
         print(adata.X)
@@ -1437,14 +1556,15 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         preprocessor(adata, batch_key=None)
         preprocessor(adata_test, batch_key=None)
 
-
     #! ASSESS MAX VALUES AFTER PP
 
-    input_layer_key = {  # the values of this map coorespond to the keys in preprocessing
-        "normed_raw": "X_normed",
-        "log1p": "X_normed",
-        "binned": "X_binned",
-    }[input_style]
+    input_layer_key = (
+        {  # the values of this map coorespond to the keys in preprocessing
+            "normed_raw": "X_normed",
+            "log1p": "X_normed",
+            "binned": "X_binned",
+        }[input_style]
+    )
     all_counts = (
         adata.layers[input_layer_key].A
         if issparse(adata.layers[input_layer_key])
@@ -1460,7 +1580,10 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     # Split to get indices only
     train_idx, valid_idx = train_test_split(
-        np.arange(len(all_counts)), test_size=0.1, shuffle=True, stratify=celltypes_labels
+        np.arange(len(all_counts)),
+        test_size=0.1,
+        shuffle=True,
+        stratify=celltypes_labels,
     )
 
     # Use indices to split the data manually
@@ -1477,11 +1600,11 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     valid_indices = all_indices[valid_idx]
 
     if CLS_MULTILABEL:
-        d_y_multilabel= u.get_multilabel_dict_from_adata(adata)
+        d_y_multilabel = u.get_multilabel_dict_from_adata(adata)
         _Y_multilabel = np.array(d_y_multilabel["Y_multilabel"])
         # Get the multilabel vectors for the training and validation sets
         train_disease_multilabels = _Y_multilabel[train_idx]
-        valid_disease_multilabels = _Y_multilabel[valid_idx]    
+        valid_disease_multilabels = _Y_multilabel[valid_idx]
 
     if config.load_model is None:
         vocab = Vocab(
@@ -1489,7 +1612,6 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         )  # bidirectional lookup [gene <-> int]
     vocab.set_default_index(vocab["<pad>"])
     gene_ids = np.array(vocab(genes), dtype=int)
-
 
     tokenized_train = tokenize_and_pad_batch(
         train_data,
@@ -1520,11 +1642,9 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         f"\n\t feature length: {tokenized_valid['genes'].shape[1]}"
     )
 
-    sys.exit(0)
-
     # endregion
 
-    #region 3. Load the pre-trained scGPT model
+    # region 3. Load the pre-trained scGPT model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
     ntokens = len(vocab)  # size of vocabulary
@@ -1556,7 +1676,6 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         fast_transformer_backend=fast_transformer_backend,
         pre_norm=config.pre_norm,
     )
-
 
     # print("\n[INFO] Model parameters and config at initialization:\n")
     # for name, param in model.named_parameters():
@@ -1614,18 +1733,19 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     model.to(device)
     wandb.watch(model)
-    
+
     if ADV:
         discriminator = AdversarialDiscriminator(
             d_model=embsize,
             n_cls=num_batch_types,
         ).to(device)
 
-
     criterion = masked_mse_loss
     criterion_cls = nn.CrossEntropyLoss()
     if CLS_MULTILABEL:
-        criterion_cls_multilabel = nn.BCEWithLogitsLoss(pos_weight=pos_weight, reduction='mean')
+        criterion_cls_multilabel = nn.BCEWithLogitsLoss(
+            pos_weight=pos_weight, reduction="mean"
+        )
     criterion_dab = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         model.parameters(), lr=lr, eps=1e-4 if config.amp else 1e-8
@@ -1651,15 +1771,14 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
     scaler = torch.cuda.amp.GradScaler(enabled=config.amp)
 
-    #endregion
+    # endregion
 
-    #region 4. Finetune scGPT with task-specific objectives
+    # region 4. Finetune scGPT with task-specific objectives
 
     if torch.cuda.is_available():
         print(torch.cuda.current_device())
         print(torch.cuda.get_device_name(torch.cuda.current_device()))
         torch.cuda.empty_cache()
-
 
     else:
         print("CUDA is not available")
@@ -1672,9 +1791,33 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     best_model = None
     tr_h.define_wandb_metrcis()
 
+    # quality check
+    """Check if there are no diseases or labels with empty labels!"""
+
+    d_y_multilabel = u.get_multilabel_dict_from_adata(adata_test)
+    _Y_test = np.array(d_y_multilabel["Y_multilabel"])
+
+    train_adata = adata[train_indices, :]  # Subset adata for training samples
+    valid_adata = adata[valid_indices, :]  # Subset adata for validation samples
+
+    d_y_multilabel = u.get_multilabel_dict_from_adata(valid_adata)
+    _Y_valid = np.array(d_y_multilabel["Y_multilabel"])
+    
+    d_y_multilabel = u.get_multilabel_dict_from_adata(train_adata)
+    _Y_train = np.array(d_y_multilabel["Y_multilabel"])
+
+
+    print("_Y_test", _Y_test.shape, min(np.sum(_Y_test, axis=0)), min(np.sum(_Y_test, axis=1)) )
+    print("_Y_valid", _Y_valid.shape, min(np.sum(_Y_valid, axis=0)), min(np.sum(_Y_valid, axis=1)) )
+    print("_Y_train", _Y_train.shape, min(np.sum(_Y_train, axis=0)), min(np.sum(_Y_train, axis=1)) )
+
+
+    # sys.exit(0)
+
 
     epochs = manual_parameters.get("epochs")
-    patience = 10
+    patience = 5
+    wait = 0
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()
         # train_data_pt, valid_data_pt = prepare_data(sort_seq_batch=per_seq_batch_sample)
@@ -1696,9 +1839,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
 
         print(">>> Finished remapping batch labels")
         print(f"Total unique remapped batch labels: {adata.obs['batch_id'].nunique()}")
-        print(f"Range of remapped batch labels: {adata.obs['batch_id'].min()} to {adata.obs['batch_id'].max()}")
-        print(">>> Sample batch labels after remapping:", adata.obs['batch_id'].value_counts().head())
-
+        print(
+            f"Range of remapped batch labels: {adata.obs['batch_id'].min()} to {adata.obs['batch_id'].max()}"
+        )
+        print(
+            ">>> Sample batch labels after remapping:",
+            adata.obs["batch_id"].value_counts().head(),
+        )
 
         print(f"CLS is {CLS}")
 
@@ -1727,19 +1874,19 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         d_metrics[f"split_{split}"]["train_err"].append(train_err)
         d_metrics[f"split_{split}"]["valid_err"].append(val_err)
         d_metrics[f"split_{split}"]["train_acc"].append(1 - train_err)
-        d_metrics[f"split_{split}"]["valid_acc"].append(1 - val_err)      
-
-
+        d_metrics[f"split_{split}"]["valid_acc"].append(1 - val_err)
 
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_model = copy.deepcopy(model)
             best_model_epoch = epoch
             logger.info(f"Best model with score {best_val_loss:5.4f}")
-        else: 
-            logger.info("Validation loss did not improve.") 
-            logger.info(f"Current best model score: {best_val_loss:5.4f} at epoch {best_model_epoch}")
-            wait+=1
+        else:
+            logger.info("Validation loss did not improve.")
+            logger.info(
+                f"Current best model score: {best_val_loss:5.4f} at epoch {best_model_epoch}"
+            )
+            wait += 1
             if wait >= patience:
                 print("early stop")
                 break
@@ -1751,7 +1898,6 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
             scheduler_D.step()
             scheduler_E.step()
 
-
         #! FOR DEBUGGING
         # break
 
@@ -1761,11 +1907,9 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     # test split
     predictions, labels, results = test(best_model, adata_test)
 
-
     ## Evaluate the model on the train set
 
     predictions_train, labels_train, results_train = test(best_model, adata)
-
 
     # ### Evaluate results on train
 
@@ -1773,11 +1917,10 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     tr_h.log_cpu_memory_usage()
     tr_h.log_gpu_memory_usage()
 
-    #endregion
+    # endregion
 
-    #region 5. Inference with fine-tuned scGPT model
+    # region 5. Inference with fine-tuned scGPT model
     adata_train_raw = adata.copy()
-
 
     # get predictions
     # test inference
@@ -1790,21 +1933,10 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     ) = test_2(best_model, adata_test)
 
     logging.info(f"Results Test: {results_test}")
-
-
-    # # train inference
-    # (
-    #     predictions_train,
-    #     labels_train,
-    #     results_train,
-    #     all_outputs_train,
-    # ) = test_2(best_model, adata)
-
-
     # Assume train_indices and valid_indices have been loaded for the current split
     train_adata = adata[train_indices, :]  # Subset adata for training samples
     valid_adata = adata[valid_indices, :]  # Subset adata for validation samples
-    
+
     print("train_adata shape:", train_adata.shape)
     print(train_adata.X)
 
@@ -1827,16 +1959,13 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
         all_outputs_valid,
     ) = test_2(best_model, valid_adata)
 
-
-
     logging.info("region 5")
     tr_h.log_cpu_memory_usage()
     tr_h.log_gpu_memory_usage()
 
-    #endregion
+    # endregion
 
-
-    #region 6. Save output
+    # region 6. Save output
     # Prepare a dictionary of all variables to be saved
     data_to_save["split"].append(split)
     data_to_save["predictions_test"].append(predictions_test)
@@ -1854,11 +1983,9 @@ for split in range(1,manual_parameters.get("n_tested_splits")+1):
     data_to_save["id2type"].append(id2type)
     data_to_save["metrics_epochs"] = d_metrics
 
-
     # Save the train/valid indices for this split
     data_to_save[f"train_indices"].append(train_indices.tolist())
     data_to_save[f"valid_indices"].append(valid_indices.tolist())
-
 
     # Store processed adata objects
     data_to_save[f"adata_train_{split}"] = train_adata
@@ -1882,28 +2009,35 @@ for filename, data in data_to_save.items():
                 pickle.dump(_d_multilabel, f)
 
             # remove the columns corresponding to multilabels
-            data.obs.drop(columns=["class_multilabel_doid", "class_multilabel_name", "class_multilabel"], inplace=True)
-            
+            data.obs.drop(
+                columns=[
+                    "class_multilabel_doid",
+                    "class_multilabel_name",
+                    "class_multilabel",
+                ],
+                inplace=True,
+            )
+
             # save
             file_path = os.path.join(output_dir, f"{filename}.h5ad")
             data.write(file_path)
-        
-        else: 
+
+        else:
             file_path = os.path.join(output_dir, f"{filename}.h5ad")
             data.write(file_path)
     else:
         file_path = os.path.join(output_dir, f"{filename}.pkl")
         with open(file_path, "wb") as f:
             pickle.dump(data, f)
-            
-            
+
+
 logging.info("region 4")
 tr_h.log_cpu_memory_usage()
 tr_h.log_gpu_memory_usage()
 
 # save manual parameters
 # Write parameters to a JSON file
-with open(os.path.join(output_dir,"parameters.json"), 'w') as json_file:
+with open(os.path.join(output_dir, "parameters.json"), "w") as json_file:
     json.dump(manual_parameters, json_file, indent=4)
 
 # save vocab
