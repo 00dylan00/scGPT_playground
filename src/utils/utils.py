@@ -105,7 +105,7 @@ def get_multilabel_data(Y_multilabel: np.ndarray, all_nodes: list, do_g: nx.Grap
     Y_multilabel_doid = [all_nodes[Y_multilabel[i].astype(bool)] for i in range(Y_multilabel.shape[0])]
     Y_multilabel_name = list()
     for nodes in Y_multilabel_doid:
-        names = [do_g.nodes[n].get("name", "Unknown") for n in nodes]
+        names = [do_g.nodes[n].get("name", "Unknown") if n != "Control" else "Control" for n in nodes]
         Y_multilabel_name.append(names)
 
     return Y_multilabel_doid, Y_multilabel_name
@@ -135,7 +135,10 @@ def get_n_lowest_ic_nodes(doid_2_ic: dict, n: int = 50) -> list:
 def check_multilabel_vector(Y_multilabel, nodes, do_g)-> None:
     _sum_nodes = np.sum(Y_multilabel, axis=0)
     for i, _node in enumerate(nodes):
-        print(f"{Y_multilabel[:, i].sum()} samples\tNode {_node} - {do_g.nodes[_node].get('name', 'Unknown')}")
+        if _node == "Control":
+            print(f"{Y_multilabel[:, i].sum()} samples\tNode {_node}")
+        else:
+            print(f"{Y_multilabel[:, i].sum()} samples\tNode {_node} - {do_g.nodes[_node].get('name', 'Unknown')}")
 
     _sum_samples = np.sum(Y_multilabel, axis=1)
     print(f"Nº of samples with only one label: {np.sum(_sum_samples == 1)}")
@@ -146,6 +149,10 @@ def generate_multilabel_vectors(adata:sc.AnnData, do_g:nx.graph, nodes:list)->tu
     """Generate multilabel vectors for the given AnnData object based on the Disease Ontology graph."""
     from sklearn.preprocessing import MultiLabelBinarizer
 
+    # check for presence of controls
+    if "Control" in adata.obs["do_id"].unique():
+        nodes.append("Control")  # add Control as a class node
+
     # define class nodes
     nodes = sorted(nodes)
 
@@ -154,9 +161,9 @@ def generate_multilabel_vectors(adata:sc.AnnData, do_g:nx.graph, nodes:list)->tu
     sample_class_nodes = []
     for doid in adata.obs["do_id"]:
 
-        if doid.lower() == "Control":
+        if doid.lower() == "control":
             # If the sample is a control, assign a single class node as Control
-            #! IMPORTANT - WE MIGHT WANT TO CHANGE THIS TO BE A STRATIFIED CONTRO + DATASET LABEL
+            #! IMPORTANT - WE MIGHT WANT TO CHANGE THIS TO BE A STRATIFIED CONTROL + DATASET LABEL
             sample_class_nodes.append(["Control"])
             continue
         

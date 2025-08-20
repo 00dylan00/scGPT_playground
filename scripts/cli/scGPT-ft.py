@@ -1205,9 +1205,9 @@ print(adata.X)
 
 
 #! REMOVE - THIS IS A QUICK AND UGLY FIX
-only_control = True
-if only_control:
-    adata = adata[adata.obs["doid_id"] != "Control"].copy()
+# only_control = True
+# if only_control:
+#     adata = adata[adata.obs["doid_id"] != "Control"].copy()
 
 # define celltype as disease
 if manual_parameters.get("ontology") == "mesh":
@@ -1338,21 +1338,21 @@ if CLS_MULTILABEL:
     # benchmark class nodes - use the sames as in the single classifier benchmark
     # _class_nodes = adata.obs["do_id"].unique().tolist()
 
-    # Generate multilabel vectors for level 1 nodes
+    # Generate multilabel vectors for class nodes
     Y_multilabel, _class_nodes = u.generate_multilabel_vectors(
         adata, do_g, _class_nodes
     )
     print(
-        f"Generated multilabel vectors for level 1 nodes with shape {Y_multilabel.shape}"
+        f"Generated multilabel vectors for class nodes with shape {Y_multilabel.shape}"
     )
 
     # Clean multilabel vectors by removing nodes with no samples
     Y_multilabel, _class_nodes = u.clean_multilabel_vectors(Y_multilabel, _class_nodes)
     print(
-        f"Cleaned multilabel vectors for top 50 nodes with shape {Y_multilabel.shape}"
+        f"Cleaned multilabel vectors for class nodes with shape {Y_multilabel.shape}"
     )
 
-    # Check the multilabel vector for level 1 nodes
+    # Check the multilabel vector for class nodes
     u.check_multilabel_vector(Y_multilabel, _class_nodes, do_g)
 
     # get doids and class names
