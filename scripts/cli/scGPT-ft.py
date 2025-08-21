@@ -299,11 +299,40 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                     {"train/cls_multilabel": loss_cls_multilabel.item()}
                 )
 
+                #! ADD FLAG
+                if True:
+                    logits = output_dict["cls_output"]
+                    y_multi = disease_multilabel.float()
+
+                    # y true - 1 if disease, 0 if control
+                    y_cond = (1.0 - y_multi[:, 0]).long().to(logits.device)
+
+                    # disease & control logits 
+                    tau = 1.0
+                    z_ctrl = logits[:,0]
+                    z_dis = tau * torch.logsumexp(logits[:, 1:] / tau, dim=1)
+
+                    # combine both
+                    z_pair = torch.stack([z_ctrl, z_dis], dim=1)
+
+                    # compute loss
+                    loss_cond = criterion_cond(z_pair, y_cond) 
+
+                    # combine both losses
+                    lambda_cond = 5
+                    loss = loss + lambda_cond * loss_cond
+                    metrics_to_log.update({
+                    "train/cond_ce": loss_cond.item(),
+                    "train/cond_acc": (z_pair.argmax(dim=1) == y_cond).float().mean().item(),
+                     })
+                    
                 # error rate is 1 - accuracy
                 _preds = torch.sigmoid(output_dict["cls_output"].detach()).cpu().numpy()
                 _preds_bin = (_preds > 0.5).astype(int)
                 _true = disease_multilabel.cpu().numpy()
                 samplewise_acc = (_preds_bin == _true).mean(axis=1).mean()
+    
+    
                 error_rate = 1 - samplewise_acc
 
             if CCE:
@@ -1746,6 +1775,10 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         criterion_cls_multilabel = nn.BCEWithLogitsLoss(
             pos_weight=pos_weight, reduction="mean"
         )
+        #! ADD FLAG
+        if True:
+            criterion_cond = nn.CrossEntropyLoss()
+
     criterion_dab = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(
         model.parameters(), lr=lr, eps=1e-4 if config.amp else 1e-8
@@ -1816,7 +1849,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
 
 
     epochs = manual_parameters.get("epochs")
-    patience = 5
+    patience = 3
     wait = 0
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()
@@ -1881,6 +1914,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
             best_model = copy.deepcopy(model)
             best_model_epoch = epoch
             logger.info(f"Best model with score {best_val_loss:5.4f}")
+            wait = 0 # reset patience when we find improvement ! 
         else:
             logger.info("Validation loss did not improve.")
             logger.info(

@@ -42,7 +42,7 @@ def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine",
                 zorder=3 if i < 2 else 2,
                 weights=weights[i] if weights is not None else None,
                 )
-    plt.title("Cosine Similarity: Same Disease vs Random")
+    plt.title(title)
     plt.xlabel("Cosine Similarity")
     plt.ylabel("Density")
     plt.legend()
@@ -57,23 +57,21 @@ def get_same_disease_sim(adata_obs:pd.DataFrame, s_matrix:np.array)->Tuple[Tuple
     
     # add control column
     adata_obs = adata_obs.copy()
-    adata_obs["is_control"] = ["C" if i.lower().startswith("control") else "D" for i in adata_obs["doid_id"]]
+    adata_obs["sample_type"] = ["C" if i.lower().startswith("control") else "D" for i in adata_obs["doid_id"]]
 
     # Precompute DOID-to-sample indices
     adata_obs.reset_index(drop=True, inplace=True)  # in case reset index 
-    doid_to_indices = dict()
-    for idx, doid in adata_obs["doid_id"].items():
-        if doid not in doid_to_indices:
-            doid_to_indices[doid] = []
-        doid_to_indices[doid].append(idx)
-
-
     # Same Disease Same Dataset
-    c_same_same, w_same_same = [], []
+    c_same_same, l_same_same = [], []
 
     # Same Disease Diff Dataset
-    c_same_diff, w_same_diff = [], []
+    c_same_diff, l_same_diff = [], []
 
+    # Control Same Dataset
+    c_ctrl_same, l_ctrl_same = [], []
+
+    # Control Diff Dataset
+    c_ctrl_diff, l_ctrl_diff = [], []
 
     # Process same disease pairs
     for do_id in tqdm(adata_obs["doid_id"].unique(), desc="Processing same disease pairs"): # loop through all unique diseases
@@ -81,43 +79,72 @@ def get_same_disease_sim(adata_obs:pd.DataFrame, s_matrix:np.array)->Tuple[Tuple
             continue
 
         # loop through unique datasets and add same disease same dataset pairs
-        _df = adata_obs.query("doid_id == @do_id") 
-        datasets = _df["dataset"].unique()
+        datasets = adata_obs.query("doid_id == @do_id")["dataset"].unique() 
+        _df = adata_obs.query("dataset in @datasets")   # dataframe w/ datasets from current disease
         for dt in datasets:
             
             # retrieve same disease same dataset pairs
-            idxs = _df.query("dataset == @dt").index
+            idxs = _df.query("(dataset == @dt) & (doid_id == @do_id)").index
             if len(idxs) < 2:
                 continue
 
             # get all combinations of pairs
             idxs_p = np.array(list(itertools.combinations(idxs, 2)))
             c_same_same.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
-            w_same_same.extend([len(idxs_p)] * len(idxs_p))
+            l_same_same.extend([do_id] * len(idxs_p))
+
+            # retrieve control same dataset pairs
+            idxs_c = _df.query("(dataset == @dt) & (sample_type == 'C')").index
+            if len(idxs_c) < 1:
+                continue
+
+            # get all combinations of pairs
+            idxs_p = np.array(list(itertools.product(idxs, idxs_c)))
+            c_ctrl_same.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
+            l_ctrl_same.extend([do_id] * len(idxs_p))
 
         # if there are multiple dataset we can compute same disease diff dataset pairs
         if len(datasets) > 1:
 
             # loop through all combinations of datasets
             for d1, d2 in itertools.combinations(datasets, 2):
-
-                idxs1 = _df.query("dataset == @d1").index
-                idxs2 = _df.query("dataset == @d2").index
-    
+                
+                idxs1 = _df.query("(dataset == @d1) & (doid_id == @do_id)").index
+                idxs2 = _df.query("(dataset == @d2) & (doid_id == @do_id)").index
+                idxs3 = _df.query("(dataset == @d2) & (sample_type == 'C')").index    #! possibly use dsaid rather than dataset?
                 # all combinations of pairs
+                
+                #! CORRECT THE WEIGHTS
+                # get all combinations of same disease diff dataset pairs
                 idxs_p = np.array(list(itertools.product(idxs1, idxs2)))
                 c_same_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
-                w_same_diff.extend([len(idxs_p)] * len(idxs_p))
+                l_same_diff.extend([do_id] * len(idxs_p))
 
-    # Normalize weights
-    w_same_same = np.array(w_same_same) / len(c_same_same)
-    w_same_diff = np.array(w_same_diff) / len(c_same_diff)
+                # get all combinations of control diff dataset pairs
+                idxs_p = np.array(list(itertools.product(idxs1, idxs3)))
+                c_ctrl_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
+                l_ctrl_diff.extend([do_id] * len(idxs_p))
+
+    def _convert_labels_to_weights(labels: List[str]) -> List[float]:
+        """Convert labels to weights"""
+        counts = Counter(labels)
+        w = np.array([1.0 / counts[d] for d in labels], dtype=float)
+        w /= w.sum()                               # normalize to sum to 1
+        return w
+
+    # convert labels to weights
+    l_same_same = _convert_labels_to_weights(l_same_same)
+    l_same_diff = _convert_labels_to_weights(l_same_diff)
+    l_ctrl_same = _convert_labels_to_weights(l_ctrl_same)
+    l_ctrl_diff = _convert_labels_to_weights(l_ctrl_diff)
 
     # convert to numpy arrays
     c_same_same = np.array(c_same_same)
     c_same_diff = np.array(c_same_diff)
+    c_ctrl_same = np.array(c_ctrl_same)
+    c_ctrl_diff = np.array(c_ctrl_diff)
 
-    return (c_same_same, w_same_same), (c_same_diff, w_same_diff)
+    return (c_same_same, l_same_same), (c_same_diff, l_same_diff), (c_ctrl_same, l_ctrl_same), (c_ctrl_diff, l_ctrl_diff)
 
 
 def get_unrelated_pairs(

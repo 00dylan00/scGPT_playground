@@ -149,12 +149,12 @@ def generate_multilabel_vectors(adata:sc.AnnData, do_g:nx.graph, nodes:list)->tu
     """Generate multilabel vectors for the given AnnData object based on the Disease Ontology graph."""
     from sklearn.preprocessing import MultiLabelBinarizer
 
-    # check for presence of controls
-    if "Control" in adata.obs["do_id"].unique():
-        nodes.append("Control")  # add Control as a class node
-
     # define class nodes
     nodes = sorted(nodes)
+
+    # check for presence of controls
+    if "Control" in adata.obs["do_id"].unique():
+        nodes.insert(0, "Control")  # add Control as a class node
 
     # For each sample, collect all ancestors
     # then assess if they are in the class nodes
