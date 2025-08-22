@@ -345,20 +345,32 @@ def split_stratified(
     random.seed(seed)
 
     df = df.copy(deep=True)
+    print(f"df shape: {df.shape}")
 
     # (tiny guard) each label must span ≥2 datasets to appear in both splits
-    ds_per_label = df.groupby(y_label)[group_label].nunique()
+    _df_diseases = df[df[y_label] != "Control"]
+    print(f"df diseases: {_df_diseases.shape}")
+
+    ds_per_label = _df_diseases.groupby(y_label, observed=True)[group_label].nunique()
     if (ds_per_label < 2).any():
         raise ValueError("Some labels occur in <2 datasets; cannot place them in both splits.")
 
-    train_groups = set()
-    test_groups  = set()       #
+    train_groups = set()    # datasets in train
+    test_groups  = set()    # datasets in test
 
     # loop through labels (sorted for determinism; remove 'sorted' if you prefer)
-    for y_i in sorted(df[y_label].unique()):
+    labels = sorted(df[y_label].unique())
+    print(f"Labels: {len(labels)} {labels}")
+
+    # remove "Control" from labels !
+    labels = [l for l in labels if l != "Control"]
+    print(f"Labels: {len(labels)} {labels}")
+
+    for y_i in labels:
+        # subset w/ this label (ie disease)
         _df_y = df[df[y_label] == y_i]
 
-        # groups for this label
+        # groups for this label (ie dataset)
         _groups = _df_y[group_label].unique().tolist()
 
         # exclude anything already fixed to either side
@@ -366,6 +378,7 @@ def split_stratified(
         already_test      = set(_groups) & test_groups
         _groups_to_split  = list(set(_groups) - already_train - already_test)
 
+        # if groups already assigned (ie datasets already in all test/train) skip splitting !
         if len(_groups_to_split) == 0:
             # nothing left to place for this label (already covered)
             print(f"Skipping {y_i} as already placed everything in train/test.")

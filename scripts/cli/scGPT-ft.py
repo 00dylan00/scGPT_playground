@@ -319,7 +319,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                     loss_cond = criterion_cond(z_pair, y_cond) 
 
                     # combine both losses
-                    lambda_cond = 5
+                    lambda_cond = 1.0
                     loss = loss + lambda_cond * loss_cond
                     metrics_to_log.update({
                     "train/cond_ce": loss_cond.item(),
@@ -1306,7 +1306,8 @@ preprocessor = Preprocessor(
     filter_cell_by_counts=False,  # step 2
     normalize_total=1e4,  # 3. whether to normalize the raw data and to what sum
     result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
-    log1p=data_is_raw,  # 4. whether to log1p the normalized data
+    # log1p=data_is_raw,  # 4. whether to log1p the normalized data
+    log1p=False,
     result_log1p_key="X_log1p",
     subset_hvg=False,  # 5. whether to subset the raw data to highly variable genes
     hvg_flavor="seurat_v3" if data_is_raw else "cell_ranger",
@@ -1360,7 +1361,6 @@ if CLS_MULTILABEL:
     doid_2_ic = u.get_sanchez_ic(do_g)
 
     #! IMPORTANT - FIX CONTROL CLASS
-
     # get nodes
     _class_nodes = u.get_lvl1_nodes(do_g)
     # _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
@@ -1563,16 +1563,91 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         print(adata_test.X)
 
     else:
+        #! ADD FLAG
+        if True:
+            def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int=2, n_dt:int=2)->sc.AnnData:
+                """Same criteria as in PP scritps
+                + n_samples per dataset
+                + n_dt per disease
+                """
+                # filter by sufficient samples
+                if "Control" in adata.obs[disease_label].unique():
+                    # split adata into control and disease
+                    adata_control = adata.obs[adata.obs[disease_label]=="Control"]
+                    adata_dis = adata.obs[adata.obs[disease_label]!="Control"]
 
-        batch_ids = adata.obs["batch_id"].tolist()
-        num_batch_types = len(set(batch_ids))
-        batch_ids = np.array(batch_ids)
+                    # check which datasets have enough samples
+                    _datasets_control_passed = [k for k, v in dict(adata_control.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+                    print(f"Nº of datasets with +{n_samples} control samples: {len(_datasets_control_passed)}")
 
-        """Re-map batch ids so it matches the max value of batches
-        """
-        _remap_dict = {k: i for i, k in enumerate(sorted(set(batch_ids)))}
-        batch_ids = np.array([_remap_dict[b] for b in batch_ids], dtype=int)
-        adata.obs["batch_id"] = batch_ids  # update the batch ids in adata.obs
+                    _datasets_dis_passed = [k for k, v in dict(adata_dis.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+                    print(f"Nº of datasets with +{n_samples} disease samples: {len(_datasets_dis_passed)}")
+
+                    _datasets_passed = set(_datasets_control_passed).intersection(set(_datasets_dis_passed))
+                    print(f"Nº of datasets with +{n_samples} samples (control and disease): {len(_datasets_passed)}")
+
+                    # filter adata
+                    adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+                    print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
+                
+                else:
+                    _datasets_passed = [k for k, v in dict(adata.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+                    print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
+
+                    # filter adata
+                    adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+                    print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
+
+
+                # filter by sufficient datasets
+                dis = adata.obs["do_id"].unique()
+                dis = [d for d in dis if d != "Control"]  # remove controls
+                _passed_diseases = list()
+                for d in dis:
+                    _df_counts = adata.obs[adata.obs["do_id"] == d].groupby("dataset", observed=True).size()
+                    if len(_df_counts) >= 2:
+                        _passed_diseases.append(d)
+                print(f"Nº of passed diseases {len(_passed_diseases)}/ {len(dis)}")
+                adata = adata[adata.obs["do_id"].isin(_passed_diseases)]
+                return adata
+            
+            def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:
+                # copy data
+                adata_tmp = adata.copy()
+                X = adata_tmp.X.copy()
+
+                # mask nans
+                mask_nans = np.isnan(X)
+
+                # compute medians, ignoring NaNs
+                col_medians = np.nanmedian(X, axis=0)
+
+                # broadcast to fill NaNs with the corresponding gene's median
+                X = np.where(np.isnan(X), col_medians, X)
+                adata_tmp.X = X
+
+                # apply batch correction
+                X = sc.pp.combat(adata_tmp, key="dataset", inplace=False)
+
+                # restore nans
+                X[mask_nans] = np.nan
+
+                adata_tmp.X = X
+                return adata_tmp
+
+            # quality control cleaning - enough samples and datasets
+            adata = clean_adata_qc(adata)
+
+            # perform combat analysis
+            adata = apply_combat_adata(adata)
+            print("PERFORMED COMBAT")
+            print(adata.X)
+        
+        # convert batch ids to integers
+        _batch_ids = adata.obs["batch_id"].tolist()
+        num_batch_types = adata.obs["batch_id"].nunique()
+        _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
+        adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
 
         # seperate data
         adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1]
@@ -1586,6 +1661,9 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         preprocessor(adata_test, batch_key=None)
 
     #! ASSESS MAX VALUES AFTER PP
+
+
+    batch_ids = adata.obs["batch_id"].to_numpy()
 
     input_layer_key = (
         {  # the values of this map coorespond to the keys in preprocessing
