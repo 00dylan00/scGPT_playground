@@ -10,19 +10,30 @@ import sys
 sys.path.append("../../")
 from src.utils import utils as ut
 import matplotlib.pyplot as plt
+import random
 
-
-def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine", weights:List=None)->None:
+def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine", weights:List=None, sample:int=np.inf)->None:
     """Plot KDE"""
 
     # Plot
     plt.figure(figsize=(4, 4), dpi=300)
 
+
+
     for i in range(len(X)):
+        X_i = X[i]
+        w_i = weights[i] if weights is not None else None
+        
+        if len(X_i) > sample:
+            _sample_i = random.sample(range(len(X_i)), sample)
+            X_i = X_i[_sample_i]
+            if weights is not None:
+                w_i = w_i[_sample_i]
+
         # background distribution
         if "random" in labels[i].lower() or "unrelated" in labels[i].lower():
             sns.kdeplot(
-                x=X[i],
+                x=X_i,
                 linewidth=3,
                 linestyle="--",
                 label=labels[i],
@@ -34,13 +45,13 @@ def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine",
 
         else:
             sns.kdeplot(
-                x=X[i],
+                x=X_i,
                 linewidth=3,
                 label=labels[i],
                 fill=True,
                 color=colors[i],
                 zorder=3 if i < 2 else 2,
-                weights=weights[i] if weights is not None else None,
+                weights=w_i if weights is not None else None,
                 )
     plt.title(title)
     plt.xlabel("Cosine Similarity")
@@ -117,13 +128,16 @@ def get_same_disease_sim(adata_obs:pd.DataFrame, s_matrix:np.array)->Tuple[Tuple
                 #! CORRECT THE WEIGHTS
                 # get all combinations of same disease diff dataset pairs
                 idxs_p = np.array(list(itertools.product(idxs1, idxs2)))
-                c_same_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
-                l_same_diff.extend([do_id] * len(idxs_p))
+                if len(idxs_p) > 0:
+                    c_same_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
+                    l_same_diff.extend([do_id] * len(idxs_p))
+
 
                 # get all combinations of control diff dataset pairs
                 idxs_p = np.array(list(itertools.product(idxs1, idxs3)))
-                c_ctrl_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
-                l_ctrl_diff.extend([do_id] * len(idxs_p))
+                if len(idxs_p) > 0:
+                    c_ctrl_diff.extend(s_matrix[idxs_p[:, 0], idxs_p[:, 1]])
+                    l_ctrl_diff.extend([do_id] * len(idxs_p))
 
     def _convert_labels_to_weights(labels: List[str]) -> List[float]:
         """Convert labels to weights"""

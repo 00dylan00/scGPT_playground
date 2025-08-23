@@ -319,7 +319,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                     loss_cond = criterion_cond(z_pair, y_cond) 
 
                     # combine both losses
-                    lambda_cond = 1.0
+                    lambda_cond = 0.2
                     loss = loss + lambda_cond * loss_cond
                     metrics_to_log.update({
                     "train/cond_ce": loss_cond.item(),
@@ -1362,8 +1362,8 @@ if CLS_MULTILABEL:
 
     #! IMPORTANT - FIX CONTROL CLASS
     # get nodes
-    _class_nodes = u.get_lvl1_nodes(do_g)
-    # _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
+    # _class_nodes = u.get_lvl1_nodes(do_g)
+    _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
     # benchmark class nodes - use the sames as in the single classifier benchmark
     # _class_nodes = adata.obs["do_id"].unique().tolist()
 
