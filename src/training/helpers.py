@@ -10,7 +10,7 @@ from typing import *
 from sklearn.model_selection import StratifiedKFold, KFold
 import torch, psutil, wandb, random
 from scanpy.pp import combat
-
+import scanpy as sc
 
 def get_test_split_common(obs: pd.DataFrame, n_splits=5) -> List[str]:
     """Get Test Split
@@ -514,3 +514,73 @@ def report_split(df:pd.DataFrame, disease_label:str="celltype", split_idx:int = 
     print(f"Nº of datasets in test split {split_idx}:\t{df_test['dataset_id'].nunique()}")
     print(f"Nº of samples in train split {split_idx}:\t{df_train['ids'].nunique()}")
     print(f"Nº of samples in test split {split_idx}:\t{df_test['ids'].nunique()}")
+
+def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int=2, n_dt:int=2)->sc.AnnData:
+    """Same criteria as in PP scritps
+    + n_samples per dataset
+    + n_dt per disease
+    """
+    # filter by sufficient samples
+    if "Control" in adata.obs[disease_label].unique():
+        # split adata into control and disease
+        adata_control = adata.obs[adata.obs[disease_label]=="Control"]
+        adata_dis = adata.obs[adata.obs[disease_label]!="Control"]
+
+        # check which datasets have enough samples
+        _datasets_control_passed = [k for k, v in dict(adata_control.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        print(f"Nº of datasets with +{n_samples} control samples: {len(_datasets_control_passed)}")
+
+        _datasets_dis_passed = [k for k, v in dict(adata_dis.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        print(f"Nº of datasets with +{n_samples} disease samples: {len(_datasets_dis_passed)}")
+
+        _datasets_passed = set(_datasets_control_passed).intersection(set(_datasets_dis_passed))
+        print(f"Nº of datasets with +{n_samples} samples (control and disease): {len(_datasets_passed)}")
+
+        # filter adata
+        adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+        print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
+    
+    else:
+        _datasets_passed = [k for k, v in dict(adata.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
+
+        # filter adata
+        adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+        print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
+
+
+    # filter by sufficient datasets
+    dis = adata.obs["do_id"].unique()
+    dis = [d for d in dis if d != "Control"]  # remove controls
+    _passed_diseases = list()
+    for d in dis:
+        _df_counts = adata.obs[adata.obs["do_id"] == d].groupby("dataset", observed=True).size()
+        if len(_df_counts) >= 2:
+            _passed_diseases.append(d)
+    print(f"Nº of passed diseases {len(_passed_diseases)}/ {len(dis)}")
+    adata = adata[adata.obs["do_id"].isin(_passed_diseases)]
+    return adata
+
+def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:
+    # copy data
+    adata_tmp = adata.copy()
+    X = adata_tmp.X.copy()
+
+    # mask nans
+    mask_nans = np.isnan(X)
+
+    # compute medians, ignoring NaNs
+    col_medians = np.nanmedian(X, axis=0)
+
+    # broadcast to fill NaNs with the corresponding gene's median
+    X = np.where(np.isnan(X), col_medians, X)
+    adata_tmp.X = X
+
+    # apply batch correction
+    X = sc.pp.combat(adata_tmp, key="dataset", inplace=False)
+
+    # restore nans
+    X[mask_nans] = np.nan
+
+    adata_tmp.X = X
+    return adata_tmp

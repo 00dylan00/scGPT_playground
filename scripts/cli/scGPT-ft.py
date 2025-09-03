@@ -130,6 +130,7 @@ parser.add_argument(
 parser.add_argument("--ecs_thres", type=float, default=0.0, help="Include ecs_thres")
 parser.add_argument("--dab_weight", type=float, default=0.0, help="Include dab_weight")
 parser.add_argument("--ontology", type=str, default="do", help="Type of ontology")
+parser.add_argument("--scgpt_pp", type=str, default="norm_log1p", help="Type of scGPT preprocessing")
 
 # booleans can be a pain in the ass with parser
 parser.add_argument(
@@ -206,6 +207,7 @@ manual_parameters = {
     "INPUT_BATCH_LABELS": args.INPUT_BATCH_LABELS,
     "do_combat": args.do_combat,
     "ontology": args.ontology,
+    "scgpt_pp": args.scgpt_pp,
 }
 
 
@@ -1253,16 +1255,76 @@ num_types = len(np.unique(celltype_id_labels))
 id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories))
 adata.obs["celltype_id"] = celltype_id_labels
 
-# config parameters
-data_is_raw = True
-filter_gene_by_counts = False
+
 
 
 # gene filtering
+
+
 if manual_parameters.get("gene_filtering") == "top_presence":
     mask_genes = tr_h.get_top_k_most_present_genes(
         adata, k=manual_parameters.get("max_seq_len")
     )
+#! CLEAN UP
+elif manual_parameters.get("gene_filtering") == "top_logfc":
+    def compute_FC(adata)->np.array:
+        # Subset by condition
+        adata_control = adata[adata.obs["doid_id"] == "Control"]
+        adata_disease = adata[adata.obs["doid_id"] != "Control"]
+
+        # Mean expression per group (already log scale)
+        mean_control = np.asarray(adata_control.X.mean(axis=0)).flatten()
+        mean_disease = np.asarray(adata_disease.X.mean(axis=0)).flatten()
+
+        # log2FC is simply difference of means
+        log2fc = mean_disease - mean_control
+        return log2fc
+
+
+    def get_top_k_fc(adata, k=3500):
+
+
+        total_n_genes = adata.X.shape[1]
+
+        # compute fc
+        all_fc = []
+        for dsaid in adata.obs["dsaid"].unique():
+            adata_dsaid = adata[adata.obs["dsaid"] == dsaid].copy()
+            fc = compute_FC(adata_dsaid)
+            all_fc.append(fc)
+
+        all_fc = np.array(all_fc)
+
+        # compute presence/absence of counts
+        count_presence = np.sum(~np.isnan(adata.X), axis=0)
+
+
+        # cutoff for top 50% genes by counts
+        cutoff = np.percentile(count_presence, 50)
+        mask_top = count_presence >= cutoff
+
+        # compute max abs FC per gene
+        max_abs_fc = np.nanmean(np.abs(all_fc), axis=0)
+
+        # apply mask
+        gene_idx_top = np.where(mask_top)[0]
+        fc_sel = max_abs_fc[mask_top]
+
+        # pick top K
+        top_local = np.argsort(fc_sel)[::-1][:k]
+        selected_idx = gene_idx_top[top_local]
+
+
+        # boolean mask for the top `k` genes
+        mask_top_k = np.zeros(total_n_genes, dtype=bool)
+        mask_top_k[selected_idx] = True
+
+        return mask_top_k
+
+    mask_genes = get_top_k_fc(adata, k=manual_parameters.get("max_seq_len"))
+
+
+
 elif manual_parameters.get("gene_filtering") == "top_variance":
     mask_genes = tr_h.get_top_k_highest_variance_genes(
         adata, k=manual_parameters.get("max_seq_len")
@@ -1285,7 +1347,8 @@ adata = adata[:, mask_genes]
 
 # mask samples
 # non_nan_percentage = np.sum(~np.isnan(adata.X), axis=1) / adata.X.shape[1]
-non_zero_non_nan_mask = ~np.isnan(adata.X) & ~(adata.X == 0)
+# non_zero_non_nan_mask = ~np.isnan(adata.X) & ~(adata.X == 0)
+non_zero_non_nan_mask = ~np.isnan(adata.X) 
 
 non_zero_non_nan_mask_pct = np.sum(non_zero_non_nan_mask, axis=1) / adata.X.shape[1]
 
@@ -1299,21 +1362,57 @@ logging.info(
 adata = adata[mask_samples, :]
 
 
-# set up the preprocessor, use the args to config the workflow
-preprocessor = Preprocessor(
-    use_key="X",  # the key in adata.layers to use as raw data
-    filter_gene_by_counts=filter_gene_by_counts,  # step 1
-    filter_cell_by_counts=False,  # step 2
-    normalize_total=1e4,  # 3. whether to normalize the raw data and to what sum
-    result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
-    # log1p=data_is_raw,  # 4. whether to log1p the normalized data
-    log1p=False,
-    result_log1p_key="X_log1p",
-    subset_hvg=False,  # 5. whether to subset the raw data to highly variable genes
-    hvg_flavor="seurat_v3" if data_is_raw else "cell_ranger",
-    binning=n_bins,  # 6. whether to bin the raw data and to what number of bins
-    result_binned_key="X_binned",  # the key in adata.layers to store the binned data
-)
+# config parameters
+data_is_raw = True
+filter_gene_by_counts = False
+
+if manual_parameters.get("scgpt_pp") == "norm_log1p":
+    # set up the preprocessor, use the args to config the workflow
+    preprocessor = Preprocessor(
+        use_key="X",  # the key in adata.layers to use as raw data
+        filter_gene_by_counts=False,  # step 1
+        filter_cell_by_counts=False,  # step 2
+        normalize_total=1e4,  # 3. whether to normalize the raw data and to what sum
+        result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
+        log1p=True,  # 4. whether to log1p the normalized data
+        result_log1p_key="X_log1p",
+        subset_hvg=False,  # 5. whether to subset the raw data to highly variable genes
+        hvg_flavor="seurat_v3" if True else "cell_ranger",
+        binning=n_bins,  # 6. whether to bin the raw data and to what number of bins
+        result_binned_key="X_binned",  # the key in adata.layers to store the binned data
+        )
+    
+    # define mapping of input layer
+    d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
+                    "normed_raw": "X_normed",
+                    "log1p": "X_normed",
+                    "binned": "X_binned",
+                    }
+
+elif manual_parameters.get("scgpt_pp") == "raw":
+
+    # set up the preprocessor, use the args to config the workflow
+    preprocessor = Preprocessor(
+        use_key="X",  # the key in adata.layers to use as raw data
+        filter_gene_by_counts=False,  # step 1
+        filter_cell_by_counts=False,  # step 2
+        normalize_total=None,  # 3. whether to normalize the raw data and to what sum
+        result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
+        log1p=False,  # 4. whether to log1p the normalized data
+        result_log1p_key="X_log1p",
+        subset_hvg=False,  # 5. whether to subset the raw data to highly variable genes
+        hvg_flavor="seurat_v3" if True else "cell_ranger",
+        binning=n_bins,  # 6. whether to bin the raw data and to what number of bins
+        result_binned_key="X_binned",  # the key in adata.layers to store the binned data
+        )
+    
+    # define mapping of input layer
+    d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
+                    "normed_raw": "X",
+                    "log1p": "X",
+                    "binned": "X_binned"
+                    }
+
 
 
 #! ADDED
@@ -1360,7 +1459,6 @@ if CLS_MULTILABEL:
     # get sanchez IC
     doid_2_ic = u.get_sanchez_ic(do_g)
 
-    #! IMPORTANT - FIX CONTROL CLASS
     # get nodes
     # _class_nodes = u.get_lvl1_nodes(do_g)
     _class_nodes = u.get_n_lowest_ic_nodes(doid_2_ic, 50)
@@ -1524,154 +1622,37 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
 
     torch.cuda.empty_cache()
 
-    #! ADDED - BATCH CORRECTION OPTION
-    #! ASSUMING GAUSSIAN DISTRIBUTION IN USE OF COMBAT! REVISE!
+    # quality control cleaning - enough samples and datasets
+    adata = tr_h.clean_adata_qc(adata)
+
     if manual_parameters.get("do_combat"):
-        # preprocess & batch correct
-        preprocessor(adata, batch_key=None)
-
-        # If we have samples from 1 single batch - combat will return NaN values for all
-        # we tackle this by removing samples with a single batch id
-        # remove samples from batch_id with only one sample
-        print(f"Shape of adata before preprocessing: {adata.shape}")
-        batch_counts = dict(adata.obs["batch_id"].value_counts())
-        _low_count_batches = [k for k, v in batch_counts.items() if v < 2]
-        mask = adata.obs["batch_id"].isin(_low_count_batches)
-        adata = adata[~mask].copy()
-        print(f"Removed {len(_low_count_batches)} batches with less than 2 samples")
-        print(f"Shape of _adata after removing low count batches: {adata.shape}")
-
-        adata = tr_h.perform_combat_correction(adata)
-        print("adata after preprocessing and batch correction")
+    
+        # perform combat analysis
+        adata = tr_h.apply_combat_adata(adata)
+        print("PERFORMED COMBAT")
         print(adata.X)
 
-        batch_ids = adata.obs["batch_id"].tolist()
-        num_batch_types = len(set(batch_ids))
-        batch_ids = np.array(batch_ids)
+    # convert batch ids to integers
+    _batch_ids = adata.obs["batch_id"].tolist()
+    num_batch_types = adata.obs["batch_id"].nunique()
+    _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
+    adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
 
-        """Re-map batch ids so it matches the max value of batches
-        """
-        _remap_dict = {k: i for i, k in enumerate(sorted(set(batch_ids)))}
-        batch_ids = np.array([_remap_dict[b] for b in batch_ids], dtype=int)
-        adata.obs["batch_id"] = batch_ids  # update the batch ids in adata.obs
+    # seperate data
+    adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1].copy()
+    adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0].copy()
 
-        # seperate the test and train data
-        adata_test = adata[adata.obs[f"test_split_{split}"] == 1]
-        adata = adata[adata.obs[f"test_split_{split}"] == 0]
+    # added
+    adata_test_raw = adata_test.copy()
 
-        print("adata_test after preprocessing and batch correction")
-        print(adata_test.X)
-
-    else:
-        #! ADD FLAG
-        if True:
-            def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int=2, n_dt:int=2)->sc.AnnData:
-                """Same criteria as in PP scritps
-                + n_samples per dataset
-                + n_dt per disease
-                """
-                # filter by sufficient samples
-                if "Control" in adata.obs[disease_label].unique():
-                    # split adata into control and disease
-                    adata_control = adata.obs[adata.obs[disease_label]=="Control"]
-                    adata_dis = adata.obs[adata.obs[disease_label]!="Control"]
-
-                    # check which datasets have enough samples
-                    _datasets_control_passed = [k for k, v in dict(adata_control.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-                    print(f"Nº of datasets with +{n_samples} control samples: {len(_datasets_control_passed)}")
-
-                    _datasets_dis_passed = [k for k, v in dict(adata_dis.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-                    print(f"Nº of datasets with +{n_samples} disease samples: {len(_datasets_dis_passed)}")
-
-                    _datasets_passed = set(_datasets_control_passed).intersection(set(_datasets_dis_passed))
-                    print(f"Nº of datasets with +{n_samples} samples (control and disease): {len(_datasets_passed)}")
-
-                    # filter adata
-                    adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
-                    print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
-                
-                else:
-                    _datasets_passed = [k for k, v in dict(adata.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-                    print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
-
-                    # filter adata
-                    adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
-                    print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
-
-
-                # filter by sufficient datasets
-                dis = adata.obs["do_id"].unique()
-                dis = [d for d in dis if d != "Control"]  # remove controls
-                _passed_diseases = list()
-                for d in dis:
-                    _df_counts = adata.obs[adata.obs["do_id"] == d].groupby("dataset", observed=True).size()
-                    if len(_df_counts) >= 2:
-                        _passed_diseases.append(d)
-                print(f"Nº of passed diseases {len(_passed_diseases)}/ {len(dis)}")
-                adata = adata[adata.obs["do_id"].isin(_passed_diseases)]
-                return adata
-            
-            def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:
-                # copy data
-                adata_tmp = adata.copy()
-                X = adata_tmp.X.copy()
-
-                # mask nans
-                mask_nans = np.isnan(X)
-
-                # compute medians, ignoring NaNs
-                col_medians = np.nanmedian(X, axis=0)
-
-                # broadcast to fill NaNs with the corresponding gene's median
-                X = np.where(np.isnan(X), col_medians, X)
-                adata_tmp.X = X
-
-                # apply batch correction
-                X = sc.pp.combat(adata_tmp, key="dataset", inplace=False)
-
-                # restore nans
-                X[mask_nans] = np.nan
-
-                adata_tmp.X = X
-                return adata_tmp
-
-            # quality control cleaning - enough samples and datasets
-            adata = clean_adata_qc(adata)
-
-            # perform combat analysis
-            adata = apply_combat_adata(adata)
-            print("PERFORMED COMBAT")
-            print(adata.X)
-        
-        # convert batch ids to integers
-        _batch_ids = adata.obs["batch_id"].tolist()
-        num_batch_types = adata.obs["batch_id"].nunique()
-        _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
-        adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
-
-        # seperate data
-        adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1]
-        adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0]
-
-        # added
-        adata_test_raw = adata_test.copy()
-
-        # batch correct - same as in original tutorial
-        preprocessor(adata, batch_key=None)
-        preprocessor(adata_test, batch_key=None)
+    # batch correct - same as in original tutorial
+    preprocessor(adata, batch_key=None)
+    preprocessor(adata_test, batch_key=None)
 
     #! ASSESS MAX VALUES AFTER PP
-
-
     batch_ids = adata.obs["batch_id"].to_numpy()
 
-    input_layer_key = (
-        {  # the values of this map coorespond to the keys in preprocessing
-            "normed_raw": "X_normed",
-            "log1p": "X_normed",
-            "binned": "X_binned",
-        }[input_style]
-    )
+    input_layer_key = d_input_layer[input_style]
     all_counts = (
         adata.layers[input_layer_key].A
         if issparse(adata.layers[input_layer_key])
