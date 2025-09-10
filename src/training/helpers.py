@@ -338,6 +338,7 @@ def split_stratified(
     group_label: str = "dataset_id",
     split_size: int = 10,
     seed: int = 42,
+    new_label:str= "test_split_1"
 ) -> pd.DataFrame:
     """Get a single stratified test split for the provided observations.
     We are here splitting datasets - trying to ensure for each label(disease) we hav at least one dataset in both train and test.
@@ -353,6 +354,7 @@ def split_stratified(
 
     ds_per_label = _df_diseases.groupby(y_label, observed=True)[group_label].nunique()
     if (ds_per_label < 2).any():
+        print(ds_per_label[ds_per_label < 2])
         raise ValueError("Some labels occur in <2 datasets; cannot place them in both splits.")
 
     train_groups = set()    # datasets in train
@@ -360,11 +362,11 @@ def split_stratified(
 
     # loop through labels (sorted for determinism; remove 'sorted' if you prefer)
     labels = sorted(df[y_label].unique())
-    print(f"Labels: {len(labels)} {labels}")
+    print(f"All Labels: {len(labels)} {labels}")
 
     # remove "Control" from labels !
     labels = [l for l in labels if l != "Control"]
-    print(f"Labels: {len(labels)} {labels}")
+    print(f"Remove Controls - Labels: {len(labels)} {labels}")
 
     for y_i in labels:
         # subset w/ this label (ie disease)
@@ -395,7 +397,8 @@ def split_stratified(
             else:
                 # both sides already have this label; keep your original choice
                 train_groups.add(g)
-
+            continue
+        
         _s_size = max(1, len(_groups_to_split) // split_size)  # at least 1 to test
         # if nothing from this label is in train yet, don't send them all to test
         if not already_train and _s_size >= len(_groups_to_split):
@@ -407,7 +410,7 @@ def split_stratified(
         train_groups.update(set(_groups_to_split) - _test_groups)
 
     # final assignment STRICTLY by dataset_id membership in test_groups
-    df["test_split_1"] = df[group_label].isin(test_groups).astype(int)
+    df[new_label] = df[group_label].isin(test_groups).astype(int)
     return df
 
 def is_test_good(df_split_2, group_label:str="dataset_id", i=1):
@@ -501,19 +504,19 @@ def define_wandb_metrcis():
     wandb.define_metric("test/avg_bio", summary="max")
 
 
-def report_split(df:pd.DataFrame, disease_label:str="celltype", split_idx:int = 1)->None:
-    
+def report_split(df:pd.DataFrame, disease_label:str="celltype", split_label:str="test_split_1")->None:
+
     # filter
-    df_train = df[df[f"test_split_{split_idx}"]==0]
-    df_test = df[df[f"test_split_{split_idx}"]==1]
-    
+    df_train = df[df[f"{split_label}"]==0]
+    df_test = df[df[f"{split_label}"]==1]
+
     # report
-    print(f"Nº of diseases in train split {split_idx}:\t{df_train[disease_label].nunique()}")
-    print(f"Nº of diseases in test split {split_idx}:\t{df_test[disease_label].nunique()}")
-    print(f"Nº of datasets in train split {split_idx}:\t{df_train['dataset_id'].nunique()}")
-    print(f"Nº of datasets in test split {split_idx}:\t{df_test['dataset_id'].nunique()}")
-    print(f"Nº of samples in train split {split_idx}:\t{df_train['ids'].nunique()}")
-    print(f"Nº of samples in test split {split_idx}:\t{df_test['ids'].nunique()}")
+    print(f"Nº of diseases in train split {split_label}:\t{df_train[disease_label].nunique()}")
+    print(f"Nº of diseases in test split {split_label}:\t{df_test[disease_label].nunique()}")
+    print(f"Nº of datasets in train split {split_label}:\t{df_train['dataset_id'].nunique()}")
+    print(f"Nº of datasets in test split {split_label}:\t{df_test['dataset_id'].nunique()}")
+    print(f"Nº of samples in train split {split_label}:\t{df_train['ids'].nunique()}")
+    print(f"Nº of samples in test split {split_label}:\t{df_test['ids'].nunique()}")
 
 def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int=2, n_dt:int=2)->sc.AnnData:
     """Same criteria as in PP scritps
@@ -541,7 +544,7 @@ def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int
         print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
     
     else:
-        _datasets_passed = [k for k, v in dict(adata.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        _datasets_passed = [k for k, v in dict(adata.obs.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
         print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
 
         # filter adata
@@ -555,10 +558,13 @@ def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int
     _passed_diseases = list()
     for d in dis:
         _df_counts = adata.obs[adata.obs["do_id"] == d].groupby("dataset", observed=True).size()
-        if len(_df_counts) >= 2:
+        if len(_df_counts) >= n_dt:
             _passed_diseases.append(d)
     print(f"Nº of passed diseases {len(_passed_diseases)}/ {len(dis)}")
-    adata = adata[adata.obs["do_id"].isin(_passed_diseases)]
+    _passed_dsaids = adata.obs[adata.obs["do_id"].isin(_passed_diseases)]["dsaid"].unique()
+    print(f"Nº of passed dsaids {len(_passed_dsaids)}/ {len(adata.obs['dsaid'].unique())}")
+    _mask = adata.obs["dsaid"].isin(_passed_dsaids)
+    adata = adata[_mask]
     return adata
 
 def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:

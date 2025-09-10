@@ -321,7 +321,7 @@ def get_roc(y_pos_score:List, y_neg_score:List, weights=None, sample=np.inf)->fl
     if len(y_pos_score) > sample:
         _idxs = random.sample(range(len(y_pos_score)), sample)
         y_pos_score = y_pos_score[_idxs]
-        weights = weights[_idxs] if weights else None
+        weights = weights[_idxs] if (weights is not None) else None
 
     print(f"Nº of positive disease pairs: {len(y_pos_score)}")
     
@@ -345,7 +345,10 @@ def plot_roc(
 
     for i in range(len(Y_pos)):
         Y_pos_i = Y_pos[i]
-        w_pos_i = w_pos[i] if w_pos else None
+        # when slicing per-disease
+        w_pos_i = w_pos[i] if (w_pos is not None) else None
+
+        
         print(f"Nº of positive disease pairs: {len(Y_pos_i)}")
         
         roc_auc, fpr, tpr = get_roc(Y_pos_i, y_neg_score, weights=w_pos_i, sample=sample)
@@ -827,8 +830,7 @@ def get_related_dis_sim_splits(
 
     return c_all, w_all, l_all
 
-def plot_tsne_adata(adata: sc.AnnData, label: str, dpi:int=300, sample_size:int=None) -> None:
-
+def transform_tsne(adata, sample_size=None):
     adata_copy = adata.copy()
 
     def _fill_nans(X):
@@ -854,22 +856,40 @@ def plot_tsne_adata(adata: sc.AnnData, label: str, dpi:int=300, sample_size:int=
 
     # compute t-SNE on expression matrix
     X = TSNE(n_components=2, random_state=42).fit_transform(X)
+    return X, adata_copy
 
-    # get colors for labels
-    lab = adata_copy.obs[label]
+def plot_tsne_adata(X:np.array, adata: sc.AnnData, label: str, dpi:int=300, title:str=None) -> None:
+    
+    # plot 
+    lab = adata.obs[label]
+    mask_control = (lab == "Control") | (lab == "unknown") | (lab == "nan")
+    X_non_control = X[~mask_control]
+    lab_nc = lab[~mask_control]
+    X_control = X[mask_control]
+    lab_c = lab[mask_control]
+    plt.figure(figsize=(3,3), dpi=dpi)   
+
+    if len(X_control) > 0:
+        plt.scatter(X_control[:,0], X_control[:,1],
+                    c="lightgrey", s=27, alpha=0.9, label="Control", linewidths=0)
+
+
+    # get colors for labels    
     if not pd.api.types.is_categorical_dtype(lab):
         lab = lab.astype("category")
 
-    codes = lab.cat.codes.to_numpy()
-    cats  = lab.cat.categories.to_list()
+    codes = lab_nc.cat.codes.to_numpy()
+    cats  = lab_nc.cat.categories.to_list()
     cmap = cm.get_cmap("tab20", len(cats)) if len(cats) <= 20 else cm.get_cmap("gist_rainbow", len(cats))
 
-    # plot 
-    plt.figure(figsize=(3,3), dpi=dpi)   
-    sc_plot = plt.scatter(X[:,0], X[:,1],
-                          c=codes, cmap=cmap, s=8, alpha=0.7)
+    sc_plot = plt.scatter(X_non_control[:,0], X_non_control[:,1],
+                        c=codes, cmap=cmap, s=20, alpha=0.7,linewidths=0)
 
     plt.title(f"t-SNE colored by {label}")
+
+    if title:
+        plt.title(title)
+
     plt.xlabel("t-SNE 1"); plt.ylabel("t-SNE 2")
     plt.tight_layout()
     

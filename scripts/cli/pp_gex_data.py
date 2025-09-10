@@ -44,8 +44,8 @@ from src.utils import utils as mu
 manual_parameters = { 
     "dataset_exercise":"umls_clean",                 
     "diseases_of_interest_set": None,
-    "library_strategies_of_interest_set": ["RNA-Seq"],
-    "normalize": "log2CPM",  # options: "log2CPM", "CPM", None
+    "library_strategies_of_interest_set": ["RNA-Seq", "Microarray"],
+    "processing": "linear"  # options: "log2", "scgpt_pp", None
 }
 
 # variables
@@ -67,13 +67,16 @@ do_g = mu.load_do_graph()
 
 if manual_parameters.get("dataset_exercise"):
     if manual_parameters["dataset_exercise"] == "umls_clean":
+        
         print("UMLS Dataset")
-
         # get dsaids of interest
         dsaids_interest = mu.get_doids_with_umls(manual_parameters.get("library_strategies_of_interest_set"))
         
-        # df = get_exp_prof(dsaids_interest)
-        df = pp.get_processed_exp_prof(dsaids_interest, normalize=manual_parameters.get("normalize"))
+        # df = pp.get_processed_exp_prof(dsaids_interest, normalize=manual_parameters.get("normalize"))
+        b_p = pp.bulk_processing(processing=manual_parameters.get("processing"), do_z_transform=False, agg_genes="median")
+
+        # process ids
+        d_types, df = b_p.get_processed_exp_prof(dsaids_interest)
         ids = df["ID"].to_list()
 
         logging.info(f"Loaded - Nº total samples: {df.shape}")

@@ -101,6 +101,8 @@ parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 
 # Define arguments
+description = "ONLY DISEASES - NO CONTROLS - n_samples=1, n_dt=4"
+
 parser.add_argument(
     "--data_path", type=str, required=True, help="Path to the data file"
 )
@@ -115,7 +117,7 @@ parser.add_argument(
     "--split_type", type=str, default="stratified", help="Type of gene filtering"
 )
 parser.add_argument(
-    "--val_split_type", type=str, default="random", help="Type of gene filtering"
+    "--val_split_type", type=str, default="rand_stratified", help="Type of gene filtering"
 )
 parser.add_argument(
     "--n_splits", type=int, default=10, help="Number of splits for cross-validation"
@@ -208,6 +210,7 @@ manual_parameters = {
     "do_combat": args.do_combat,
     "ontology": args.ontology,
     "scgpt_pp": args.scgpt_pp,
+    "description":description
 }
 
 
@@ -302,7 +305,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 )
 
                 #! ADD FLAG
-                if True:
+                if False:
                     logits = output_dict["cls_output"]
                     y_multi = disease_multilabel.float()
 
@@ -1236,9 +1239,9 @@ print(adata.X)
 
 
 #! REMOVE - THIS IS A QUICK AND UGLY FIX
-# only_control = True
-# if only_control:
-#     adata = adata[adata.obs["doid_id"] != "Control"].copy()
+only_control = True
+if only_control:
+    adata = adata[adata.obs["doid_id"] != "Control"].copy()
 
 # define celltype as disease
 if manual_parameters.get("ontology") == "mesh":
@@ -1367,11 +1370,15 @@ data_is_raw = True
 filter_gene_by_counts = False
 
 if manual_parameters.get("scgpt_pp") == "norm_log1p":
+    #! CHANGE IN FUTURE!
+    #! we are introducing log2 scaled data - we should NOT apply log1 on the log2
+    adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
+
     # set up the preprocessor, use the args to config the workflow
     preprocessor = Preprocessor(
         use_key="X",  # the key in adata.layers to use as raw data
         filter_gene_by_counts=False,  # step 1
-        filter_cell_by_counts=False,  # step 2
+        filter_cell_by_counts=False,  # step 2 #! WE HAVE CASES WHERE EVERYTHING IS 0 - WE SHOULD ACTIVATE THIS!
         normalize_total=1e4,  # 3. whether to normalize the raw data and to what sum
         result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
         log1p=True,  # 4. whether to log1p the normalized data
@@ -1407,7 +1414,7 @@ elif manual_parameters.get("scgpt_pp") == "raw":
         )
     
     # define mapping of input layer
-    d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
+    d_input_layer = {  # the values of this map correspond to the keys in preprocessing
                     "normed_raw": "X",
                     "log1p": "X",
                     "binned": "X_binned"
@@ -1579,6 +1586,12 @@ elif manual_parameters.get("split_type") == "mixed":
     )
     adata.obs = new_obs
 
+
+# quality control cleaning - enough samples and datasets
+adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=5)
+print("QUALITY CONTROL FILTER - ADATA SHAPE:", adata.shape)
+
+
 # store original data
 adata_orig = adata.copy()
 
@@ -1621,16 +1634,17 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     }
 
     torch.cuda.empty_cache()
-
-    # quality control cleaning - enough samples and datasets
-    adata = tr_h.clean_adata_qc(adata)
-
     if manual_parameters.get("do_combat"):
-    
+        # change to log2 scale before!
+        adata.X = np.log2(adata.X + 1)  
+
         # perform combat analysis
         adata = tr_h.apply_combat_adata(adata)
         print("PERFORMED COMBAT")
         print(adata.X)
+
+        # change back to raw data scale!
+        adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
 
     # convert batch ids to integers
     _batch_ids = adata.obs["batch_id"].tolist()
@@ -1639,8 +1653,12 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
 
     # seperate data
-    adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1].copy()
-    adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0].copy()
+    adata_test = adata[adata.obs[f"test_split_{split}"] == 1].copy()
+    adata = adata[adata.obs[f"test_split_{split}"] == 0].copy()
+
+    #! IMPORTANT BUG BEFORE:
+    # adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1].copy()
+    # adata = adata_orig[adata_orig.obs[f"test_split_{split}"] == 0].copy()
 
     # added
     adata_test_raw = adata_test.copy()
@@ -1648,6 +1666,10 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     # batch correct - same as in original tutorial
     preprocessor(adata, batch_key=None)
     preprocessor(adata_test, batch_key=None)
+    """batch_key (:class:`str`, optional):
+            The key of :class:`AnnData.obs` to use for batch information. This arg
+            is used in the highly variable gene selection step
+    """
 
     #! ASSESS MAX VALUES AFTER PP
     batch_ids = adata.obs["batch_id"].to_numpy()
@@ -1666,13 +1688,50 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     # Create indices for the entire dataset
     all_indices = np.arange(len(all_counts))
 
-    # Split to get indices only
-    train_idx, valid_idx = train_test_split(
-        np.arange(len(all_counts)),
-        test_size=0.1,
-        shuffle=True,
-        stratify=celltypes_labels,
-    )
+    if manual_parameters.get("val_split_type") == "rand_stratified":
+        # Split to get indices only
+        train_idx, valid_idx = train_test_split(
+            np.arange(len(all_counts)),
+            test_size=0.1,
+            shuffle=True,
+            stratify=celltypes_labels,
+            random_state=42,
+        )
+        print(f"train_idx {train_idx.shape}, valid_idx {valid_idx.shape}")
+
+    elif manual_parameters.get("val_split_type") == "stratified":
+        _df_obs = adata.obs.copy()
+        valid_obs = tr_h.split_stratified(
+        df=_df_obs,
+        y_label="doid_id",  # should ALWAYS be on DOID! - OR  celltype be DOID! 
+        group_label="dataset_id",
+        split_size=10,
+        seed=42,
+        new_label="valid_split_1"
+        )
+
+        tr_h.report_split(valid_obs, split_label="valid_split_1")
+
+        mask_valid = valid_obs["valid_split_1"] == 1
+        mask_train = valid_obs["valid_split_1"] == 0
+
+        valid_idx =  np.argwhere(mask_valid.to_numpy()).flatten()
+        train_idx =  np.argwhere(mask_train.to_numpy()).flatten()
+        
+        # shuffle 
+        #! CRITICAL
+        rng = np.random.default_rng(42)
+
+        valid_idx = rng.permutation(valid_idx)
+        train_idx = rng.permutation(train_idx)
+
+        print(f"train_idx {train_idx.shape}, valid_idx {valid_idx.shape}")
+
+    elif manual_parameters.get("val_split_type") == "testing":
+        # another sklearn split
+        train_idx = np.array(range(len(adata)))[1000:]
+        valid_idx = np.array(range(len(adata)))[:1000]
+
 
     # Use indices to split the data manually
     train_data = all_counts[train_idx]
@@ -1731,7 +1790,6 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     )
 
     # endregion
-
     # region 3. Load the pre-trained scGPT model
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -1898,17 +1956,12 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     d_y_multilabel = u.get_multilabel_dict_from_adata(train_adata)
     _Y_train = np.array(d_y_multilabel["Y_multilabel"])
 
-
     print("_Y_test", _Y_test.shape, min(np.sum(_Y_test, axis=0)), min(np.sum(_Y_test, axis=1)) )
     print("_Y_valid", _Y_valid.shape, min(np.sum(_Y_valid, axis=0)), min(np.sum(_Y_valid, axis=1)) )
     print("_Y_train", _Y_train.shape, min(np.sum(_Y_train, axis=0)), min(np.sum(_Y_train, axis=1)) )
 
-
-    # sys.exit(0)
-
-
     epochs = manual_parameters.get("epochs")
-    patience = 3
+    patience = 10
     wait = 0
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()

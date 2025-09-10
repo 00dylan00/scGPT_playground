@@ -6,6 +6,14 @@ import numpy as np
 import anndata as ad, yaml
 from typing import *
 from tqdm.contrib.concurrent import thread_map, process_map
+from tqdm.contrib.concurrent import thread_map, process_map
+import scipy
+import numpy as np
+from typing import *
+from functools import partial
+from tqdm.contrib.concurrent import thread_map
+
+
 
 def convert_to_adata(df:pd.DataFrame, normalize:bool)-> sc.AnnData:
     """Convert DataFrame to AnnData"""
@@ -406,3 +414,382 @@ def add_sample_counts(ids:str, df_info:pd.DataFrame) -> pd.DataFrame:
     df_info["n_controls"] = df_info["dsaid"].map(lambda x: d_counts[x]["n_controls"])
 
     return df_info
+
+
+class bulk_processing:
+    def __init__(self, processing:str=None, do_z_transform:bool=False, agg_genes:str=None):
+        if processing is not None:
+            assert processing in ["log2", "scgpt_pp", "linear"], "Err Select correct option"
+        self.processing = processing
+        self.do_z_transform = do_z_transform        
+        self.agg_genes = agg_genes 
+        self.processing = processing
+        self.genes = None
+        if self.agg_genes:
+            assert self.agg_genes in ["keep_first", "median", "mean"], "Err Select correct option"
+        
+    def store_human_protein_coding_genes(self)->set:
+        self.genes = self.get_human_protein_coding_genes()
+
+    def load_ncbi_gene_ids(self)->pd.DataFrame:
+        yml_path = "/aloy/home/ddalton/projects/disease_signatures/conf/paths.yml"
+        # Load YAML content
+        with open(yml_path, "r") as f:
+            config = yaml.safe_load(f)
+        database_dir = config["database_dir"]
+        return pd.read_csv(os.path.join(database_dir, "NCBI/gene_info"), sep="\t", usecols=["#tax_id", "GeneID", "type_of_gene", "Symbol"]
+            )
+
+    def get_human_protein_coding_genes(self)->set:
+        ncbi_gene_info = self.load_ncbi_gene_ids()
+        genes = ncbi_gene_info[(ncbi_gene_info["#tax_id"] == 9606) & (ncbi_gene_info["type_of_gene"] == "protein-coding")]["Symbol"].unique()
+        return sorted(list(genes))
+
+
+    def _is_raw_ma(self, expr):
+        """Simple Approximation to identify raw ma expr
+        Rules:
+            1. We have values >= 100 (not log transformed)
+            2. We have no negative values (expr not centred)
+        """
+        if expr.max() >= 100 and (expr < 0).sum() == 0:
+            return True
+        return False
+
+    def _is_raw_shifted_ma(self, expr):
+        """Simple Approximation to identify raw shifted ma expr
+        Rules:
+            1. We have values >= 100 (not log transformed)
+            2. We have negative values (expr not centred)
+        """
+        if expr.max() >= 100 and (expr < 0).sum() > 0:
+            return True
+        return False
+
+    def _is_log_ma(self, expr):
+        """Simple Approximation to identify log ma expr
+        Rules:
+            1. We have values < 20 (log transformed)
+            2. We have no negative values (expr not centred)
+        """
+        if expr.max() < 20 and (expr < 0).sum() == 0:
+            return True
+        return False
+
+    def _is_log_shifted_ma(self, expr):
+        """Simple Approximation to identify log shifted ma expr
+        Rules:
+            1. We have values < 20 (log transformed)
+            2. We have negative values (expr not centred)
+        """
+        if expr.max() < 20 and (expr < 0).sum() > 0:
+            return True
+        return False
+
+
+    def _log2_transform(self, expr):
+        """Log transform expression expr
+        """
+        assert expr.min() >= 0, "expr has negative values, cannot recentre"
+        # no need to handle nans - nans will stay nans 
+        return np.log2(expr + 1)    # add small offset - using log2 stabilizes variance
+    
+    def _log1_transform(self, expr):
+        """Log transform expression expr
+        """
+        assert expr.min() >= 0, "expr has negative values, cannot recentre"
+        # no need to handle nans - nans will stay nans 
+        return np.log1p(expr)    # add small offset - using log2 stabilizes variance
+    
+
+    def _recentre_expr(self, expr):
+        """Recentre expr so we have no negative values
+        """
+        return expr - expr.min()
+
+
+    def _z_transform_ma(self, expr):
+
+        """Z transform expression expr
+        """
+    
+        # normalize across genes for a given dataset
+        # bare in mind 0 variance genes will become nans!
+        # idea is that all genes contribute equally
+        #! any sample with nan for a given gene will make all samples to have nans for said gene 
+        #! GENE WISE!
+        return scipy.stats.zscore(expr, axis=0, nan_policy='propagate')
+
+    def _classify_expr(self, expr):
+        if self._is_raw_ma(expr):
+            return "raw"
+        elif self._is_raw_shifted_ma(expr):
+            return "raw_shifted"
+        elif self._is_log_ma(expr):
+            return "log"
+        elif self._is_log_shifted_ma(expr):
+            return "log_shifted"
+        else:
+            return "unknown"
+
+    def convert_to_log2(self, df_expr):        
+        # retrieve expression - first column is gene symbols
+        gene_col = df_expr.columns[0]
+        sample_col = df_expr.columns[1:]
+
+        gene_ids = df_expr[gene_col].to_list()
+        expr = df_expr.iloc[:, 1:].astype(float).to_numpy() # genes are rows columns are samples
+
+        # determine expression type
+        expr_type = self._classify_expr(expr)
+
+        # process different expression types
+        if expr_type == "raw":
+            expr = self._log2_transform(expr)
+        elif expr_type == "raw_shifted":
+            expr = self._recentre_expr(expr)
+            expr = self._log2_transform(expr)
+        elif expr_type == "log":
+            expr = expr  # already log transformed
+        elif expr_type == "log_shifted":
+            expr = expr 
+        elif expr_type == "unknown":
+            return None
+
+        # Convert back to DataFrame
+        df_expr_p = pd.DataFrame(expr, columns=sample_col, index=df_expr.index)
+        
+        # Add ID column back
+        df_expr_p.insert(0, "gene_symbol", gene_ids)
+        
+        # handle duplicates
+        df_expr_p = self._aggregate_genes(df_expr_p)
+
+        return df_expr_p
+
+    def _aggregate_genes(self, df_expr:pd.DataFrame)->pd.DataFrame:
+        
+        gene_col = df_expr.columns[0]  # first column is gene symbols
+
+        if self.agg_genes == "keep_first":
+            df_expr = df_expr.drop_duplicates(subset=gene_col, keep='first')
+        elif self.agg_genes == "mean":
+            df_expr = df_expr.groupby(gene_col, as_index=False).mean(numeric_only=True)
+        elif self.agg_genes == "median":
+            df_expr = df_expr.groupby(gene_col, as_index=False).median(numeric_only=True)
+        
+        return df_expr
+
+    def convert_to_zscore(self, df_expr):
+        # retrieve expression - first column is gene symbols
+        sample_ids = df_expr["ID"].to_list()
+        gene_cols = df_expr.columns[1:]
+        expr = df_expr.iloc[:, 1:].astype(float).to_numpy()
+
+        # apply z transformation GENE WISE
+        #! any samples w/ nans in a gene will propagate said nans to all samples
+        expr = self._z_transform_ma(expr)
+
+        # Convert back to DataFrame
+        df_expr_p = pd.DataFrame(expr, columns=gene_cols, index=df_expr.index)
+
+        # Add ID column back
+        df_expr_p.insert(0, "ID", sample_ids)
+        return df_expr_p
+        
+
+    def _transpose_df_expr(self, df:pd.DataFrame)->pd.DataFrame:
+        """
+        Process the DataFrame to set gene symbols as index, transpose it, and reset index.
+        """
+        # before clean all genes w/ only nans
+        df = df.dropna(how="all")
+        
+        # set gene symbol as index
+        df = df.set_index("gene_symbol")
+
+        # transpose the DataFrame
+        # this way column names will be the gene symbols and rows will the samples
+        df = df.T
+
+        # reset index so samples are no longer the index
+        df = df.reset_index()
+
+        # rename index to ID
+        df = df.rename(columns={"index": "ID"})
+
+        return df
+
+    def _load_processed_data(self, dsaid:str)->pd.DataFrame:
+        """
+        Load raw data for a given DSAID.
+        """
+        # Path to your YAML file
+        yml_path = "/aloy/home/ddalton/projects/disease_signatures/conf/paths.yml"
+        # Load YAML content
+        with open(yml_path, "r") as f:
+            config = yaml.safe_load(f)
+        database_dir = config["database_dir"]
+        
+        return pd.read_csv(os.path.join(database_dir, "DiSignAtlas","exp-profile-processed", f"{dsaid}.csv"))
+
+
+    def normalize_total_numpy(self, X: np.ndarray, target_sum: float = 1e4) -> np.ndarray:
+        """
+        Normalize each column (cell) of a genes × cells matrix so that it sums to `target_sum`.
+
+        Parameters
+        ----------
+        X : np.ndarray
+            2D array (genes × cells).
+        target_sum : float
+            The total counts per cell after normalization.
+
+        Returns
+        -------
+        X_norm : np.ndarray
+            Normalized array (same shape as X).
+        """
+        # Sum of counts per cell, ignoring NaNs
+        counts_per_cell = np.nansum(X, axis=0, keepdims=True)  # shape (1, n_cells)
+
+        # Avoid division by zero
+        counts_per_cell[counts_per_cell == 0] = 1.0
+
+        # Normalize (NaNs in X will remain NaN)
+        X_norm = X / counts_per_cell * target_sum
+
+        return X_norm
+
+
+    def convert_scgpt_pp(self, df_expr):
+        
+        # retrieve expression - first column is gene symbols
+        gene_col = df_expr.columns[0]
+        sample_col = df_expr.columns[1:]
+
+        gene_ids = df_expr[gene_col].to_list()
+        expr = df_expr.iloc[:, 1:].astype(float).to_numpy() # genes are rows columns are samples
+
+        # determine expression type
+        expr_type = self._classify_expr(expr)
+
+        # process different expression types
+        if expr_type == "raw":
+            expr = self.normalize_total_numpy(expr)
+            expr = self._log1_transform(expr)
+
+        elif expr_type == "raw_shifted":
+            expr = self._recentre_expr(expr)
+            expr = self.normalize_total_numpy(expr)
+            expr = self._log1_transform(expr)
+        elif expr_type == "log":
+            expr = np.power(2, expr) - 1  # revert log2
+            expr = self.normalize_total_numpy(expr)
+            expr = self._log1_transform(expr)
+        elif expr_type == "log_shifted":
+            expr = np.power(2, expr) - 1  # revert log2
+            expr = self._recentre_expr(expr)
+            expr = self.normalize_total_numpy(expr)
+            expr = self._log1_transform(expr)
+        elif expr_type == "unknown":
+            return None
+
+        # Convert back to DataFrame
+        df_expr_p = pd.DataFrame(expr, columns=sample_col, index=df_expr.index)
+        
+        # Add ID column back
+        df_expr_p.insert(0, "gene_symbol", gene_ids)
+        
+        # handle duplicates
+        df_expr_p = self._aggregate_genes(df_expr_p)
+
+        return df_expr_p
+    
+
+    def convert_linear(self, df_expr):
+        
+        # retrieve expression - first column is gene symbols
+        gene_col = df_expr.columns[0]
+        sample_col = df_expr.columns[1:]
+
+        gene_ids = df_expr[gene_col].to_list()
+        expr = df_expr.iloc[:, 1:].astype(float).to_numpy() # genes are rows columns are samples
+
+        # determine expression type
+        expr_type = self._classify_expr(expr)
+
+        # process different expression types
+        if expr_type == "raw":
+            expr = expr # do nothing
+        elif expr_type == "raw_shifted":
+            expr = self._recentre_expr(expr)
+        elif expr_type == "log":
+            expr = np.power(2, expr) - 1  # revert log2
+        elif expr_type == "log_shifted":
+            expr = np.power(2, expr) - 1  # revert log2
+            expr = self._recentre_expr(expr)
+        elif expr_type == "unknown":
+            return None
+
+        # Convert back to DataFrame
+        df_expr_p = pd.DataFrame(expr, columns=sample_col, index=df_expr.index)
+        
+        # Add ID column back
+        df_expr_p.insert(0, "gene_symbol", gene_ids)
+        
+        # handle duplicates
+        df_expr_p = self._aggregate_genes(df_expr_p)
+
+        return df_expr_p
+    
+
+
+
+    def _load_one_processed(self, dsaid: str, cols):
+        try:
+            df = self._load_processed_data(dsaid)
+            d_type = self._classify_expr(df.iloc[:, 1:].to_numpy())
+            if self.processing == "log2":
+                df = self.convert_to_log2(df)                   
+            elif self.processing == "scgpt_pp":
+                df = self.convert_scgpt_pp(df)
+            elif self.processing == "linear":
+                df = self.convert_linear(df)
+            else:
+                df = self._aggregate_genes(df)
+  
+            if df is None:
+                print(f"DSAOID {dsaid}: Could not classify expression type {d_type}, skipping...")
+                return None
+
+            df = self._transpose_df_expr(df)                            
+            if self.do_z_transform:
+                df = self.convert_to_zscore(df)
+            return (dsaid, d_type), df.reindex(columns=cols)
+        
+        except Exception as e:
+            print(f"[warn] DSAID {dsaid}: {e}")
+            return None
+
+
+    def get_processed_exp_prof(self, dsaids_interest:list,):
+        if self.genes is None:
+            self.store_human_protein_coding_genes()
+
+        # define fixed dataframe columns
+        cols = ["ID"] + list(self.genes)
+
+        # define worker function
+        worker = partial(self._load_one_processed, cols=cols)
+        n_workers = max(1, (os.cpu_count() or 1) - 1)  # optional: leave 1 core free
+
+        # run parallel processing
+        frames = thread_map(worker, dsaids_interest,
+                            max_workers=n_workers, chunksize=1, desc="Processing")
+
+        d_types = [f[0] for f in frames if f is not None] 
+        d_types = {k:v for k,v in d_types}
+        frames = [f[1] for f in frames if f is not None]
+
+        return d_types, pd.concat(frames, axis=0, ignore_index=True, copy=False) if frames else pd.DataFrame(columns=cols)
