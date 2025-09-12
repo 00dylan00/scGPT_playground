@@ -452,7 +452,9 @@ class bulk_processing:
             1. We have values >= 100 (not log transformed)
             2. We have no negative values (expr not centred)
         """
-        if expr.max() >= 100 and (expr < 0).sum() == 0:
+        # nan values can really mess this up!
+        _expr = np.where(np.isnan(expr), 0, expr )
+        if _expr.max() >= 100 and (_expr < 0).sum() == 0:
             return True
         return False
 
@@ -462,7 +464,8 @@ class bulk_processing:
             1. We have values >= 100 (not log transformed)
             2. We have negative values (expr not centred)
         """
-        if expr.max() >= 100 and (expr < 0).sum() > 0:
+        _expr = np.where(np.isnan(expr), 0, expr )
+        if _expr.max() >= 100 and (_expr < 0).sum() > 0:
             return True
         return False
 
@@ -472,7 +475,8 @@ class bulk_processing:
             1. We have values < 20 (log transformed)
             2. We have no negative values (expr not centred)
         """
-        if expr.max() < 20 and (expr < 0).sum() == 0:
+        _expr = np.where(np.isnan(expr), 0, expr )
+        if _expr.max() < 20 and (_expr < 0).sum() == 0:
             return True
         return False
 
@@ -482,7 +486,8 @@ class bulk_processing:
             1. We have values < 20 (log transformed)
             2. We have negative values (expr not centred)
         """
-        if expr.max() < 20 and (expr < 0).sum() > 0:
+        _expr = np.where(np.isnan(expr), 0, expr )
+        if _expr.max() < 20 and (_expr < 0).sum() > 0:
             return True
         return False
 

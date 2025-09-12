@@ -1351,20 +1351,31 @@ logging.info(f"Combined mask {np.sum(mask_genes)} genes left")
 adata = adata[:, mask_genes]
 
 # mask samples
-# non_nan_percentage = np.sum(~np.isnan(adata.X), axis=1) / adata.X.shape[1]
-# non_zero_non_nan_mask = ~np.isnan(adata.X) & ~(adata.X == 0)
-non_zero_non_nan_mask = ~np.isnan(adata.X) 
+nan_thr= 0.9
 
-non_zero_non_nan_mask_pct = np.sum(non_zero_non_nan_mask, axis=1) / adata.X.shape[1]
+non_nan_mask = ~np.isnan(adata.X)  & ~(adata.X==0) 
+non_nan_mask_pct = np.sum(non_nan_mask, axis=1) / adata.X.shape[1]
 
 # mask samples that have less than 30% non-NaN values
-mask_samples = non_zero_non_nan_mask_pct >= manual_parameters.get("sample_presence_pct")
-logging.info(
-    f"Filtering out {np.sum(~mask_samples)} / {len(mask_samples)} samples with less than 30% non-NaN values"
-)
+mask_samples_nan = non_nan_mask_pct >= nan_thr 
+
+print(f"{nan_thr} Keeping {np.sum(mask_samples_nan)} samples out of {adata.X.shape[0]} ({np.sum(mask_samples_nan)/adata.X.shape[0]*100:.2f}%)")
+
+
+zero_thr = 0.5
+non_zero_mask = ~(adata.X==0) 
+non_zero_mask_pct = np.sum(non_zero_mask, axis=1) / adata.X.shape[1]
+
+# mask samples that have less than 30% non-NaN values
+mask_samples_zero = non_zero_mask_pct >= zero_thr 
+
+print(f"{zero_thr} Keeping {np.sum(mask_samples_zero)} samples out of {adata.X.shape[0]} ({np.sum(mask_samples_zero)/adata.X.shape[0]*100:.2f}%)")
+
+mask_samples_comb = mask_samples_nan & mask_samples_zero
+print(f"Combined: Keeping {np.sum(mask_samples_comb)} samples out of {adata.X.shape[0]} ({np.sum(mask_samples_comb)/adata.X.shape[0]*100:.2f}%)")
 
 # apply the mask to the AnnData object
-adata = adata[mask_samples, :]
+adata = adata[mask_samples_comb, :]
 
 
 # config parameters
@@ -1374,7 +1385,7 @@ filter_gene_by_counts = False
 if manual_parameters.get("scgpt_pp") == "norm_log1p":
     #! CHANGE IN FUTURE!
     #! we are introducing log2 scaled data - we should NOT apply log1 on the log2
-    adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
+    # adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
 
     # set up the preprocessor, use the args to config the workflow
     preprocessor = Preprocessor(
@@ -1522,8 +1533,9 @@ if CLS_MULTILABEL:
     print(f"Number of classes: {num_types}")
 
 # quality control cleaning - enough samples and datasets
-adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=5)
-print("QUALITY CONTROL FILTER - ADATA SHAPE:", adata.shape)
+print("BEFORE QC - ADATA SHAPE:", adata.shape)
+adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=3)
+print("AFTER QC - ADATA SHAPE:", adata.shape)
 
 #! WHAT IS THIS
 print("config.load_model", config.load_model)
