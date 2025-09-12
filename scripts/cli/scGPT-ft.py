@@ -391,42 +391,45 @@ def train(model: nn.Module, loader: DataLoader) -> None:
         scaler.update()
 
         if ADV:
-            # rerun the model for adversarial training
-            output_dict = model(
-                input_gene_ids,
-                input_values,
-                src_key_padding_mask=src_key_padding_mask,
-                batch_labels=(
-                    batch_labels if INPUT_BATCH_LABELS or config.DSBN else None
-                ),
-                CLS=(CLS or CLS_MULTILABEL),
-                CCE=CCE,
-                MVC=MVC,
-                ECS=ECS,
-                do_sample=do_sample_in_train,
-                # generative_training=False
-            )
+            with torch.autocast(device_type="cuda",
+                    dtype=(torch.bfloat16 if torch.cuda.is_bf16_supported() else torch.float16),
+                    enabled=config.amp):
+                # rerun the model for adversarial training
+                output_dict = model(
+                    input_gene_ids,
+                    input_values,
+                    src_key_padding_mask=src_key_padding_mask,
+                    batch_labels=(
+                        batch_labels if INPUT_BATCH_LABELS or config.DSBN else None
+                    ),
+                    CLS=(CLS or CLS_MULTILABEL),
+                    CCE=CCE,
+                    MVC=MVC,
+                    ECS=ECS,
+                    do_sample=do_sample_in_train,
+                    # generative_training=False
+                )
 
-            # TRAINING DISCRIMINATOR
-            loss_adv_D = criterion_adv(
-                discriminator(output_dict["cell_emb"].detach()), batch_labels
-            )
-            if epoch > adv_D_delay_epochs:
-                discriminator.zero_grad()
-                loss_adv_D.backward()
-                optimizer_D.step()
+                # TRAINING DISCRIMINATOR
+                loss_adv_D = criterion_adv(
+                    discriminator(output_dict["cell_emb"].detach()), batch_labels
+                )
+                if epoch > adv_D_delay_epochs:
+                    discriminator.zero_grad()
+                    loss_adv_D.backward()
+                    optimizer_D.step()
 
-            # TRAINING ENCODER
-            loss_adv_E = -criterion_adv(
-                discriminator(output_dict["cell_emb"]), batch_labels
-            )
-            # NOTE: the loss is negative here because we want to maximize
-            # the cross_entropy_loss, in other words, disguise against the discriminator
-            if epoch > adv_E_delay_epochs:
-                model.zero_grad()
-                discriminator.zero_grad()
-                loss_adv_E.backward()
-                optimizer_E.step()
+                # TRAINING ENCODER
+                loss_adv_E = -criterion_adv(
+                    discriminator(output_dict["cell_emb"]), batch_labels
+                )
+                # NOTE: the loss is negative here because we want to maximize
+                # the cross_entropy_loss, in other words, disguise against the discriminator
+                if epoch > adv_E_delay_epochs:
+                    model.zero_grad()
+                    discriminator.zero_grad()
+                    loss_adv_E.backward()
+                    optimizer_E.step()
 
         wandb.log(metrics_to_log)
 
@@ -1347,7 +1350,6 @@ logging.info(f"Combined mask {np.sum(mask_genes)} genes left")
 # mask the genes
 adata = adata[:, mask_genes]
 
-
 # mask samples
 # non_nan_percentage = np.sum(~np.isnan(adata.X), axis=1) / adata.X.shape[1]
 # non_zero_non_nan_mask = ~np.isnan(adata.X) & ~(adata.X == 0)
@@ -1519,6 +1521,9 @@ if CLS_MULTILABEL:
     num_types = len(_class_nodes)
     print(f"Number of classes: {num_types}")
 
+# quality control cleaning - enough samples and datasets
+adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=5)
+print("QUALITY CONTROL FILTER - ADATA SHAPE:", adata.shape)
 
 #! WHAT IS THIS
 print("config.load_model", config.load_model)
@@ -1585,11 +1590,6 @@ elif manual_parameters.get("split_type") == "mixed":
         obs=df_obs, n_splits=manual_parameters.get("n_splits")
     )
     adata.obs = new_obs
-
-
-# quality control cleaning - enough samples and datasets
-adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=5)
-print("QUALITY CONTROL FILTER - ADATA SHAPE:", adata.shape)
 
 
 # store original data

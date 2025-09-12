@@ -709,11 +709,14 @@ def get_related_dis_sim(
         # get related pairs
         related_idxs, _l_related = get_doid_idxs_pairs(list(_df_related["pair_sorted"]), do_ids, datasets, return_weights=True)
         print(f"Nº of related disease pairs for {label_i}: {len(related_idxs)}")
+        
+        if len(related_idxs) == 0:
+            continue
 
         # convert label to weights - all pairs add to 1
         _w_related = _convert_labels_to_weights(_l_related)
 
-        if sample:
+        if sample & (len(related_idxs) > sample):
             _sample_i = random.sample(range(len(related_idxs)), sample)
             related_idxs = related_idxs[_sample_i]
             _w_related = _w_related[_sample_i]
@@ -751,10 +754,6 @@ def get_related_dis_sim(
 
     return c_all, w_all, l_all
 
-
-
-
-
 def get_related_dis_sim_splits(
     adata_qry, adata_ref, c_matrix, df_related, df_unrelated, labels, sample:int=None
 ):
@@ -787,7 +786,7 @@ def get_related_dis_sim_splits(
         # convert label to weights - all pairs add to 1
         _w_related = _convert_labels_to_weights(_l_related)
 
-        if sample:
+        if sample & (len(related_idxs) > sample):
             _sample_i = random.sample(range(len(related_idxs)), sample)
             related_idxs = related_idxs[_sample_i]
             _w_related = _w_related[_sample_i]

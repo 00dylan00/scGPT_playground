@@ -386,6 +386,8 @@ def split_stratified(
             print(f"Skipping {y_i} as already placed everything in train/test.")
             continue
 
+        # if already in test! then put everything else in train
+
         if len(_groups_to_split) == 1:
             g = _groups_to_split[0]
             if not already_test:
@@ -398,15 +400,19 @@ def split_stratified(
                 # both sides already have this label; keep your original choice
                 train_groups.add(g)
             continue
-        
-        _s_size = max(1, len(_groups_to_split) // split_size)  # at least 1 to test
-        # if nothing from this label is in train yet, don't send them all to test
-        if not already_train and _s_size >= len(_groups_to_split):
-            _s_size = len(_groups_to_split) - 1  # leave >=1 for train
+
+        # _s_size = max(1, len(_groups_to_split) // split_size)  # at least 1 to test
+        _target_test_size = max(1, len(_groups) // split_size)  # at least 1 to test
+        _target_test_size = _target_test_size - len(already_test) 
+        # # if nothing from this label is in train yet, don't send them all to test
+        # if not already_train and _s_size >= len(_groups_to_split):
+        #     _s_size = len(_groups_to_split) - 1  # leave >=1 for train
 
         # pick test groups and record both sides
-        _test_groups = set(random.sample(_groups_to_split, _s_size))
-        test_groups.update(_test_groups)                            
+        test_groups = set()
+        if _target_test_size >=1:
+            _test_groups = set(random.sample(_groups_to_split, _target_test_size))
+            test_groups.update(_test_groups)                            
         train_groups.update(set(_groups_to_split) - _test_groups)
 
     # final assignment STRICTLY by dataset_id membership in test_groups
