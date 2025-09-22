@@ -17,7 +17,7 @@ import scanpy as sc
 from sklearn.manifold import TSNE
 from matplotlib import cm
 
-def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine", weights:List=None, sample:int=np.inf, dpi:int=300, output_dir:str=None)->None:
+def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine", weights:List=None, sample:int=np.inf, dpi:int=300, output_dir:str=None, x_lim_val :Tuple[float, float]=(0,1))->None:
     """Plot KDE"""
     # Plot
     plt.figure(figsize=(4, 4), dpi=dpi)
@@ -42,7 +42,7 @@ def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine",
                 linestyle="--",
                 label=labels[i],
                 fill=True,
-                color=colors[i],
+                color="grey",
                 zorder=2,
                 
             )
@@ -62,7 +62,7 @@ def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine",
     plt.ylabel("Density")
     # plt.legend()
     plt.tight_layout()
-    plt.xlim(0, 1)
+    plt.xlim(x_lim_val[0], x_lim_val[1])
     plt.grid(zorder=-3, linestyle="--")
     
     # legend centered below the axes
@@ -298,12 +298,12 @@ def plot_adata_top_families(adata, n_class_nodes:int=None, top_n:int=None, dpi:i
     counts_dis = dict(sorted(counts_dis.items(), key=lambda item: item[1], reverse=False))
 
     # plot horizontal histogram of counts of main families
-    plt.figure(figsize=(3, 3), dpi=dpi)
+    plt.figure(figsize=(2.5, 2.5), dpi=dpi)
     if top_n:
-        plt.barh(list(counts_dis.keys())[-top_n:], list(counts_dis.values())[-top_n:],zorder=2)
-        plt.title(f"Nº Samples per Top {top_n} Disease Family")
+        plt.barh(list(counts_dis.keys())[-top_n:], list(counts_dis.values())[-top_n:],zorder=2,color="#2778ffff", alpha=1)
+        plt.title(f"Nº Samples per\nTop {top_n} Disease Family")
     else:
-        plt.barh(list(counts_dis.keys()), list(counts_dis.values()),zorder=2)
+        plt.barh(list(counts_dis.keys()), list(counts_dis.values()),zorder=2,color="#2778ffff", alpha=1)
         plt.title("Nº Samples per Disease Family")
     plt.xlabel("Number of Samples")
     plt.ylabel("Disease Families")
@@ -654,6 +654,7 @@ def get_doid_idxs_single_set(do_ids_1:List,do_ids_2:List, datasets_1:List, datas
 
     uniq_do_ids = list(set(do_ids_1))
     uniq_do_ids = [c for c in uniq_do_ids if c != "Control"]
+    uniq_do_ids = [c for c in uniq_do_ids if c != "nan"]    # added to reuse this funciton for tissues!    
 
     print(f"Nº of diseases: {len(uniq_do_ids)}")
 

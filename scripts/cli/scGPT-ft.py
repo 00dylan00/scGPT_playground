@@ -10,99 +10,95 @@ Structure:
 """
 
 # region 0. Imports, Variables & Functions
-
-import copy, json, os
-from pathlib import Path
-import shutil, sys, time
-from typing import *
-import warnings, pandas as pd
-from datetime import datetime
-import sys
-
-sys.path.append("/aloy/home/ddalton/projects/scGPT_playground/")
-from scanpy.pp import combat
-from sklearn.metrics import average_precision_score, roc_auc_score
-
-# from . import asyn
+# ===== Standard library =====
+import argparse
+import copy
+import json
+import logging
+import os
 import pickle
-import torch
-from anndata import AnnData
+import shutil
+import sys
+import time
+from collections import Counter
+from datetime import datetime
+from pathlib import Path
+from typing import *
+
+# ===== Third-party =====
+import warnings
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import scanpy as sc
 import scvi
 import seaborn as sns
-import numpy as np
+import torch
 import wandb
+from anndata import AnnData
 from scipy.sparse import issparse
-import matplotlib.pyplot as plt
+from sklearn.metrics import (
+    accuracy_score,
+    adjusted_rand_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    normalized_mutual_info_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import (
+    KFold,
+    StratifiedGroupKFold,
+    StratifiedKFold,
+    train_test_split,
+)
 from torch import nn
 from torch.nn import functional as F
-from torch.utils.data import Dataset, DataLoader
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import adjusted_rand_score, normalized_mutual_info_score
+from torch.utils.data import DataLoader, Dataset
 from torchtext.vocab import Vocab
-from torchtext._torchtext import (
-    Vocab as VocabPybind,
-)
-from sklearn.metrics import confusion_matrix
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from torchtext._torchtext import Vocab as VocabPybind
 
-sys.path.insert(0, "../")
+# ===== Local paths (add before importing scgpt) =====
 sys.path.insert(0, "/aloy/home/ddalton/git_clones/scGPT")
+sys.path.insert(0, "../")
+sys.path.append("/aloy/home/ddalton/projects/scGPT_playground/")
+
+# ===== scGPT =====
 import scgpt as scg
-
-print(f"scGPT version: {scg.__file__}")
-
-from scgpt.model import TransformerModel, AdversarialDiscriminator
-from scgpt.tokenizer import tokenize_and_pad_batch, random_mask_value
+from scgpt import SubsetsBatchSampler
 from scgpt.loss import (
+    criterion_neg_log_bernoulli,
     masked_mse_loss,
     masked_relative_error,
-    criterion_neg_log_bernoulli,
 )
-from scgpt.tokenizer.gene_tokenizer import GeneVocab
+from scgpt.model import AdversarialDiscriminator, TransformerModel
 from scgpt.preprocess import Preprocessor
-from scgpt import SubsetsBatchSampler
-from scgpt.utils import set_seed, category_str2int, eval_scib_metrics
-from sklearn.metrics import confusion_matrix
+from scgpt.tokenizer import random_mask_value, tokenize_and_pad_batch
+from scgpt.tokenizer.gene_tokenizer import GeneVocab
+from scgpt.utils import category_str2int, eval_scib_metrics, set_seed
 
-
-import numpy as np
-from sklearn.model_selection import train_test_split
-import logging
+# ===== Project helpers =====
+from scanpy.pp import combat
 from src.training import helpers as tr_h
 
-from collections import Counter
-import logging
-import psutil
-
-from typing import *
-from sklearn.model_selection import StratifiedGroupKFold, KFold
-import json
-
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.metrics import confusion_matrix
-import argparse
-
+# ===== One-time setup =====
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
-
-
 sc.set_figure_params(figsize=(6, 6))
 os.environ["KMP_WARNINGS"] = "off"
 warnings.filterwarnings("ignore")
 
-logging.info(f"Is Cuda Available {str(torch.cuda.is_available())}")
+print(f"scGPT version: {scg.__file__}")
+logging.info(f"Is Cuda Available {torch.cuda.is_available()}")
 
-
-import torch
 
 print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 
 # Define arguments
-description = "ONLY DISEASES - NO CONTROLS - n_samples=1, n_dt=4"
-
+description = ""
 parser.add_argument(
     "--data_path", type=str, required=True, help="Path to the data file"
 )
@@ -133,6 +129,9 @@ parser.add_argument("--ecs_thres", type=float, default=0.0, help="Include ecs_th
 parser.add_argument("--dab_weight", type=float, default=0.0, help="Include dab_weight")
 parser.add_argument("--ontology", type=str, default="do", help="Type of ontology")
 parser.add_argument("--scgpt_pp", type=str, default="norm_log1p", help="Type of scGPT preprocessing")
+parser.add_argument(
+    "--library", type=str, default="all", help="Wether to use RNA-Seq, Microarray or all data"
+)
 
 # booleans can be a pain in the ass with parser
 parser.add_argument(
@@ -165,8 +164,12 @@ parser.add_argument(
 parser.add_argument(
     "--do_combat", type=eval, default=False, help="Apply ComBat batch correction"
 )
-
-
+parser.add_argument(
+    "--use_controls", type=eval, default=True, help="Use control samples"
+)
+parser.add_argument(
+    "--use_control_loss", type=eval, default=True, help="Use control samples"
+)
 # Parse arguments
 args = parser.parse_args()
 print("######\tParsed arguments\t######")
@@ -210,7 +213,10 @@ manual_parameters = {
     "do_combat": args.do_combat,
     "ontology": args.ontology,
     "scgpt_pp": args.scgpt_pp,
-    "description":description
+    "description":description,
+    "library":args.library,
+    "use_controls":args.use_controls,
+    "use_control_loss": args.use_control_loss,
 }
 
 
@@ -219,7 +225,7 @@ for k, v in manual_parameters.items():
 
 
 # functions
-def train(model: nn.Module, loader: DataLoader) -> None:
+def train(model: nn.Module, loader: DataLoader, use_control_loss:bool=False) -> None:
     """
     Train the model for one epoch.
     """
@@ -305,7 +311,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                 )
 
                 #! ADD FLAG
-                if False:
+                if use_control_loss:
                     logits = output_dict["cls_output"]
                     y_multi = disease_multilabel.float()
 
@@ -324,7 +330,7 @@ def train(model: nn.Module, loader: DataLoader) -> None:
                     loss_cond = criterion_cond(z_pair, y_cond) 
 
                     # combine both losses
-                    lambda_cond = 0.2
+                    lambda_cond = 0.1
                     loss = loss + lambda_cond * loss_cond
                     metrics_to_log.update({
                     "train/cond_ce": loss_cond.item(),
@@ -1237,14 +1243,25 @@ scg.utils.add_file_handler(logger, save_dir / "run.log")
 # We follow the standard scGPT data pre-processing pipelines for the cell-type annotation task. Note that since now we have two datasets at hand (i.e., reference and query data), the same pre-prpocessing steps need to be applied to both of them.
 # load data
 adata = sc.read(manual_parameters.get("data_path"))
-print("adata loaded")
-print(adata.X)
+print("adata loaded - shape", adata.shape)
 
 
-#! REMOVE - THIS IS A QUICK AND UGLY FIX
-only_control = True
-if only_control:
+# filter dataset
+if manual_parameters.get("library")=="all":
+    print("Using all data")
+elif manual_parameters.get("library")=="RNA-Seq":
+    adata = adata[adata.obs["library"] == "RNA-Seq"].copy()
+    print("Using RNA-Seq data only - adata shape", adata.shape)
+elif manual_parameters.get("library")=="Microarray":
+    adata = adata[adata.obs["library"] == "Microarray"].copy()
+    print("Using Microarray data only - adata shape", adata.shape)
+
+else:
+    raise ValueError("Unknown library option")
+
+if manual_parameters.get("use_controls")==False:
     adata = adata[adata.obs["doid_id"] != "Control"].copy()
+    print("Removing controls - adata shape", adata.shape)
 
 # define celltype as disease
 if manual_parameters.get("ontology") == "mesh":
@@ -1261,16 +1278,12 @@ num_types = len(np.unique(celltype_id_labels))
 id2type = dict(enumerate(adata.obs["celltype"].astype("category").cat.categories))
 adata.obs["celltype_id"] = celltype_id_labels
 
-
-
-
 # gene filtering
-
-
 if manual_parameters.get("gene_filtering") == "top_presence":
     mask_genes = tr_h.get_top_k_most_present_genes(
         adata, k=manual_parameters.get("max_seq_len")
     )
+
 #! CLEAN UP
 elif manual_parameters.get("gene_filtering") == "top_logfc":
     def compute_FC(adata)->np.array:
@@ -1383,9 +1396,19 @@ data_is_raw = True
 filter_gene_by_counts = False
 
 if manual_parameters.get("scgpt_pp") == "norm_log1p":
+    #! QUICK FIX BECAUSE SCGPT IS FUCKING USELESS AND MESSES UP NANs
+    # substitue NaNs with 0s
+    adata.X = adata.X.toarray() if issparse(adata.X) else adata.X
+
+    # change
+
+    # adata.X = np.nan_to_num(adata.X, nan=0.0)
+
     #! CHANGE IN FUTURE!
     #! we are introducing log2 scaled data - we should NOT apply log1 on the log2
     # adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
+
+
 
     # set up the preprocessor, use the args to config the workflow
     preprocessor = Preprocessor(
@@ -1401,7 +1424,7 @@ if manual_parameters.get("scgpt_pp") == "norm_log1p":
         binning=n_bins,  # 6. whether to bin the raw data and to what number of bins
         result_binned_key="X_binned",  # the key in adata.layers to store the binned data
         )
-    
+
     # define mapping of input layer
     d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
                     "normed_raw": "X_normed",
@@ -1532,9 +1555,12 @@ if CLS_MULTILABEL:
     num_types = len(_class_nodes)
     print(f"Number of classes: {num_types}")
 
+# drop duplicates! samples with same celltype!
+adata = tr_h.clean_redundancy(adata)
+
 # quality control cleaning - enough samples and datasets
 print("BEFORE QC - ADATA SHAPE:", adata.shape)
-adata = tr_h.clean_adata_qc(adata,n_samples=1, n_dt=3)
+adata = tr_h.clean_adata_qc(adata,n_samples=2, n_dt=2)
 print("AFTER QC - ADATA SHAPE:", adata.shape)
 
 #! WHAT IS THIS
@@ -1676,12 +1702,23 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     adata_test_raw = adata_test.copy()
 
     # batch correct - same as in original tutorial
+
+    mask_nans = np.isnan(adata.X)
+    adata.X[mask_nans] = 0.0    # set to 0
+
+    mask_nans_test = np.isnan(adata_test.X)
+    adata_test.X[mask_nans_test] = 0.0    # set
+
     preprocessor(adata, batch_key=None)
     preprocessor(adata_test, batch_key=None)
     """batch_key (:class:`str`, optional):
             The key of :class:`AnnData.obs` to use for batch information. This arg
             is used in the highly variable gene selection step
     """
+    # set to pad value 
+    adata.X[mask_nans] = pad_value
+    adata_test.X[mask_nans_test] = pad_value
+
 
     #! ASSESS MAX VALUES AFTER PP
     batch_ids = adata.obs["batch_id"].to_numpy()
@@ -1701,6 +1738,10 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     all_indices = np.arange(len(all_counts))
 
     if manual_parameters.get("val_split_type") == "rand_stratified":
+        print(adata.obs["doid_id"].value_counts())
+        print("###################")
+        print(adata.obs["celltype"].value_counts())
+        
         # Split to get indices only
         train_idx, valid_idx = train_test_split(
             np.arange(len(all_counts)),
@@ -1973,7 +2014,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     print("_Y_train", _Y_train.shape, min(np.sum(_Y_train, axis=0)), min(np.sum(_Y_train, axis=1)) )
 
     epochs = manual_parameters.get("epochs")
-    patience = 10
+    patience = 5
     wait = 0
     for epoch in range(1, epochs + 1):
         epoch_start_time = time.time()
@@ -2011,6 +2052,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
             train_loss, train_err = train(
                 model,
                 loader=train_loader,
+                use_control_loss=manual_parameters.get("use_control_loss"),
             )
 
         # validation

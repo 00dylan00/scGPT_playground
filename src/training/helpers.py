@@ -332,7 +332,7 @@ def get_test_split(obs: pd.DataFrame, n_splits=5) -> List[str]:
     return obs_copy
 
 
-def split_stratified(
+def split_stratified_old(
     df: pd.DataFrame,
     y_label: str = "celltype",
     group_label: str = "dataset_id",
@@ -386,8 +386,6 @@ def split_stratified(
             print(f"Skipping {y_i} as already placed everything in train/test.")
             continue
 
-        # if already in test! then put everything else in train
-
         if len(_groups_to_split) == 1:
             g = _groups_to_split[0]
             if not already_test:
@@ -401,19 +399,93 @@ def split_stratified(
                 train_groups.add(g)
             continue
 
-        # _s_size = max(1, len(_groups_to_split) // split_size)  # at least 1 to test
         _target_test_size = max(1, len(_groups) // split_size)  # at least 1 to test
         _target_test_size = _target_test_size - len(already_test) 
-        # # if nothing from this label is in train yet, don't send them all to test
-        # if not already_train and _s_size >= len(_groups_to_split):
-        #     _s_size = len(_groups_to_split) - 1  # leave >=1 for train
 
         # pick test groups and record both sides
-        test_groups = set()
         if _target_test_size >=1:
             _test_groups = set(random.sample(_groups_to_split, _target_test_size))
-            test_groups.update(_test_groups)                            
+            test_groups.update(_test_groups)
         train_groups.update(set(_groups_to_split) - _test_groups)
+
+    # final assignment STRICTLY by dataset_id membership in test_groups
+    df[new_label] = df[group_label].isin(test_groups).astype(int)
+    return df
+
+
+#! BAD PRACTICE - YOLO'D THIS FUNCTION - NEEDS REVIEW
+def split_stratified(
+    df: pd.DataFrame,
+    y_label: str = "celltype",
+    group_label: str = "dataset_id",
+    split_size: int = 10,
+    seed: int = 42,
+    new_label: str = "test_split_1"
+) -> pd.DataFrame:
+    """Get a single stratified test split for the provided observations.
+    We are here splitting datasets - trying to ensure for each label(disease) we have at least one dataset in both train and test.
+    """
+
+    rng = random.Random(seed)   # use local RNG
+
+    df = df.copy(deep=True)
+    print(f"df shape: {df.shape}")
+
+    # (tiny guard) each label must span ≥2 datasets to appear in both splits
+    _df_diseases = df[df[y_label] != "Control"]
+    print(f"df diseases: {_df_diseases.shape}")
+
+    ds_per_label = _df_diseases.groupby(y_label, observed=True)[group_label].nunique()
+    if (ds_per_label < 2).any():
+        print(ds_per_label[ds_per_label < 2])
+        raise ValueError("Some labels occur in <2 datasets; cannot place them in both splits.")
+
+    train_groups = set()    # datasets in train
+    test_groups  = set()    # datasets in test
+
+    # loop through labels (sorted for determinism; remove 'sorted' if you prefer)
+    labels = sorted(df[y_label].unique())
+    print(f"All Labels: {len(labels)} {labels}")
+
+    # remove "Control" from labels !
+    labels = [l for l in labels if l != "Control"]
+    print(f"Remove Controls - Labels: {len(labels)} {labels}")
+
+    for y_i in labels:
+        # subset w/ this label (ie disease)
+        _df_y = df[df[y_label] == y_i]
+
+        # groups for this label (ie dataset) → make deterministic by sorting
+        _groups = sorted(_df_y[group_label].unique().tolist())
+
+        # exclude anything already fixed to either side → also deterministic
+        already_train     = set(_groups) & train_groups
+        already_test      = set(_groups) & test_groups
+        _groups_to_split  = [g for g in _groups if g not in already_train and g not in already_test]
+
+        # if groups already assigned (ie datasets already in all test/train) skip splitting !
+        if len(_groups_to_split) == 0:
+            print(f"Skipping {y_i} as already placed everything in train/test.")
+            continue
+
+        if len(_groups_to_split) == 1:
+            g = _groups_to_split[0]
+            if not already_test:
+                test_groups.add(g)
+            elif not already_train:
+                train_groups.add(g)
+            else:
+                train_groups.add(g)
+            continue
+
+        _target_test_size = max(1, len(_groups) // split_size)  # at least 1 to test
+        _target_test_size = _target_test_size - len(already_test) 
+
+        # pick test groups and record both sides
+        if _target_test_size >= 1:
+            _test_groups = set(rng.sample(_groups_to_split, _target_test_size))  # use local RNG
+            test_groups.update(_test_groups)
+        train_groups.update([g for g in _groups_to_split if g not in test_groups])
 
     # final assignment STRICTLY by dataset_id membership in test_groups
     df[new_label] = df[group_label].isin(test_groups).astype(int)
@@ -536,25 +608,51 @@ def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int
         adata_dis = adata.obs[adata.obs[disease_label]!="Control"]
 
         # check which datasets have enough samples
-        _datasets_control_passed = [k for k, v in dict(adata_control.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-        print(f"Nº of datasets with +{n_samples} control samples: {len(_datasets_control_passed)}")
+        # _datasets_control_passed = [k for k, v in dict(adata_control.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        # print(f"Nº of datasets with +{n_samples} control samples: {len(_datasets_control_passed)}")
 
-        _datasets_dis_passed = [k for k, v in dict(adata_dis.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-        print(f"Nº of datasets with +{n_samples} disease samples: {len(_datasets_dis_passed)}")
+        # _datasets_dis_passed = [k for k, v in dict(adata_dis.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        # print(f"Nº of datasets with +{n_samples} disease samples: {len(_datasets_dis_passed)}")
+        pair_counts = (
+                adata_dis.groupby(["celltype", "dataset"], observed=True)
+                        .size()
+                        .rename("n")
+            )
+        _datasets_dis_failed = pair_counts[pair_counts < 2].index
+        _datasets_dis_failed = set([x[1] for x in _datasets_dis_failed])
+        print(f"Nº of failed datasets - less than +{n_samples} control samples: {len(_datasets_dis_failed)}")
 
-        _datasets_passed = set(_datasets_control_passed).intersection(set(_datasets_dis_passed))
-        print(f"Nº of datasets with +{n_samples} samples (control and disease): {len(_datasets_passed)}")
+        pair_counts = (
+                adata_control.groupby(["celltype", "dataset"], observed=True)
+                        .size()
+                        .rename("n")
+            )
+        _datasets_control_failed = pair_counts[pair_counts < 2].index
+        _datasets_control_failed = set([x[1] for x in _datasets_control_failed])
+        print(f"Nº of failed datasets - less than +{n_samples} disease samples: {len(_datasets_control_failed)}")
+
+        _datasets_failed = set(_datasets_control_failed) | set(_datasets_dis_failed)
+        print(f"Nº of failed datasets - less than +{n_samples} samples (control and disease): {len(_datasets_failed)} / {adata.obs['dataset'].nunique()}")
 
         # filter adata
-        adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+        adata = adata[~adata.obs["dataset"].isin(_datasets_failed)]
         print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
     
     else:
-        _datasets_passed = [k for k, v in dict(adata.obs.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
-        print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
+        # _datasets_passed = [k for k, v in dict(adata.obs.groupby("dataset", observed=True)['celltype'].count()).items() if v>=n_samples ]
+        # print(f"Nº of datasets with +{n_samples} samples (disease): {len(_datasets_passed)}")
+        pair_counts = (
+                adata.obs.groupby(["celltype", "dataset"], observed=True)
+                        .size()
+                        .rename("n")
+            )
+
+        _datasets_failed = pair_counts[pair_counts < 2].index
+        _datasets_failed = set([x[1] for x in _datasets_failed])
+        print(f"Nº of datasets with less than +{n_samples} samples (disease): {len(_datasets_failed)}")
 
         # filter adata
-        adata = adata[adata.obs["dataset"].isin(_datasets_passed)]
+        adata = adata[~adata.obs["dataset"].isin(_datasets_failed)]
         print(f"adata shape after filtering datasets with +{n_samples} samples: {adata.shape}")
 
 
@@ -566,12 +664,14 @@ def clean_adata_qc(adata:sc.AnnData, disease_label:str="celltype", n_samples:int
         _df_counts = adata.obs[adata.obs["do_id"] == d].groupby("dataset", observed=True).size()
         if len(_df_counts) >= n_dt:
             _passed_diseases.append(d)
-    print(f"Nº of passed diseases {len(_passed_diseases)}/ {len(dis)}")
+    print(f"Nº of passed diseases +{n_dt} {len(_passed_diseases)}/ {len(dis)}")
     _passed_dsaids = adata.obs[adata.obs["do_id"].isin(_passed_diseases)]["dsaid"].unique()
-    print(f"Nº of passed dsaids {len(_passed_dsaids)}/ {len(adata.obs['dsaid'].unique())}")
+    print(f"Nº of passed dsaids +{n_dt} {len(_passed_dsaids)}/ {len(adata.obs['dsaid'].unique())}")
     _mask = adata.obs["dsaid"].isin(_passed_dsaids)
     adata = adata[_mask]
     return adata
+
+
 
 def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:
     # copy data
@@ -596,3 +696,26 @@ def apply_combat_adata(adata:sc.AnnData)->sc.AnnData:
 
     adata_tmp.X = X
     return adata_tmp
+
+def clean_redundancy(adata):
+    # remove ALL samples which appear in +1 datasets
+    # this are corner cases which when evaluating can completely over-shoot performance
+    adata = adata.copy()
+    adata.obs["sample_id"] = [x.split(".")[1] for x in adata.obs["ids"]]
+
+    pair = adata.obs.groupby("sample_id")["dataset"].nunique()
+    dup_smp = list(pair[pair>1].index)
+
+    adata = adata[~adata.obs["sample_id"].isin(dup_smp)]
+    print(f"Removed samples in multiple datasets, new shape: {adata.shape}")
+
+    # drop duplicate samples! 
+    # because the data derives from DE - many of the samples are repeated
+    adata = adata[~adata.obs.duplicated(subset=['sample_id','celltype'])]
+    print(f"Removed duplicate samples, new shape: {adata.shape}")
+
+    # remove ANY duplicate sample independent of disease
+    adata = adata[~adata.obs.duplicated('sample_id', keep='first')].copy()
+    print(f"Removed duplicate samples independent of disease, new shape: {adata.shape}")
+
+    return adata
