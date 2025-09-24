@@ -86,11 +86,11 @@ print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 # variables
-run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-19-02"
-query_data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-25-09-12-01/data.h5ad"
-# query_data_path = os.path.join(run_dir, "adata_valid_1.h5ad")
-data_name = "zero_shot"
-is_processed= False
+run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-13-18"
+# query_data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-25-09-12-01/data.h5ad"
+query_data_path = os.path.join(run_dir, "adata_test_1.h5ad")
+data_name = "test"
+is_processed= True
 
 manual_parameters = {
     "scgpt_pp": "norm_log1p",  # options: raw, norm_log1p, binned
@@ -207,18 +207,14 @@ if not is_processed:
     adata_query = adata_query[:, mask_genes]
     print(f"Filtered data to {adata_query.shape[0]} samples and {adata_query.shape[1]} genes")
 
-
     # mask samples
     nan_thr= 0.9
-
     non_nan_mask = ~np.isnan(adata_query.X)  & ~(adata_query.X==0) 
     non_nan_mask_pct = np.sum(non_nan_mask, axis=1) / adata_query.X.shape[1]
 
     # mask samples that have less than 30% non-NaN values
     mask_samples_nan = non_nan_mask_pct >= nan_thr 
-
     print(f"{nan_thr} Keeping {np.sum(mask_samples_nan)} samples out of {adata_query.X.shape[0]} ({np.sum(mask_samples_nan)/adata_query.X.shape[0]*100:.2f}%)")
-
 
     zero_thr = 0.5
     non_zero_mask = ~(adata_query.X==0) 
@@ -259,7 +255,7 @@ if not is_processed:
             binning=config.get("n_bins"),  # 6. whether to bin the raw data and to what number of bins
             result_binned_key="X_binned",  # the key in adata_query.layers to store the binned data
             )
-
+        
     #! WHAT IS THIS
     print("config.load_model", config.get("load_model"))
     if config.get("load_model") is not None:
@@ -343,9 +339,14 @@ if is_processed:
             if s not in vocab:
                 vocab.append_token(s)
 
+        # adata_query.var["id_in_vocab"] = [
+        #     1 if gene in vocab else -1 for gene in adata_query.var["gene_name"]
+        # ]
         adata_query.var["id_in_vocab"] = [
-            1 if gene in vocab else -1 for gene in adata_query.var["gene_name"]
-        ]
+                vocab[gene] if gene in vocab else -1 for gene in adata_query.var["gene_name"]
+            ]
+
+
         gene_ids_in_vocab = np.array(adata_query.var["id_in_vocab"])
         print(
             f"match {np.sum(gene_ids_in_vocab >= 0)}/{len(gene_ids_in_vocab)} genes "
@@ -465,93 +466,160 @@ test_loader = DataLoader(
 
 model.eval()
 
-embeddings = list()
-with torch.no_grad():
-    for batch_data in tqdm(test_loader):
-        input_gene_ids = batch_data["gene_ids"].to(device)
-        input_values = batch_data["values"].to(device)
-        target_values = batch_data["target_values"].to(device)
-        batch_labels = batch_data["batch_labels"].to(device)
-        celltype_labels = batch_data["celltype_labels"].to(device)
-
-        src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
-        with torch.cuda.amp.autocast(enabled=config["amp"]):
-            output_dict = model(
-                input_gene_ids,
-                input_values,
-                src_key_padding_mask=src_key_padding_mask,
-                batch_labels=None,
-                CLS=True, 
-                CCE=False,
-                MVC=False,
-                ECS=False,
-                # generative_training = False,
-            )
-            
-            output_values = output_dict["cls_output"]
-
-            preds = torch.sigmoid(output_values).cpu().numpy()
-            preds_bin = (preds > 0.5).astype(int)
-        
-            output_dict = {
-                key: value.cpu() if isinstance(value, torch.Tensor) else value
-                for key, value in output_dict.items()
-            }
-
-        embeddings.append(output_dict)
-
 # load finetuned model
-model_path = os.path.join(run_dir, "model_1.pt")
+model_path = os.path.join(run_dir, "best_model.pt")
 model_ft = torch.load(model_path, map_location=device)  # try to read container
 model_ft.to(device)
 model_ft.eval()
-embeddings_ft = list()
+
+
+embeddings_pt_2 = []
 with torch.no_grad():
-    for batch_data in tqdm(test_loader):
+    for batch_data in tqdm(test_loader, desc="Embedding (finetuned model)"):
         input_gene_ids = batch_data["gene_ids"].to(device)
         input_values = batch_data["values"].to(device)
-        target_values = batch_data["target_values"].to(device)
-        batch_labels = batch_data["batch_labels"].to(device)
-        celltype_labels = batch_data["celltype_labels"].to(device)
-
         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
-        with torch.cuda.amp.autocast(enabled=config["amp"]):
-            output_dict = model_ft(
+
+        # fp16/bf16 autocast so flash-attn accepts the dtype
+        with torch.cuda.amp.autocast(enabled=config.get("amp", True)):
+            hidden = model._encode(
                 input_gene_ids,
                 input_values,
                 src_key_padding_mask=src_key_padding_mask,
                 batch_labels=None,
-                CLS=True, 
-                CCE=False,
-                MVC=False,
-                ECS=False,
-                # generative_training = False,
             )
+
+        cls_emb = hidden[:, 0, :].cpu().numpy()
+        embeddings_pt_2.append(cls_emb)
+
+embeddings_pt_2 = np.concatenate(embeddings_pt_2, axis=0)
+
+# alternative way to embed
+embed_adata = scg.tasks.embed_data(
+    adata_query,
+    model_dir,
+    gene_col="gene_name",
+    batch_size=64,
+)
+
+# embeddings = list()
+# with torch.no_grad():
+#     for batch_data in tqdm(test_loader):
+#         input_gene_ids = batch_data["gene_ids"].to(device)
+#         input_values = batch_data["values"].to(device)
+#         target_values = batch_data["target_values"].to(device)
+#         batch_labels = batch_data["batch_labels"].to(device)
+#         celltype_labels = batch_data["celltype_labels"].to(device)
+
+#         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+#         with torch.cuda.amp.autocast(enabled=config["amp"]):
+#             output_dict = model(
+#                 input_gene_ids,
+#                 input_values,
+#                 src_key_padding_mask=src_key_padding_mask,
+#                 batch_labels=None,
+#                 CLS=True, 
+#                 CCE=False,
+#                 MVC=False,
+#                 ECS=False,
+#                 # generative_training = False,
+#             )
             
-            output_values = output_dict["cls_output"]
+#             output_values = output_dict["cls_output"]
 
-            preds = torch.sigmoid(output_values).cpu().numpy()
-            preds_bin = (preds > 0.5).astype(int)
+#             preds = torch.sigmoid(output_values).cpu().numpy()
+#             preds_bin = (preds > 0.5).astype(int)
+        
+#             output_dict = {
+#                 key: value.cpu() if isinstance(value, torch.Tensor) else value
+#                 for key, value in output_dict.items()
+#             }
 
-            output_dict = {
-                key: value.cpu() if isinstance(value, torch.Tensor) else value
-                for key, value in output_dict.items()
-            }
+#         embeddings.append(output_dict)
 
 
-        embeddings_ft.append(output_dict)
+# embeddings_ft = list()
+# with torch.no_grad():
+#     for batch_data in tqdm(test_loader):
+#         input_gene_ids = batch_data["gene_ids"].to(device)
+#         input_values = batch_data["values"].to(device)
+#         target_values = batch_data["target_values"].to(device)
+#         batch_labels = batch_data["batch_labels"].to(device)
+#         celltype_labels = batch_data["celltype_labels"].to(device)
+
+#         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+#         with torch.cuda.amp.autocast(enabled=config["amp"]):
+#             output_dict = model_ft(
+#                 input_gene_ids,
+#                 input_values,
+#                 src_key_padding_mask=src_key_padding_mask,
+#                 batch_labels=None,
+#                 CLS=True, 
+#                 CCE=False,
+#                 MVC=False,
+#                 ECS=False,
+#                 # generative_training = False,
+#             )
+            
+#             output_values = output_dict["cls_output"]
+
+#             preds = torch.sigmoid(output_values).cpu().numpy()
+#             preds_bin = (preds > 0.5).astype(int)
+
+#             output_dict = {
+#                 key: value.cpu() if isinstance(value, torch.Tensor) else value
+#                 for key, value in output_dict.items()
+#             }
+
+
+#         embeddings_ft.append(output_dict)
+
+
+# embeddings_ft_2 = []
+# with torch.no_grad():
+#     for batch_data in tqdm(test_loader, desc="Embedding (finetuned model)"):
+#         input_gene_ids = batch_data["gene_ids"].to(device)
+#         input_values = batch_data["values"].to(device)
+#         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+
+#         # fp16/bf16 autocast so flash-attn accepts the dtype
+#         with torch.cuda.amp.autocast(enabled=config.get("amp", True)):
+#             hidden = model_ft._encode(
+#                 input_gene_ids,
+#                 input_values,
+#                 src_key_padding_mask=src_key_padding_mask,
+#                 batch_labels=None,
+#             )
+
+#         cls_emb = hidden[:, 0, :].cpu().numpy()
+#         embeddings_ft_2.append(cls_emb)
+
+# embeddings_ft_2 = np.concatenate(embeddings_ft_2, axis=0)
+
+# embed_adata_2 = scg.tasks.embed_data(
+#     adata_query,
+#     run_dir,
+#     gene_col="gene_name",
+#     batch_size=64,
+# )
 
 
 # pre-process embeddings
-embeddings = merge_embeddings(embeddings)
-embeddings_ft = merge_embeddings(embeddings_ft)
+# embeddings = merge_embeddings(embeddings)
+# embeddings_ft = merge_embeddings(embeddings_ft)
 
 # generate output folder
 output_dir = generate_scratch_folder(run_dir)
 
 # store adata query 
-adata_query.write_h5ad(os.path.join(output_dir, f"{data_name}_adata.h5ad"))
+# adata_query.write_h5ad(os.path.join(output_dir, f"{data_name}_adata.h5ad"))
 
 # save embeddings
-np.save(os.path.join(output_dir, f"{data_name}-pt_embeddings.npy"), embeddings)
-np.save(os.path.join(output_dir, f"{data_name}-ft_embeddings.npy"), embeddings_ft)
+# np.save(os.path.join(output_dir, f"{data_name}-pt_embeddings.npy"), embeddings)
+pickle.dump(embed_adata, open(os.path.join(output_dir, f"{data_name}-pt_embed_adata.pkl"), "wb"))
+# pickle.dump(embed_adata, open(os.path.join(output_dir, f"{data_name}-ft_embed_adata.pkl"), "wb"))
+# np.save(os.path.join(output_dir, f"{data_name}-ft_embeddings.npy"), embeddings_ft)
+# pickle.dump(embeddings, open(os.path.join(output_dir, f"{data_name}-pt_all_outputs.pkl"), "wb"))
+# pickle.dump(embeddings_ft, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs.pkl"), "wb"))
+# pickle.dump(embeddings_ft_2, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs_2.pkl"), "wb"))
+pickle.dump(embeddings_pt_2, open(os.path.join(output_dir, f"{data_name}-pt_all_outputs_2.pkl"), "wb"))

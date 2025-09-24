@@ -98,6 +98,8 @@ parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 
 # Define arguments
+set_cls_to_pad = True
+include_zero_gene = True
 description = ""
 parser.add_argument(
     "--data_path", type=str, required=True, help="Path to the data file"
@@ -217,6 +219,8 @@ manual_parameters = {
     "library":args.library,
     "use_controls":args.use_controls,
     "use_control_loss": args.use_control_loss,
+    "include_zero_gene": include_zero_gene,
+    "set_cls_to_pad": set_cls_to_pad,
 }
 
 
@@ -632,6 +636,10 @@ def test(model: nn.Module, adata: DataLoader) -> float:
         include_zero_gene=include_zero_gene,
     )
 
+    if set_cls_to_pad:
+        tokenized_test["values"][:, 0] = pad_value
+
+
     input_values_test = random_mask_value(
         tokenized_test["values"],
         mask_ratio=mask_ratio,
@@ -736,12 +744,18 @@ def test_2(model: nn.Module, adata: DataLoader) -> float:
         include_zero_gene=include_zero_gene,
     )
 
+    if set_cls_to_pad:
+        # set <cls> token to pad value
+        tokenized_test["values"][:, 0] = pad_value
+
+
     input_values_test = random_mask_value(
         tokenized_test["values"],
         mask_ratio=mask_ratio,
         mask_value=mask_value,
         pad_value=pad_value,
     )
+
 
     test_data_pt = {
         "gene_ids": tokenized_test["genes"],
@@ -826,13 +840,23 @@ def evaluate_2(
     total_num = 0
     predictions = []
     all_outputs = list()
+    i = 0
     with torch.no_grad():
-        for batch_data in loader:
+        for batch_data in loader:   
             input_gene_ids = batch_data["gene_ids"].to(device)
             input_values = batch_data["values"].to(device)
             target_values = batch_data["target_values"].to(device)
             batch_labels = batch_data["batch_labels"].to(device)
             celltype_labels = batch_data["celltype_labels"].to(device)
+
+            if i==0:
+                print("input_gene_ids", input_gene_ids)
+                print("input_values", input_values)
+                print("target_values", target_values)
+                print("batch_labels", batch_labels)
+                print("celltype_labels", celltype_labels)
+                i+=1
+
 
             if CLS_MULTILABEL:
                 disease_multilabel = batch_data["class_multilabel"].to(device).float()
@@ -1061,6 +1085,7 @@ def prepare_dataloader(
     return data_loader
 
 
+
 # endregion
 
 # region 1. Specify hyper-parameter setup for integration task
@@ -1088,7 +1113,7 @@ hyperparameter_defaults = dict(
     fast_transformer=True,
     pre_norm=False,
     amp=True,  # Automatic Mixed Precision
-    include_zero_gene=False,
+    include_zero_gene=include_zero_gene,
     freeze=False,  # freeze
     DSBN=False,  # Domain-spec batchnorm
 )
@@ -1833,6 +1858,13 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         append_cls=True,
         include_zero_gene=include_zero_gene,
     )
+
+    # set <cls> token to pad value
+    if set_cls_to_pad:
+        tokenized_train["values"][:, 0] = pad_value
+        tokenized_valid["values"][:, 0] = pad_value
+
+
     logger.info(
         f"train set number of samples: {tokenized_train['genes'].shape[0]}, "
         f"\n\t feature length: {tokenized_train['genes'].shape[1]}"
@@ -2194,6 +2226,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
 
     # save best model
     torch.save(best_model, os.path.join(output_dir, f"model_{split}.pt"))
+    torch.save(best_model.state_dict(), os.path.join(output_dir, f"best_model.pt"))
 
     break
 
@@ -2246,14 +2279,56 @@ vocab.save_json(vocab_file)
 
 
 # save model config
+# save model config
 model_config_file = os.path.join(output_dir, "args.json")
 
 model_configs = {
-    "embsize": embsize,
-    "nheads": nhead,
-    "d_hid": d_hid,
+    # paths / data
+    "data_source": manual_parameters.get("data_path"),
+    "save_dir": str(save_dir),
+    "load_model": (str(config.load_model) if config.load_model is not None else None),
+
+    # tokens / styles
+    "pad_token": pad_token,
+    "input_style": input_style,
+    "input_emb_style": input_emb_style,
+    "n_bins": n_bins,
+    "max_seq_len": manual_parameters.get("max_seq_len"),
+
+    # training sizes / lr
+    "batch_size": batch_size,
+    "eval_batch_size": eval_batch_size,
+    "epochs": manual_parameters.get("epochs"),
+    "lr": lr,
+
+    # objectives / precision / speed
+    "no_cls": (not CLS),
+    "no_cce": (not CCE),
+    "USE_CLS": CLS,
+    "USE_CCE": CCE,
+    "MVC": MVC,
+    "fp16": bool(config.amp),
+    "fast_transformer": bool(use_fast_transformer),
+    
+    # architecture
     "nlayers": nlayers,
-    # "n_layers_cls": n_layers_cls
+    "nheads": nhead,
+    "embsize": embsize,
+    "d_hid": d_hid,
+    "dropout": dropout,
+    "n_layers_cls": 3,
+    
+    # values for tokenizer/inputs
+    "mask_value": mask_value,
+    "pad_value": pad_value,
+
+    # vocab path we just saved above
+    "vocab_path": vocab_file,
 }
+
+# only include n_layers_cls if we actually have it (e.g., when loading a pretrain with that field)
+if "n_layers_cls" in locals():
+    model_configs["n_layers_cls"] = n_layers_cls
+
 with open(model_config_file, "w") as f:
     json.dump(model_configs, f, indent=4)
