@@ -12,7 +12,6 @@ from collections import Counter
 from datetime import datetime
 from pathlib import Path
 from typing import *
-
 import warnings
 import matplotlib.pyplot as plt
 import numpy as np
@@ -720,7 +719,6 @@ if method == 3:
         max_length=max_seq_len,
     )
     pickle.dump(embed_adata, open(os.path.join(output_dir, f"method_{method}-{max_seq_len}-{data_name}-ft_embed_adata.pkl"), "wb"))
-
 
     # scGPT Pre Trained Embedding
     embed_adata = scg.tasks.embed_data(

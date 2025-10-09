@@ -85,8 +85,8 @@ print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 # variables
-method = 3
-run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-23-03"
+method = 4
+run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-13-18"
 # query_data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-25-09-12-01/data.h5ad"
 query_data_path = os.path.join(run_dir, "adata_test_1.h5ad")
 data_name = "test"
@@ -102,17 +102,16 @@ special_tokens = [pad_token, "<cls>", "<eoc>"]
 gene_col = "gene_name"
 
 max_seq_len = 3501
-include_zero_gene = False
+include_zero_gene = True
 mask_ratio = 0.0
 eval_batch_size = 16
 batch_size = eval_batch_size
 device = "cuda"
 model_dir = "/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human"
 input_style = "binned"
-
 use_fast_transformer = True
 
-config = {'seed': 0, 
+config = {'seed': 0,    
           'dataset_name': 'test_1', 
           'do_train': True, 
           'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 
@@ -122,7 +121,7 @@ config = {'seed': 0,
           'MVC': False, 
           'ecs_thres': 0.0, 
           'dab_weight': 0.0, 
-          'lr': 0.0001, 
+          'lr': 0.0001,
           'batch_size': 32, 
           'layer_size': 128, 
           'nlayers': 4, 
@@ -195,8 +194,12 @@ adata_query = sc.read(query_data_path)
 adata_query = adata_query[adata_query.obs["library"] == "RNA-Seq"].copy()
 print("Using RNA-Seq data only - adata shape", adata_query.shape)
 
+model_path = os.path.join(run_dir, "best_model.pt")
+
+
 # Method 1
-if method == 1:
+if False:
+# if method == 1:
     # load variables
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     include_zero_gene = (
@@ -387,7 +390,8 @@ if method == 1:
 
 
 # Method 2
-if method == 2:
+if False:
+# if method == 2:
     adata_or_file = adata_query
     if isinstance(adata_or_file, AnnData):
         adata = adata_or_file
@@ -473,11 +477,11 @@ if method == 2:
     # model.eval()
 
 
-    # load finetuned model
-    model_path = os.path.join(run_dir, "best_model.pt")
-    model_ft = torch.load(model_path, map_location=device)  # try to read container
-    model_ft.to(device)
-    model_ft.eval()
+    # # load finetuned model
+    # model_path = os.path.join(run_dir, "model_1.pt")
+    # model_ft = torch.load(model_path, map_location=device)  # try to read container
+    # model_ft.to(device)
+    # model_ft.eval()
 
 
     input_layer_key = d_input_layer[input_style]
@@ -532,11 +536,10 @@ if method == 2:
         pin_memory=True,
     )
 
-
-    # === FIX: force expression pad values to match collator ===
-    pad_id = vocab[pad_token]
-    pad_mask = tokenized_test["genes"] == pad_id
-    tokenized_test["values"][pad_mask] = pad_value   # overwrite 0.0 → -2.0
+    # # === FIX: force expression pad values to match collator ===
+    # pad_id = vocab[pad_token]
+    # pad_mask = tokenized_test["genes"] == pad_id
+    # tokenized_test["values"][pad_mask] = pad_value   # overwrite 0.0 → -2.0
 
     # load finetuned model
     # model_path = os.path.join(run_dir, "best_model.pt")
@@ -676,16 +679,16 @@ if method == 2:
             # input_gene_ids = data_dict["gene"].to(device)
             # input_values = data_dict["expr"].to(device)
             # input_values = data_dict["values"].clone()  # make a copy so we can edit
-            # input_values[:, 0] = 0.0                    # force <cls> expression = 0.0
-            # input_values = input_values.to(device)        
+            input_values[:, 0] = pad_value                  # force <cls> expression = 0.0
+            input_values = input_values.to(device)        
 
             if count == 0:
                 print(input_gene_ids.shape, input_values.shape)
                 print("INPUT GENE IDS", input_gene_ids)
                 print("INPUT VALUES", input_values)
-                pickle.dump(input_values.cpu().numpy(), open(os.path.join(output_dir, f"input_values_3.pkl"), "wb"))
-                pickle.dump(input_gene_ids.cpu().numpy(), open(os.path.join(output_dir, f"input_genes_3.pkl"), "wb"))
-                print(f'DUMPED IN {os.path.join(output_dir, f"input_genes_3.pkl")}')
+                # pickle.dump(input_values.cpu().numpy(), open(os.path.join(output_dir, f"input_values_3.pkl"), "wb"))
+                # pickle.dump(input_gene_ids.cpu().numpy(), open(os.path.join(output_dir, f"input_genes_3.pkl"), "wb"))
+                # print(f'DUMPED IN {os.path.join(output_dir, f"input_genes_3.pkl")}')
          
             # === QUICK HACK: deterministic truncation if too long ===
             # max_length = 1200
@@ -716,27 +719,346 @@ if method == 2:
 
 # Method 3
 # alternative way to embed
-if method == 3:
+# if method == 3:
+if False:
+
+    # define data as binned data
+    adata_query.X = adata_query.layers["X_binned"]
+
 
     # scGPT Fine-tuned Embedding
-    model_path = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-23-03"
     embed_adata = scg.tasks.embed_data(
         adata_query,
-        model_path,
+        run_dir,
         gene_col="gene_name",
         batch_size=64,
         max_length=max_seq_len,
+        do_binning=False,
     )
     pickle.dump(embed_adata, open(os.path.join(output_dir, f"method_{method}-{max_seq_len}-{data_name}-ft_embed_adata.pkl"), "wb"))
 
+    # scGPT Pre-trained Embedding
+    embed_adata = scg.tasks.embed_data(
+        adata_query,
+        model_dir,
+        gene_col="gene_name",
+        batch_size=64,
+        max_length=max_seq_len,
+        do_binning=False,
+    )
+    pickle.dump(embed_adata, open(os.path.join(output_dir, f"method_{method}-{max_seq_len}-{data_name}-pt_embed_adata.pkl"), "wb"))
 
-    # embed_adata = scg.tasks.embed_data(
-    #     adata_query,
-    #     model_dir,
-    #     gene_col="gene_name",
-    #     batch_size=64,
-    #     max_length=max_seq_len,
-    # )
-    # pickle.dump(embed_adata, open(os.path.join(output_dir, f"method_{method}-{max_seq_len}-{data_name}-pt_embed_adata.pkl"), "wb"))
+if method == 4:
+
+    # imports
 
 
+
+    # variables
+
+
+
+    # functions
+
+    def load_model(model_dir: str, adata, device: torch.device) -> torch.nn.Module:
+
+        model_dir = Path(model_dir)
+        vocab_file = model_dir / "vocab.json"
+        model_config_file = model_dir / "args.json"
+        model_file = model_dir / "best_model.pt"
+        pad_token = "<pad>"
+        special_tokens = [pad_token, "<cls>", "<eoc>"]
+
+        # vocabulary
+        vocab = GeneVocab.from_file(vocab_file)
+        for s in special_tokens:
+            if s not in vocab:
+                vocab.append_token(s)
+        adata.var["id_in_vocab"] = [
+            vocab[gene] if gene in vocab else -1 for gene in adata.var[gene_col]
+        ]
+        gene_ids_in_vocab = np.array(adata.var["id_in_vocab"])
+        print(
+            f"match {np.sum(gene_ids_in_vocab >= 0)}/{len(gene_ids_in_vocab)} genes "
+            f"in vocabulary of size {len(vocab)}."
+        )
+        adata = adata[:, adata.var["id_in_vocab"] >= 0]
+
+        with open(model_config_file, "r") as f:
+            model_configs = json.load(f)
+
+        # Binning will be applied after tokenization. A possible way to do is to use the unified way of binning in the data collator.
+
+        vocab.set_default_index(vocab["<pad>"])
+        genes = adata.var[gene_col].tolist()
+        gene_ids = np.array(vocab(genes), dtype=int)
+
+        # all_counts = adata.layers["counts"]
+        # num_of_non_zero_genes = [
+        #     np.count_nonzero(all_counts[i]) for i in range(all_counts.shape[0])
+        # ]
+        # max_length = min(max_length, np.max(num_of_non_zero_genes) + 1)
+
+        model = TransformerModel(
+            ntoken=len(vocab),
+            d_model=model_configs["embsize"],
+            nhead=model_configs["nheads"],
+            d_hid=model_configs["d_hid"],
+            nlayers=model_configs["nlayers"],
+            nlayers_cls=model_configs["n_layers_cls"],
+            n_cls=1,
+            vocab=vocab,
+            dropout=model_configs["dropout"],
+            pad_token=model_configs["pad_token"],
+            pad_value=model_configs["pad_value"],
+            do_mvc=True,
+            do_dab=False,
+            use_batch_labels=False,
+            domain_spec_batchnorm=False,
+            explicit_zero_prob=False,
+            use_fast_transformer=use_fast_transformer,
+            fast_transformer_backend="flash",
+            pre_norm=False,
+        )
+        load_pretrained(model, torch.load(model_file, map_location=device), verbose=False)
+
+        return model
+
+    def load_pretrained(
+        model: torch.nn.Module,
+        pretrained_params: Mapping[str, torch.Tensor],
+        strict: bool = False,
+        prefix: Optional[List[str]] = None,
+        verbose: bool = True,
+    ) -> torch.nn.Module:
+        """
+        Load pretrained weights to the model.
+
+        Args:
+            model (torch.nn.Module): The model to load weights to.
+            pretrained_params (Mapping[str, torch.Tensor]): The pretrained parameters.
+            strict (bool): Whether to strictly enforce that the keys in :attr:`pretrained_params`
+                match the keys returned by this module's :meth:`Module.state_dict`. Default to False.
+            prefix (List[str]): The list of prefix strings to match with the keys in
+                :attr:`pretrained_params`. The matched keys will be loaded. Default to None.
+
+        Returns:
+            torch.nn.Module: The model with pretrained weights.
+        """
+
+        use_flash_attn = getattr(model, "use_fast_transformer", True)
+        if not use_flash_attn:
+            pretrained_params = {
+                k.replace("Wqkv.", "in_proj_"): v for k, v in pretrained_params.items()
+            }
+
+        if prefix is not None and len(prefix) > 0:
+            if isinstance(prefix, str):
+                prefix = [prefix]
+            pretrained_params = {
+                k: v
+                for k, v in pretrained_params.items()
+                if any(k.startswith(p) for p in prefix)
+            }
+
+        model_dict = model.state_dict()
+        if strict:
+            if verbose:
+                for k, v in pretrained_params.items():
+                    print(f"Loading parameter {k} with shape {v.shape}")
+            model_dict.update(pretrained_params)
+            model.load_state_dict(model_dict)
+        else:
+            if verbose:
+                for k, v in pretrained_params.items():
+                    if k in model_dict and v.shape == model_dict[k].shape:
+                        print(f"Loading parameter {k} with shape {v.shape}")
+            pretrained_params = {
+                k: v
+                for k, v in pretrained_params.items()
+                if k in model_dict and v.shape == model_dict[k].shape
+            }
+            model_dict.update(pretrained_params)
+            model.load_state_dict(model_dict)
+
+        return model
+
+    # load model variables
+    adata_valid = sc.read(os.path.join(run_dir, "adata_valid_1.h5ad"))
+    n_input_bins = n_bins = config["n_bins"]
+
+
+
+    # generate vocab
+    genes = adata_valid.var["gene_name"].tolist()
+
+    model_dir = Path(model_dir)
+    vocab_file = os.path.join(run_dir, "vocab.json")
+    model_config_file = os.path.join(run_dir, "args.json")
+    pad_token = "<pad>"
+    special_tokens = [pad_token, "<cls>", "<eoc>"]
+
+    # vocabulary
+    vocab = GeneVocab.from_file(vocab_file)
+
+    vocab.set_default_index(vocab["<pad>"])
+    gene_ids = np.array(vocab(genes), dtype=int)
+
+
+
+    input_layer_key = d_input_layer[input_style]
+
+    all_counts = (
+        adata_query.layers[input_layer_key].A
+        if issparse(adata_query.layers[input_layer_key])
+        else adata_query.layers[input_layer_key]
+    )
+
+    # load data
+    adata_query = sc.read(query_data_path)
+
+    # define data as binned data
+    # set up the preprocessor, use the args to config the workflow
+    preprocessor = Preprocessor(
+        use_key="X",  # the key in adata.layers to use as raw data
+        filter_gene_by_counts=False,  # step 1
+        filter_cell_by_counts=False,  # step 2 #! WE HAVE CASES WHERE EVERYTHING IS 0 - WE SHOULD ACTIVATE THIS!
+        normalize_total=1e4,  # 3. whether to normalize the raw data and to what sum
+        result_normed_key="X_normed",  # the key in adata.layers to store the normalized data
+        log1p=True,  # 4. whether to log1p the normalized data
+        result_log1p_key="X_log1p",
+        subset_hvg=False,  # 5. whether to subset the raw data to highly variable genes
+        hvg_flavor="seurat_v3" if True else "cell_ranger",
+        binning=n_bins,  # 6. whether to bin the raw data and to what number of bins
+        result_binned_key="X_binned",  # the key in adata.layers to store the binned data
+        )
+
+    # define mapping of input layer
+    d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
+                    "normed_raw": "X_normed",
+                    "log1p": "X_normed",
+                    "binned": "X_binned",
+                    }
+
+    mask_nans = np.isnan(adata_query.X)
+    adata_query.X[mask_nans] = 0.0    # set to 0
+
+    preprocessor(adata_query, batch_key=None)
+
+
+    batch_ids = adata_query.obs["batch_id"].to_numpy()
+    
+    # set to pad value to the data which will be used as input
+    input_layer_key = d_input_layer[input_style]
+    pad_nan_vals = True
+    if pad_nan_vals:
+        adata_query.layers[input_layer_key][mask_nans] = pad_value
+
+
+    # load model method A
+    # model_ft = load_model(run_dir, adata_valid, device)
+    # model_ft.to(device)
+    # model_ft.eval()
+
+    # load model method B
+    model_path = os.path.join(run_dir, "model_1.pt")
+    model_ft = torch.load(model_path, map_location=device)  # try to read container
+    model_ft.to(device)
+    model_ft.eval()
+
+    # get cell embeddings
+    all_counts = (
+        adata_query.layers[input_layer_key].A
+        if issparse(adata_query.layers[input_layer_key])
+        else adata_query.layers[input_layer_key]
+    )
+
+    celltypes_labels = adata_query.obs["celltype_id"].tolist()  # make sure count from 0
+    celltypes_labels = np.array(celltypes_labels)
+
+    batch_ids = adata_query.obs["batch_id"].tolist()
+    batch_ids = np.array(batch_ids)
+
+    tokenized_test = tokenize_and_pad_batch(
+        all_counts,
+        gene_ids,
+        max_len=max_seq_len,
+        vocab=vocab,
+        pad_token=pad_token,
+        pad_value=pad_value,
+        append_cls=True,  # append <cls> token at the beginning
+        include_zero_gene=include_zero_gene,
+    )
+    set_cls_to_pad = True
+    if set_cls_to_pad:
+        tokenized_test["values"][:, 0] = pad_value
+
+
+    input_values_test = random_mask_value(
+        tokenized_test["values"],
+        mask_ratio=mask_ratio,
+        mask_value=mask_value,
+        pad_value=pad_value,
+    )
+
+    test_data_pt = {
+        "gene_ids": tokenized_test["genes"],
+        "values": input_values_test,
+        "target_values": tokenized_test["values"],
+        "batch_labels": torch.from_numpy(batch_ids).long(),
+        "celltype_labels": torch.from_numpy(celltypes_labels).long(),
+    }
+    test_loader = DataLoader(
+        dataset=SeqDataset(test_data_pt),
+        batch_size=eval_batch_size,
+        shuffle=False,
+        drop_last=False,
+        num_workers=min(len(os.sched_getaffinity(0)), eval_batch_size // 2),
+        pin_memory=True,
+    )
+
+
+
+    all_outputs = list()
+    with torch.no_grad():
+        c = 0
+        for batch_data in test_loader:   
+            input_gene_ids = batch_data["gene_ids"].to(device)
+            input_values = batch_data["values"].to(device)
+            target_values = batch_data["target_values"].to(device)
+            batch_labels = batch_data["batch_labels"].to(device)
+            celltype_labels = batch_data["celltype_labels"].to(device)
+            src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+            
+            if c== 0:
+                print(input_gene_ids.shape, input_values.shape)
+                print("INPUT GENE IDS", input_gene_ids)
+                print("INPUT VALUES", input_values)
+                # pickle.dump(input_values.cpu().numpy(), open(os.path.join(output_dir, f"input_values_4.pkl"), "wb"))
+                # pickle.dump(input_gene_ids.cpu().numpy(), open(os.path.join(output_dir, f"input_genes_4.pkl"), "wb"))
+                # print(f'DUMPED IN {os.path.join(output_dir, f"input_genes_4.pkl")}')
+            c += 1
+
+            with torch.cuda.amp.autocast(enabled=config.get("amp", True)):
+                output_dict = model_ft(
+                    input_gene_ids,
+                    input_values,
+                    src_key_padding_mask=src_key_padding_mask,
+                    batch_labels=None,
+                    CLS=True,  # evaluation does not need CLS or CCE
+                    CCE=False,
+                    MVC=False,
+                    ECS=False,
+                    do_sample=False,
+                    # generative_training = False,
+                )
+
+            # convert everythin to cpu !
+            output_dict = {
+                key: value.cpu() if isinstance(value, torch.Tensor) else value
+                for key, value in output_dict.items()
+            }
+
+            all_outputs.append(output_dict)
+
+    pickle.dump(all_outputs, open(os.path.join(output_dir, f"method_{method}-{max_seq_len}-{data_name}-ft_embed_adata.pkl"), "wb"))

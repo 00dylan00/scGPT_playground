@@ -87,6 +87,7 @@ parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 # variables
 run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-13-18"
+run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-26-02"
 # query_data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-25-09-12-01/data.h5ad"
 query_data_path = os.path.join(run_dir, "adata_test_1.h5ad")
 data_name = "test"
@@ -440,6 +441,11 @@ tokenized_test = tokenize_and_pad_batch(
     include_zero_gene=include_zero_gene,
 )
 
+# set_cls_to_pad = True
+# if set_cls_to_pad:
+#     tokenized_test["values"][:, 0] = 0.0
+
+
 input_values_test = random_mask_value(
     tokenized_test["values"],
     mask_ratio=mask_ratio,
@@ -467,7 +473,7 @@ test_loader = DataLoader(
 model.eval()
 
 # load finetuned model
-model_path = os.path.join(run_dir, "best_model.pt")
+model_path = os.path.join(run_dir, "model_1.pt")
 model_ft = torch.load(model_path, map_location=device)  # try to read container
 model_ft.to(device)
 model_ft.eval()
@@ -537,64 +543,69 @@ embed_adata = scg.tasks.embed_data(
 
 #         embeddings.append(output_dict)
 
+c = 0
+embeddings_ft = list()
+with torch.no_grad():
+    for batch_data in tqdm(test_loader):
+        input_gene_ids = batch_data["gene_ids"].to(device)
+        input_values = batch_data["values"].to(device)
+        target_values = batch_data["target_values"].to(device)
+        batch_labels = batch_data["batch_labels"].to(device)
+        celltype_labels = batch_data["celltype_labels"].to(device)
+        input_values[:, 0] = 0.0                    # force <cls> expression = 0.0
+        if c == 0:
+            print("input_values", input_values[0, :50])
+            print("target_values", target_values[0, :50])
+            c += 1
 
-# embeddings_ft = list()
-# with torch.no_grad():
-#     for batch_data in tqdm(test_loader):
-#         input_gene_ids = batch_data["gene_ids"].to(device)
-#         input_values = batch_data["values"].to(device)
-#         target_values = batch_data["target_values"].to(device)
-#         batch_labels = batch_data["batch_labels"].to(device)
-#         celltype_labels = batch_data["celltype_labels"].to(device)
-
-#         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
-#         with torch.cuda.amp.autocast(enabled=config["amp"]):
-#             output_dict = model_ft(
-#                 input_gene_ids,
-#                 input_values,
-#                 src_key_padding_mask=src_key_padding_mask,
-#                 batch_labels=None,
-#                 CLS=True, 
-#                 CCE=False,
-#                 MVC=False,
-#                 ECS=False,
-#                 # generative_training = False,
-#             )
+        src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+        with torch.cuda.amp.autocast(enabled=config["amp"]):
+            output_dict = model_ft(
+                input_gene_ids,
+                input_values,
+                src_key_padding_mask=src_key_padding_mask,
+                batch_labels=None,
+                CLS=True, 
+                CCE=False,
+                MVC=False,
+                ECS=False,
+                # generative_training = False,
+            )
             
-#             output_values = output_dict["cls_output"]
+            output_values = output_dict["cls_output"]
 
-#             preds = torch.sigmoid(output_values).cpu().numpy()
-#             preds_bin = (preds > 0.5).astype(int)
+            preds = torch.sigmoid(output_values).cpu().numpy()
+            preds_bin = (preds > 0.5).astype(int)
 
-#             output_dict = {
-#                 key: value.cpu() if isinstance(value, torch.Tensor) else value
-#                 for key, value in output_dict.items()
-#             }
-
-
-#         embeddings_ft.append(output_dict)
+            output_dict = {
+                key: value.cpu() if isinstance(value, torch.Tensor) else value
+                for key, value in output_dict.items()
+            }
 
 
-# embeddings_ft_2 = []
-# with torch.no_grad():
-#     for batch_data in tqdm(test_loader, desc="Embedding (finetuned model)"):
-#         input_gene_ids = batch_data["gene_ids"].to(device)
-#         input_values = batch_data["values"].to(device)
-#         src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
+        embeddings_ft.append(output_dict)
 
-#         # fp16/bf16 autocast so flash-attn accepts the dtype
-#         with torch.cuda.amp.autocast(enabled=config.get("amp", True)):
-#             hidden = model_ft._encode(
-#                 input_gene_ids,
-#                 input_values,
-#                 src_key_padding_mask=src_key_padding_mask,
-#                 batch_labels=None,
-#             )
 
-#         cls_emb = hidden[:, 0, :].cpu().numpy()
-#         embeddings_ft_2.append(cls_emb)
+embeddings_ft_2 = []
+with torch.no_grad():
+    for batch_data in tqdm(test_loader, desc="Embedding (finetuned model)"):
+        input_gene_ids = batch_data["gene_ids"].to(device)
+        input_values = batch_data["values"].to(device)
+        src_key_padding_mask = input_gene_ids.eq(vocab[pad_token])
 
-# embeddings_ft_2 = np.concatenate(embeddings_ft_2, axis=0)
+        # fp16/bf16 autocast so flash-attn accepts the dtype
+        with torch.cuda.amp.autocast(enabled=config.get("amp", True)):
+            hidden = model_ft._encode(
+                input_gene_ids,
+                input_values,
+                src_key_padding_mask=src_key_padding_mask,
+                batch_labels=None,
+            )
+
+        cls_emb = hidden[:, 0, :].cpu().numpy()
+        embeddings_ft_2.append(cls_emb)
+
+embeddings_ft_2 = np.concatenate(embeddings_ft_2, axis=0)
 
 # embed_adata_2 = scg.tasks.embed_data(
 #     adata_query,
@@ -620,6 +631,6 @@ pickle.dump(embed_adata, open(os.path.join(output_dir, f"{data_name}-pt_embed_ad
 # pickle.dump(embed_adata, open(os.path.join(output_dir, f"{data_name}-ft_embed_adata.pkl"), "wb"))
 # np.save(os.path.join(output_dir, f"{data_name}-ft_embeddings.npy"), embeddings_ft)
 # pickle.dump(embeddings, open(os.path.join(output_dir, f"{data_name}-pt_all_outputs.pkl"), "wb"))
-# pickle.dump(embeddings_ft, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs.pkl"), "wb"))
-# pickle.dump(embeddings_ft_2, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs_2.pkl"), "wb"))
+pickle.dump(embeddings_ft, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs.pkl"), "wb"))
+pickle.dump(embeddings_ft_2, open(os.path.join(output_dir, f"{data_name}-ft_all_outputs_2.pkl"), "wb"))
 pickle.dump(embeddings_pt_2, open(os.path.join(output_dir, f"{data_name}-pt_all_outputs_2.pkl"), "wb"))

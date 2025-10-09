@@ -1,56 +1,118 @@
 # imports
 import argparse
+import copy
 import json
 import logging
 import os
+import pickle
+import shutil
 import sys
+import time
+from collections import Counter
+from datetime import datetime
 from pathlib import Path
 from typing import *
+
 import warnings
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import scanpy as sc
+import scvi
+import seaborn as sns
 import torch
+import wandb
 from anndata import AnnData
 from scipy.sparse import issparse
+from sklearn.metrics import (
+    accuracy_score,
+    adjusted_rand_score,
+    average_precision_score,
+    confusion_matrix,
+    f1_score,
+    normalized_mutual_info_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import (
+    KFold,
+    StratifiedGroupKFold,
+    StratifiedKFold,
+    train_test_split,
+)
 from tqdm import tqdm
 from torch import nn
+from torch.nn import functional as F
 from torch.utils.data import DataLoader, Dataset
 from torchtext.vocab import Vocab
+from torchtext._torchtext import Vocab as VocabPybind
+
+# ===== Local paths (add before importing scgpt) =====
 sys.path.insert(0, "/aloy/home/ddalton/git_clones/scGPT")
 sys.path.insert(0, "../")
 sys.path.append("/aloy/home/ddalton/projects/scGPT_playground/")
+
+# ===== scGPT =====
 import scgpt as scg
+from scgpt import SubsetsBatchSampler
+from scgpt.loss import (
+    criterion_neg_log_bernoulli,
+    masked_mse_loss,
+    masked_relative_error,
+)
+from scgpt.model import AdversarialDiscriminator, TransformerModel
 from scgpt.preprocess import Preprocessor
 from scgpt.tokenizer import random_mask_value, tokenize_and_pad_batch
 from scgpt.tokenizer.gene_tokenizer import GeneVocab
+from scgpt.utils import category_str2int, eval_scib_metrics, set_seed
+from scgpt.tasks.cell_emb import get_batch_cell_embeddings
+
+# ===== Project helpers =====
+from scanpy.pp import combat
 from src.training import helpers as tr_h
 from src.utils import viz as vz
 
+# ===== One-time setup =====
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+sc.set_figure_params(figsize=(6, 6))
+os.environ["KMP_WARNINGS"] = "off"
+warnings.filterwarnings("ignore")
+
 print(f"scGPT version: {scg.__file__}")
-print(f"Is Cuda Available {torch.cuda.is_available()}")
+logging.info(f"Is Cuda Available {torch.cuda.is_available()}")
 
 print(torch.cuda.device_count())  # Check how many GPUs are available
 parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 # variables
-parser.add_argument("--adata_path", type=str, required=True, help="Path to the data file" )
-parser.add_argument("--run_dir", type=str, required=True, help="Path to the run directory" )
-parser.add_argument("--model_type", type=str, required=True, help="Model type (ft or pt)" )
-parser.add_argument("--is_processed", type=eval, default=False, help="If the input data is pre-processed or not" )
-parser.add_argument("--set_cls_to_pad", type=eval, default=False, help="Set CLS token values to PAD" )
-parser.add_argument("--include_zero_gene", type=eval, default=False, help="Include zero gene in vocab" )
-parser.add_argument("--pad_nan_vals", type=eval, default=False, help="PAD NaN values in input" )
-args = parser.parse_args()
+run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-17-01"
+# run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-13-18"
+# run_dir = "/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-28-02"
+set_cls_to_pad = False
+include_zero_gene = False
+pad_nan_vals = False
+is_processed= False
 
+query_data_path = "/aloy/home/ddalton/projects/scGPT_playground/data/pp_data-25-09-12-01/data.h5ad"
 # query_data_path = os.path.join(run_dir, "adata_test_1.h5ad")
-data_name = args.adata_path.split("/")[-1].replace(".h5ad","")
-assert args.model_type in ["ft", "pt"], "model_type must be 'ft' or 'pt'"
+data_name = "microarray"
+model_type = "ft"
+assert model_type in ["ft", "pt"], "model_type must be 'ft' or 'pt'"
 
-manual_parameters = {"scgpt_pp": "norm_log1p"}
+manual_parameters = {
+    "scgpt_pp": "norm_log1p",  # options: raw, norm_log1p, binned
+}
+mask_value = -1
+pad_value = -2
+pad_token = "<pad>"
+special_tokens = [pad_token, "<cls>", "<eoc>"]
 
-d_input_layer = {   "normed_raw": "X_normed",
-                    "log1p": "X_normed",
-                    "binned": "X_binned",
+
+d_input_layer = {  # the values of this map coorespond to the keys in preprocessing
+                "normed_raw": "X_normed",
+                "log1p": "X_normed",
+                "binned": "X_binned",
                 }
 
 # functions
@@ -78,6 +140,7 @@ def generate_scratch_folder(run_dir:str)-> str:
 
     print(f"Output directory created: {output_dir}")
     return output_dir
+
 
 def merge_embeddings(output: List[Dict]) -> np.array:
     """Merge Embeddings
@@ -220,70 +283,32 @@ def get_loader(adata: AnnData,
     )
     return data_loader
 
-def get_qc_mask(adata:AnnData,nan_thr:float=0.5)-> np.array:    
-    # mask samples
-    nan_thr= 0.5
-
-    non_nan_mask = ~np.isnan(adata.X)  & ~(adata.X==0) 
-    non_nan_mask_pct = np.sum(non_nan_mask, axis=1) / adata_query.X.shape[1]
-
-    # mask samples that have less than X% non-NaN values
-    mask_samples_vals = non_nan_mask_pct >= nan_thr 
-
-    print(f"{nan_thr} Keeping {np.sum(mask_samples_vals)} samples out of {adata_query.X.shape[0]} ({np.sum(mask_samples_vals)/adata_query.X.shape[0]*100:.2f}%)")
-    return mask_samples_vals
-
 # load variables
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 input_style = "binned"  # "normed_raw", "log1p", or "binned"
 
+batch_size = 16
+eval_batch_size = 16
+max_seq_len = 3501
+
 # load adata train
-adata_model = sc.read(os.path.join(args.run_dir, "adata_train_1.h5ad"))
+adata_model = sc.read(os.path.join(run_dir, "adata_train_1.h5ad"))
 
 # load data
-adata_query = sc.read(args.adata_path)
+adata_query = sc.read(query_data_path)
 # adata_query = adata_query[adata_query.obs["library"] == "RNA-Seq"].copy()
 # print("Using RNA-Seq data only - adata shape", adata_query.shape)
-
-#! BENCHMARK
-# import sys
-# sys.path.append("../..")
-# from src.utils import utils as ut
-
-# # subset by disease
-# df_info = ut.load_dsa_info()
-
-# # map dsaid to disease id
-# dsa_to_disease_id = dict(zip(df_info["dsaid"], df_info["diseaseid"]))
-
-# # disease ids to keep
-# _dsaid = adata_model.obs["dsaid"].to_list()
-# disease_ids = [dsa_to_disease_id[d] for d in _dsaid]
-# print(f"Nº of diseases : {len(set(disease_ids))}")
-
-# # get all dsaids w/ said diease ids
-# all_dsaids = [d for d, v in dsa_to_disease_id.items() if v in disease_ids]
-# print(f"Nº of dsaids : {len(set(_dsaid))}")
-
-# # filter adata
-# adata_query = adata_query[adata_query.obs["library"] == "RNA-Seq"].copy()
-# adata_query = adata_query[adata_query.obs["dsaid"].isin(all_dsaids)].copy()
-# # print("Using Microarray data only - adata shape", adata_query.shape)
-# print("Using RNA-Seq data only - adata shape", adata_query.shape)
-# print(f"Nº of diseases : {len(set(adata_query.obs['doid_id'].to_list()))}")
-
-
 
 # generate output folder
-output_dir = generate_scratch_folder(args.run_dir)
+output_dir = generate_scratch_folder(run_dir)
 
-if args.model_type == "ft":
-    model_config_file = os.path.join(args.run_dir,"args.json")
-    vocab_file = os.path.join(args.run_dir, "vocab.json")
+if model_type == "ft":
+    model_config_file = os.path.join(run_dir,"args.json")
+    vocab_file = os.path.join(run_dir, "vocab.json")
 
     vocab = GeneVocab.from_file(vocab_file)
-    pad_token = "<pad>"
-    special_tokens = [pad_token, "<cls>", "<eoc>"]
+
     for s in special_tokens:
         if s not in vocab:
             vocab.append_token(s)
@@ -302,9 +327,83 @@ if args.model_type == "ft":
     with open(model_config_file, "r") as f:
         model_configs = json.load(f)
 
+    #! TEST-OUT
+    # def subset_adata(adata, adata_ref):
+    #     import numpy as np
+    #     import pandas as pd
+
+    #     # mask presence in ref
+    #     mask = np.isin(adata.obs.ids, adata_ref.obs.ids)
+    #     adata_subset = adata[mask]
+
+    #     # re-order to match
+    #     desired = adata_ref.obs["ids"].tolist()
+    #     cat = pd.Categorical(adata_subset.obs["ids"], categories=desired, ordered=True)
+    #     adata_subset = adata_subset[adata_subset.obs.assign(_k=cat).sort_values("_k").index, :].copy()
+
+    #     assert (adata_subset.obs["ids"].values == adata_ref.obs["ids"].values).all()
+
+    #     return adata_subset
+
+    # adata_query = subset_adata(adata_query, adata_model)
+    # print("After subsetting to match valid data:", adata_query.shape)
+
+    # # filter genes
+    # mask_genes = np.isin(adata_query.var["gene_name"].tolist(), adata_model.var["gene_name"].tolist() )
+    # adata_query = adata_query[:, mask_genes]
+    # print("After subsetting to match valid genes:", adata_query.shape)
+
+    import sys
+    sys.path.append("../..")
+    from src.utils import utils as ut
+
+    # subset by disease
+    df_info = ut.load_dsa_info()
+
+    # map dsaid to disease id
+    dsa_to_disease_id = dict(zip(df_info["dsaid"], df_info["diseaseid"]))
+
+    # disease ids to keep
+    _dsaid = adata_model.obs["dsaid"].to_list()
+    disease_ids = [dsa_to_disease_id[d] for d in _dsaid]
+    print(f"Nº of diseases : {len(set(disease_ids))}")
+
+    # get all dsaids w/ said diease ids
+    all_dsaids = [d for d, v in dsa_to_disease_id.items() if v in disease_ids]
+    print(f"Nº of dsaids : {len(set(_dsaid))}")
+
+    # filter adata
+    adata_query = adata_query[adata_query.obs["library"] == "RNA-Seq"].copy()
+    adata_query = adata_query[adata_query.obs["dsaid"].isin(all_dsaids)].copy()
+    # print("Using Microarray data only - adata shape", adata_query.shape)
+    print("Using RNA-Seq data only - adata shape", adata_query.shape)
+    print(f"Nº of diseases : {len(set(adata_query.obs['doid_id'].to_list()))}")
+
+    # mask samples
+    nan_thr= 0.5
+
+    non_nan_mask = ~np.isnan(adata_query.X)  & ~(adata_query.X==0) 
+    non_nan_mask_pct = np.sum(non_nan_mask, axis=1) / adata_query.X.shape[1]
+
+    # mask samples that have less than 30% non-NaN values
+    mask_samples_nan = non_nan_mask_pct >= nan_thr 
+
+    print(f"{nan_thr} Keeping {np.sum(mask_samples_nan)} samples out of {adata_query.X.shape[0]} ({np.sum(mask_samples_nan)/adata_query.X.shape[0]*100:.2f}%)")
+
+    zero_thr = 0.5
+    non_zero_mask = ~(adata_query.X==0) 
+    non_zero_mask_pct = np.sum(non_zero_mask, axis=1) / adata_query.X.shape[1]
+
+    # mask samples that have less than 30% non-NaN values
+    mask_samples_zero = non_zero_mask_pct >= zero_thr 
+
+    print(f"{zero_thr} Keeping {np.sum(mask_samples_zero)} samples out of {adata_query.X.shape[0]} ({np.sum(mask_samples_zero)/adata_query.X.shape[0]*100:.2f}%)")
+
+    mask_samples_comb = mask_samples_nan & mask_samples_zero
+    print(f"Combined: Keeping {np.sum(mask_samples_comb)} samples out of {adata_query.X.shape[0]} ({np.sum(mask_samples_comb)/adata_query.X.shape[0]*100:.2f}%)")
+
     # apply the mask to the AnnData object
-    mask_samples_vals = get_qc_mask(adata_query, nan_thr=0.5)
-    adata_query = adata_query[mask_samples_vals, :]
+    adata_query = adata_query[mask_samples_comb, :]
 
     input_layer_key = d_input_layer[input_style]
 
@@ -312,35 +411,34 @@ if args.model_type == "ft":
     test_loader = get_loader(
         adata=adata_query,
         vocab=vocab,
-        batch_size=16,
-        max_length=3501,
-        include_zero_gene=args.include_zero_gene,
-        set_cls_to_pad=args.set_cls_to_pad,
-        pad_nan_vals=args.pad_nan_vals,
+        batch_size=batch_size,
+        max_length=max_seq_len,
+        include_zero_gene=include_zero_gene,
+        set_cls_to_pad=set_cls_to_pad,
+        pad_nan_vals=pad_nan_vals,
         input_layer_key=input_layer_key,
-        is_processed=args.is_processed,
-        pad_token="<pad>",
-        pad_value=-2,
+        is_processed=is_processed,
+        pad_token=pad_token,
+        pad_value=pad_value,
         mask_ratio=0.0,  # no masking during evaluation
-        mask_value=-1,
+        mask_value=mask_value,
     ) 
 
     # load finetuned model
-    model_path = os.path.join(args.run_dir, "model_1.pt")
+    model_path = os.path.join(run_dir, "model_1.pt")
     model_ft = torch.load(model_path, map_location=device)  # try to read container
     model_ft.to(device)
     model_ft.eval()
 
+
     # generate embeddings
     embeddings = get_embeddings(model_ft, test_loader, vocab, device)
 
-    # add to adata object under layers
-    adata_query.obsm["ft_scGPT"] = embeddings
-
     # save embedding
-    adata_query.write(os.path.join(output_dir, f"ft_{data_name}.h5ad"))
+    pickle.dump(embeddings, open(os.path.join(output_dir, f"{data_name}-{model_type}.pkl"), "wb"))
 
-elif args.model_type == "pt":
+
+elif model_type == "pt":
 
     model_dir = Path("/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human")
     model_config_file = model_dir / "args.json"
@@ -356,9 +454,7 @@ elif args.model_type == "pt":
             model_dir,
             gene_col="gene_name",
             batch_size=64,
-            max_length=3501,
+            max_length=max_seq_len,
             do_binning=True,
         )
-    
-    # save embedding
-    cell_embeddings.write(os.path.join(output_dir, f"pt_{data_name}.h5ad"))
+    pickle.dump(cell_embeddings, open(os.path.join(output_dir, f"{data_name}-{model_type}.pkl"), "wb"))

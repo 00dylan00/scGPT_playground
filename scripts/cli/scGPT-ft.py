@@ -98,8 +98,9 @@ parser = argparse.ArgumentParser(description="Script for scGPT project")
 
 
 # Define arguments
-set_cls_to_pad = True
-include_zero_gene = True
+set_cls_to_pad = False
+include_zero_gene = False
+pad_nan_vals = True
 description = ""
 parser.add_argument(
     "--data_path", type=str, required=True, help="Path to the data file"
@@ -221,6 +222,7 @@ manual_parameters = {
     "use_control_loss": args.use_control_loss,
     "include_zero_gene": include_zero_gene,
     "set_cls_to_pad": set_cls_to_pad,
+    "pad_nan_vals": pad_nan_vals,
 }
 
 
@@ -1399,7 +1401,6 @@ mask_samples_nan = non_nan_mask_pct >= nan_thr
 
 print(f"{nan_thr} Keeping {np.sum(mask_samples_nan)} samples out of {adata.X.shape[0]} ({np.sum(mask_samples_nan)/adata.X.shape[0]*100:.2f}%)")
 
-
 zero_thr = 0.5
 non_zero_mask = ~(adata.X==0) 
 non_zero_mask_pct = np.sum(non_zero_mask, axis=1) / adata.X.shape[1]
@@ -1415,26 +1416,13 @@ print(f"Combined: Keeping {np.sum(mask_samples_comb)} samples out of {adata.X.sh
 # apply the mask to the AnnData object
 adata = adata[mask_samples_comb, :]
 
-
 # config parameters
 data_is_raw = True
 filter_gene_by_counts = False
 
 if manual_parameters.get("scgpt_pp") == "norm_log1p":
-    #! QUICK FIX BECAUSE SCGPT IS FUCKING USELESS AND MESSES UP NANs
-    # substitue NaNs with 0s
     adata.X = adata.X.toarray() if issparse(adata.X) else adata.X
-
-    # change
-
-    # adata.X = np.nan_to_num(adata.X, nan=0.0)
-
-    #! CHANGE IN FUTURE!
-    #! we are introducing log2 scaled data - we should NOT apply log1 on the log2
-    # adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
-
-
-
+    
     # set up the preprocessor, use the args to config the workflow
     preprocessor = Preprocessor(
         use_key="X",  # the key in adata.layers to use as raw data
@@ -1716,8 +1704,38 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
 
     # seperate data
-    adata_test = adata[adata.obs[f"test_split_{split}"] == 1].copy()
-    adata = adata[adata.obs[f"test_split_{split}"] == 0].copy()
+    #! REMOVE IN FUTURE
+    if False:
+        adata_ref_train = sc.read("/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-23-03/adata_train_1.h5ad")
+        adata_ref_test = sc.read("/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-23-03/adata_test_1.h5ad")
+        adata_ref_valid = sc.read("/aloy/home/ddalton/projects/scGPT_playground/outputs/run-25-09-23-03/adata_valid_1.h5ad")
+
+        def subset_adata(adata, adata_ref):
+            import numpy as np
+            import pandas as pd
+
+            # mask presence in ref
+            mask = np.isin(adata.obs.ids, adata_ref.obs.ids)
+            adata_subset = adata[mask]
+
+            # re-order to match
+            desired = adata_ref.obs["ids"].tolist()
+            cat = pd.Categorical(adata_subset.obs["ids"], categories=desired, ordered=True)
+            adata_subset = adata_subset[adata_subset.obs.assign(_k=cat).sort_values("_k").index, :].copy()
+
+            assert (adata_subset.obs["ids"].values == adata_ref.obs["ids"].values).all()
+
+            return adata_subset
+
+        adata_test = subset_adata(adata, adata_ref_test)
+        adata_train = subset_adata(adata, adata_ref_train)
+        adata_valid = subset_adata(adata, adata_ref_valid)
+        adata = adata_train.concatenate(adata_valid)
+        adata.obs.reset_index(inplace=True, drop=True)
+
+    else:
+        adata_test = adata[adata.obs[f"test_split_{split}"] == 1].copy()
+        adata = adata[adata.obs[f"test_split_{split}"] == 0].copy()
 
     #! IMPORTANT BUG BEFORE:
     # adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1].copy()
@@ -1740,15 +1758,16 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
             The key of :class:`AnnData.obs` to use for batch information. This arg
             is used in the highly variable gene selection step
     """
-    # set to pad value 
-    adata.X[mask_nans] = pad_value
-    adata_test.X[mask_nans_test] = pad_value
-
-
-    #! ASSESS MAX VALUES AFTER PP
+    
     batch_ids = adata.obs["batch_id"].to_numpy()
-
+    
+    # set to pad value to the data which will be used as input
     input_layer_key = d_input_layer[input_style]
+
+    if pad_nan_vals:
+        adata.layers[input_layer_key][mask_nans] = pad_value
+        adata_test.layers[input_layer_key][mask_nans_test] = pad_value
+
     all_counts = (
         adata.layers[input_layer_key].A
         if issparse(adata.layers[input_layer_key])
@@ -1762,7 +1781,19 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     # Create indices for the entire dataset
     all_indices = np.arange(len(all_counts))
 
-    if manual_parameters.get("val_split_type") == "rand_stratified":
+    #! CHANGE 
+    if False:
+        all_ids_list   = adata.obs["ids"].astype(str).tolist()
+        train_ids_list = adata_train.obs["ids"].astype(str).tolist()
+
+        # boolean mask: which rows of `adata` are in train
+        train_mask = np.isin(all_ids_list, train_ids_list)
+
+        # indices via argwhere → 1-D → list
+        train_idx = np.argwhere(train_mask).ravel().tolist()
+        valid_idx  = np.argwhere(~train_mask).ravel().tolist()
+
+    elif manual_parameters.get("val_split_type") == "rand_stratified":
         print(adata.obs["doid_id"].value_counts())
         print("###################")
         print(adata.obs["celltype"].value_counts())
