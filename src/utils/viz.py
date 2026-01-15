@@ -16,6 +16,7 @@ from matplotlib.ticker import EngFormatter
 import scanpy as sc
 from sklearn.manifold import TSNE
 from matplotlib import cm
+import umap
 
 def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine", weights:List=None, sample:int=np.inf, dpi:int=300, output_dir:str=None, x_lim_val :Tuple[float, float]=(0,1))->None:
     """Plot KDE"""
@@ -247,7 +248,7 @@ def merge_embeddings(output: List[Dict]) -> np.array:
     return embeddings
 
 
-def plot_adata_top_families(adata, n_class_nodes:int=None, top_n:int=None, dpi:int=150)->None:
+def plot_adata_top_families(adata, n_class_nodes:int=None, top_n:int=None, dpi:int=300)->None:
     # get Disease Ontology graph
     do_g = ut.load_do_graph()
 
@@ -298,7 +299,7 @@ def plot_adata_top_families(adata, n_class_nodes:int=None, top_n:int=None, dpi:i
     counts_dis = dict(sorted(counts_dis.items(), key=lambda item: item[1], reverse=False))
 
     # plot horizontal histogram of counts of main families
-    plt.figure(figsize=(2.5, 2.5), dpi=dpi)
+    plt.figure(figsize=(3, 2.5), dpi=dpi)
     if top_n:
         plt.barh(list(counts_dis.keys())[-top_n:], list(counts_dis.values())[-top_n:],zorder=2,color="#2778ffff", alpha=1)
         plt.title(f"Nº Samples per\nTop {top_n} Disease Family")
@@ -855,10 +856,56 @@ def transform_tsne(adata, sample_size=None):
     X = _fill_nans(X)
 
     # compute t-SNE on expression matrix
-    X = TSNE(n_components=2, random_state=42).fit_transform(X)
     return X, adata_copy
 
-def plot_tsne_adata(X:np.array, adata: sc.AnnData, label: str, dpi:int=300, title:str=None) -> None:
+
+def get_reduced_embeddings(adata: sc.AnnData, sample_size:int=None, method:str="tsne", rand_state:int=42)-> Tuple[np.array, sc.AnnData]:
+    assert method in ["tsne", "umap"], "Method must be 'tsne' or 'umap'"
+    adata_copy = adata.copy()
+
+    def _fill_nans(X):
+        X[np.isnan(adata_copy.X)] = 0
+        return X
+
+    if sample_size and adata_copy.n_obs > sample_size:
+        # pick random observation indices (without replacement)
+        _idxs = np.random.choice(len(adata_copy), size=min(sample_size, len(adata_copy)), replace=False)
+
+        # boolean mask
+        mask = np.zeros(len(adata_copy), dtype=bool)
+        mask[_idxs] = True
+
+        # subset and make an explicit copy (AnnData best practice)
+        adata_copy = adata_copy[mask].copy()
+
+    # get raw gene expression
+    X = np.array(adata_copy.X).copy()
+
+    # fill nans
+    X = _fill_nans(X)
+
+    if method == "umap":
+        reducer = umap.UMAP(
+            n_components=2,
+            n_neighbors=20,
+            min_dist=0.9,
+            metric='cosine',
+            # random_state=rand_state,
+            n_jobs=8,
+            )
+        
+    elif method == "tsne":
+        reducer = TSNE(
+            n_components=2,
+            metric='cosine',
+            random_state=rand_state,
+        )    
+    
+    X = reducer.fit_transform(X)
+    return X, adata_copy
+
+
+def plot_adata_emb(X:np.array, adata: sc.AnnData, label: str, dpi:int=300, title:str=None) -> None:
     
     # plot 
     lab = adata.obs[label]
@@ -880,17 +927,27 @@ def plot_tsne_adata(X:np.array, adata: sc.AnnData, label: str, dpi:int=300, titl
 
     codes = lab_nc.cat.codes.to_numpy()
     cats  = lab_nc.cat.categories.to_list()
-    cmap = cm.get_cmap("tab20", len(cats)) if len(cats) <= 20 else cm.get_cmap("gist_rainbow", len(cats))
+    cmap = cm.get_cmap("tab20", len(cats)) if len(cats) <= 20 else cm.get_cmap("Spectral", len(cats))
 
     sc_plot = plt.scatter(X_non_control[:,0], X_non_control[:,1],
-                        c=codes, cmap=cmap, s=20, alpha=0.7,linewidths=0)
+                        c=codes, cmap=cmap, s=20, alpha=1,linewidths=0)
 
-    plt.title(f"t-SNE colored by {label}")
+    plt.title(f"{label}")
 
     if title:
         plt.title(title)
 
-    plt.xlabel("t-SNE 1"); plt.ylabel("t-SNE 2")
+    # plt.xlabel("t-SNE 1"); plt.ylabel("t-SNE 2")
+
+    plt.xticks([])
+    plt.yticks([])
+    plt.xlabel("")
+    plt.ylabel("")
+    plt.gca().tick_params(left=False, bottom=False, labelleft=False, labelbottom=False)
+    for spine in plt.gca().spines.values():
+        spine.set_visible(False)
+
+
     plt.tight_layout()
     
     # remove legend

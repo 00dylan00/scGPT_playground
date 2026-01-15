@@ -42,6 +42,8 @@ def load_run_output(input_dir: str) -> tuple:
             with open(os.path.join(input_dir, f"{variable}.pkl"), "rb") as f:
                 loaded_variable = pickle.load(f)
 
+        print(f"Loaded variable {variable}")
+
         # add the loaded variable to the tuple
         loaded_variables += (loaded_variable,)
 
