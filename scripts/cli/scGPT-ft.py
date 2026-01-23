@@ -1243,7 +1243,7 @@ elif input_style == "log1p" or input_style == "normed_raw":
         )
 
 if input_emb_style == "category":
-    mask_value = n_bins + 1
+    # mask_value = n_bins + 1
     pad_value = n_bins  # for padding gene expr values
     n_input_bins = n_bins + 2
 else:
