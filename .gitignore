@@ -10,3 +10,5 @@
 /scripts/cli/save
 /scripts/cli/wandb
 /scripts/*.sh
+*.csv
+/notebooks/exp/tmp*
