@@ -793,9 +793,13 @@ def get_related_dis_sim_splits(
             related_idxs = related_idxs[_sample_i]
             _w_related = _w_related[_sample_i]
 
-        # retrieve similarities
-        _c_related = c_matrix[related_idxs[:, 0], related_idxs[:, 1]]
 
+        if len(related_idxs) > 0:
+            # retrieve similarities
+            _c_related = c_matrix[related_idxs[:, 0], related_idxs[:, 1]]
+        else:
+            print(f"Nothing for {label_i}")
+            continue
         # append values
         c_all.append(_c_related)
         w_all.append(_w_related)
