@@ -59,7 +59,7 @@ def plot_kde(X:List, labels:List, colors:List, title:str, metric:str = "Cosine",
                 weights=w_i if weights is not None else None,
                 )
     plt.title(title)
-    plt.xlabel("Cosine Similarity")
+    plt.xlabel(f"{metric} Similarity")
     plt.ylabel("Density")
     # plt.legend()
     plt.tight_layout()
