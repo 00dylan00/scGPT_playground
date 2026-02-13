@@ -13,8 +13,6 @@ from typing import *
 from functools import partial
 from tqdm.contrib.concurrent import thread_map
 
-
-
 def convert_to_adata(df:pd.DataFrame, normalize:bool)-> sc.AnnData:
     """Convert DataFrame to AnnData"""
     # extract IDs, gene expression data, and gene names

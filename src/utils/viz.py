@@ -176,12 +176,84 @@ def get_same_disease_sim(adata_obs:pd.DataFrame, s_matrix:np.array)->Tuple[Tuple
 
 
 
+def get_unrelated_pairs_split(
+    df_qry: pd.DataFrame,
+    df_ref: pd.DataFrame,
+    df_related: pd.DataFrame,
+    s_matrix: np.ndarray,
+    n_samples: int = 1000,
+    use_ctrl:bool=True,
+    exclude_dts:bool=False,
+    seed: int = 42,
+
+) -> List[Tuple[int, int]]:
+    """Get unrelated pairs of samples across splits"""
+
+    np.random.seed(seed)
+
+    df_ref = df_ref.copy()
+    df_ref.reset_index(drop=True, inplace=True)
+    df_ref["is_control"] = ["C" if i.startswith("Control") else "D" for i in df_ref["doid_id"]]
+    dts_ref = df_ref["dataset"].to_numpy()
+
+    df_qry = df_qry.copy()
+    df_qry.reset_index(drop=True, inplace=True)
+    df_qry["is_control"] = ["C" if i.startswith("Control") else "D" for i in df_qry["doid_id"]]
+    dts_qry = df_qry["dataset"].to_numpy()
+
+    # Precompute DOID-to-sample indices
+    doid_to_indices = dict()
+    for idx, doid in df_ref["doid_id"].items():
+        if doid not in doid_to_indices:
+            doid_to_indices[doid] = []
+        doid_to_indices[doid].append(idx)
+
+    # Build unrelated pairs
+    unrelated_pairs = []
+    pair_key_set = set(tuple(sorted(p)) for p in df_related["pair_sorted"])
+    doids = list(doid_to_indices.keys())
+    _universe_comb = list(itertools.combinations(doids, 2))
+    for d1, d2 in tqdm(_universe_comb, total=len(_universe_comb)):
+
+        # skip related diseases
+        if d1 == d2 or tuple(sorted([d1, d2])) in pair_key_set:
+            continue    
+        
+        if not use_ctrl:
+            if (d1 == 'Control') or (d2 == 'Control'):
+                continue
+
+        idxs1 = df_qry.query("doid_id == @d2").index
+        idxs2 = df_ref.query("doid_id == @d1").index
+
+        unrelated_pairs.extend(itertools.product(idxs1, idxs2))
+
+    # Sample unrelated pairs
+    print(len(unrelated_pairs), "unrelated pairs found")
+    k = min(n_samples, len(unrelated_pairs))
+    print(k)
+    selected_idxs = np.random.choice(len(unrelated_pairs), size=k, replace=False)
+    print("Selected", len(selected_idxs), "unrelated pairs")
+    
+    _rand_sample_pairs = [unrelated_pairs[i] for i in selected_idxs]
+    # remove same dataset comparisons
+    if exclude_dts:
+        _rand_sample_pairs = [p for p in _rand_sample_pairs if dts_qry[p[0]] != dts_ref[p[1]]]
+    print("Sampled pairs:", len(_rand_sample_pairs))
+    
+    c_rand = [s_matrix[i, j] for i, j in _rand_sample_pairs]
+    return np.array(c_rand)
+
+
+
 def get_unrelated_pairs(
     adata_obs: pd.DataFrame,
     df_related: pd.DataFrame,
     s_matrix: np.ndarray,
     n_samples: int = 1000,
     seed: int = 42,
+    use_ctrl:bool=True,
+    exclude_dts:bool=False,
 ) -> List[Tuple[int, int]]:
     """Get unrelated pairs of samples"""
 
@@ -190,6 +262,8 @@ def get_unrelated_pairs(
     adata_obs = adata_obs.copy()
     adata_obs.reset_index(drop=True, inplace=True)
     adata_obs["is_control"] = ["C" if i.startswith("Control") else "D" for i in adata_obs["doid_id"]]
+    dts = adata_obs["dataset"]
+
 
     # Precompute DOID-to-sample indices
     doid_to_indices = dict()
@@ -203,12 +277,15 @@ def get_unrelated_pairs(
     pair_key_set = set(tuple(sorted(p)) for p in df_related["pair_sorted"])
     doids = list(doid_to_indices.keys())
     print(len(doids), "diseases in dataset")
-    for d1, d2 in tqdm(itertools.combinations(doids, 2)):
-
+    _universe_comb = list(itertools.combinations(doids, 2))
+    for d1, d2 in tqdm(_universe_comb, total=len(_universe_comb)):
         # skip related diseases
         if d1 == d2 or tuple(sorted([d1, d2])) in pair_key_set:
             continue    
-        
+        if not use_ctrl:
+            if (d1 == 'Control') or (d2 == 'Control'):
+                continue
+
         #! WARNING - THIS WOULD ALSO INCLUDE CONTROLS
         # idxs1 = adata_obs.query("doid_id == @d1").index
         # idxs2 = adata_obs.query("doid_id == @d2").index
@@ -225,11 +302,16 @@ def get_unrelated_pairs(
     selected_idxs = np.random.choice(len(unrelated_pairs), size=k, replace=False)
     print("Selected", len(selected_idxs), "unrelated pairs")
     _rand_sample_pairs = [unrelated_pairs[i] for i in selected_idxs]
+
+    # remove same dataset comparisons
+    if exclude_dts:
+        _rand_sample_pairs = [p for p in _rand_sample_pairs if dts[p[0]] != dts[p[1]]]
+
     print("Sampled pairs:", len(_rand_sample_pairs))
     c_rand = [s_matrix[i, j] for i, j in _rand_sample_pairs]
     
-    
-    return c_rand
+    return np.array(c_rand)
+
 
 def merge_embeddings(output: List[Dict]) -> np.array:
     """Merge Embeddings
@@ -452,63 +534,6 @@ def get_same_dis_similarity_splits(adata_qry, adata_ref,s_matrix,dsaid_2_dis)->T
     w_ctrl_diff = _convert_labels_to_weights(l_ctrl_diff)
 
     return (s_same_diff, s_ctrl_diff), (w_same_diff, w_ctrl_diff)
-
-def get_unrelated_pairs_split(
-    adata_qry: pd.DataFrame,
-    adata_ref: pd.DataFrame,
-    df_related: pd.DataFrame,
-    s_matrix: np.ndarray,
-    n_samples: int = 1000,
-    seed: int = 42,
-) -> List[Tuple[int, int]]:
-    """Get unrelated pairs of samples across splits"""
-
-    np.random.seed(seed)
-
-    adata_ref = adata_ref.copy()
-    adata_ref.reset_index(drop=True, inplace=True)
-    adata_ref["is_control"] = ["C" if i.startswith("Control") else "D" for i in adata_ref["doid_id"]]
-
-    adata_qry = adata_qry.copy()
-    adata_qry.reset_index(drop=True, inplace=True)
-    adata_qry["is_control"] = ["C" if i.startswith("Control") else "D" for i in adata_qry["doid_id"]]
-    
-    # Precompute DOID-to-sample indices
-    doid_to_indices = dict()
-    for idx, doid in adata_ref["doid_id"].items():
-        if doid not in doid_to_indices:
-            doid_to_indices[doid] = []
-        doid_to_indices[doid].append(idx)
-
-    # Build unrelated pairs
-    unrelated_pairs = []
-    pair_key_set = set(tuple(sorted(p)) for p in df_related["pair_sorted"])
-    doids = list(doid_to_indices.keys())
-    print(len(doids), "diseases in dataset")
-    for d1, d2 in tqdm(itertools.combinations(doids, 2)):
-
-        # skip related diseases
-        if d1 == d2 or tuple(sorted([d1, d2])) in pair_key_set:
-            continue    
-        
-        #! WARNING - THIS WOULD ALSO INCLUDE CONTROLS
-        # idxs1 = adata_ref.query("doid_id == @d1").index
-        # idxs2 = adata_ref.query("doid_id == @d2").index
-        idxs1 = adata_qry.query("doid_id == @d2").index
-        idxs2 = adata_ref.query("doid_id == @d1").index
-
-        unrelated_pairs.extend(itertools.product(idxs1, idxs2))
-
-    # Sample unrelated pairs
-    print(len(unrelated_pairs), "unrelated pairs found")
-    k = min(n_samples, len(unrelated_pairs))
-    print(k)
-    selected_idxs = np.random.choice(len(unrelated_pairs), size=k, replace=False)
-    print("Selected", len(selected_idxs), "unrelated pairs")
-    _rand_sample_pairs = [unrelated_pairs[i] for i in selected_idxs]
-    print("Sampled pairs:", len(_rand_sample_pairs))
-    c_rand = [s_matrix[i, j] for i, j in _rand_sample_pairs]
-    return c_rand
 
 def get_unrelated_pairs_split_2(adata_qry, adata_ref, c_matrix, df_unrelated, dsaid_2_dis:dict,sample_size:int=None, include_control:bool=False):
 
