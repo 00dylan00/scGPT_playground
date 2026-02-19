@@ -373,9 +373,16 @@ def train(model: nn.Module, loader: DataLoader, use_control_loss:bool=False) -> 
                 loss = loss + loss_ecs
                 metrics_to_log.update({"train/ecs": loss_ecs.item()})
             if DAB:
+                #! CHANGE ramp-up dab weight with epochs to fixed max
+                # linear warmup for dab_weight over first 30% of epochs
+                dab_w_max = manual_parameters["dab_weight"]   # e.g. 0.05
+                warm = int(0.3 * epochs)
+                dab_weight_epoch = dab_w_max * min(1.0, epoch / max(1, warm))
+                
                 # try weighting and separate optimizer
                 loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
-                loss = loss + dab_weight * loss_dab
+                # loss = loss + dab_weight * loss_dab   #! CHANGE
+                loss = loss + dab_weight_epoch * loss_dab
                 metrics_to_log.update({"train/dab": loss_dab.item()})
 
         # clears the previous gradients from the model's parameters
@@ -568,7 +575,21 @@ def evaluate(model: nn.Module, loader: DataLoader, return_raw: bool = False) -> 
                     loss = criterion_cls_multilabel(output_values, disease_multilabel)
 
                 if DAB:
-                    loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
+                    #! CHANGED - APPLY DAB ONLY ON CONTROL SO AS TO NOT DESTROY BIOLOGICAL SIGNAL
+                    # loss_dab = criterion_dab(output_dict["dab_output"], batch_labels)
+                    dab_logits = output_dict["dab_output"]          # (B, n_batches)
+                    batch_lbl  = batch_labels                       # (B,)
+
+                    if CLS_MULTILABEL:
+                        y_multi = disease_multilabel                # (B, n_classes)
+                        ctrl_mask = (y_multi[:, 0] > 0.5)           # Control == 1
+                    else:
+                        # fallback if you have single-label disease: define control some other way
+                        ctrl_mask = torch.ones_like(batch_lbl, dtype=torch.bool)
+
+                    # only compute if there are enough controls in this mini-batch
+                    if ctrl_mask.sum() >= 2 and (~ctrl_mask).sum() >= 2:
+                        loss_dab = criterion_dab(dab_logits[ctrl_mask], batch_lbl[ctrl_mask])
 
             total_loss += loss.item() * len(input_gene_ids)
             total_dab += loss_dab.item() * len(input_gene_ids) if DAB else 0.0
@@ -1697,11 +1718,12 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         # change back to raw data scale!
         adata.X = np.power(2, adata.X) - 1 # originally it was log2(X+1)
 
+    #! CHANGED
     # convert batch ids to integers
-    _batch_ids = adata.obs["batch_id"].tolist()
-    num_batch_types = adata.obs["batch_id"].nunique()
-    _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
-    adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
+    # _batch_ids = adata.obs["batch_id"].tolist()
+    # num_batch_types = adata.obs["batch_id"].nunique()
+    # _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
+    # adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
 
     # seperate data
     #! REMOVE IN FUTURE
@@ -1736,6 +1758,18 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
     else:
         adata_test = adata[adata.obs[f"test_split_{split}"] == 1].copy()
         adata = adata[adata.obs[f"test_split_{split}"] == 0].copy()
+
+    #! CHANGED! 
+    # convert batch_ids to integers
+    _batch_ids = adata.obs["batch_id"].tolist()
+    _remap_dict = {k: i for i, k in enumerate(sorted(set(_batch_ids)))}
+    adata.obs["batch_id"] = np.array([_remap_dict[b] for b in _batch_ids], dtype=int)  # update the batch ids in adata.obs
+    num_batch_types = adata.obs["batch_id"].nunique()
+
+    # do same for test
+    _batch_ids_test = adata_test.obs["batch_id"].tolist()
+    _remap_dict_test = {k: i for i, k in enumerate(sorted(set(_batch_ids_test)))}
+    adata_test.obs["batch_id"] = np.array([_remap_dict_test[b] for b in _batch_ids_test], dtype=int)  # update the batch ids in adata_test.obs
 
     #! IMPORTANT BUG BEFORE:
     # adata_test = adata_orig[adata_orig.obs[f"test_split_{split}"] == 1].copy()
