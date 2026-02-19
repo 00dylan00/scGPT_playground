@@ -1,0 +1,43 @@
+2026-02-17 14:32:58,881 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Current SDK version is 0.17.5
+2026-02-17 14:32:58,881 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Configure stats pid to 2824751
+2026-02-17 14:32:58,881 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Loading settings from /home/ddalton/.config/wandb/settings
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Loading settings from /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/wandb/settings
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Loading settings from environment variables: {'api_key': '***REDACTED***'}
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program': '<python with no main file>'}
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Applying login settings: {}
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_setup.py:_flush():76] Applying login settings: {}
+2026-02-17 14:32:58,882 INFO    MainThread:2824751 [wandb_init.py:_log_setup():529] Logging user logs to /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/wandb/run-20260217_143258-laomba8t/logs/debug.log
+2026-02-17 14:32:58,883 INFO    MainThread:2824751 [wandb_init.py:_log_setup():530] Logging internal logs to /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/wandb/run-20260217_143258-laomba8t/logs/debug-internal.log
+2026-02-17 14:32:58,883 INFO    MainThread:2824751 [wandb_init.py:_jupyter_setup():475] configuring jupyter hooks <wandb.sdk.wandb_init._WandbInit object at 0x14fc3cd4be20>
+2026-02-17 14:32:58,883 INFO    MainThread:2824751 [wandb_init.py:init():569] calling init triggers
+2026-02-17 14:32:58,884 INFO    MainThread:2824751 [wandb_init.py:init():576] wandb.init called with sweep_config: {}
+config: {'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0.0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0.0, 'dab_weight': 0.0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+2026-02-17 14:32:58,884 INFO    MainThread:2824751 [wandb_init.py:init():619] starting backend
+2026-02-17 14:32:58,884 INFO    MainThread:2824751 [wandb_init.py:init():623] setting up manager
+2026-02-17 14:32:58,885 INFO    MainThread:2824751 [backend.py:_multiprocessing_setup():105] multiprocessing start_methods=fork,spawn,forkserver, using: fork
+2026-02-17 14:32:58,887 INFO    MainThread:2824751 [wandb_init.py:init():631] backend started and connected
+2026-02-17 14:32:58,889 INFO    MainThread:2824751 [wandb_run.py:_label_probe_notebook():1334] probe notebook
+2026-02-17 14:32:58,889 INFO    MainThread:2824751 [wandb_run.py:_label_probe_notebook():1344] Unable to probe notebook: 'NoneType' object has no attribute 'get'
+2026-02-17 14:32:58,890 INFO    MainThread:2824751 [wandb_init.py:init():720] updated telemetry
+2026-02-17 14:32:58,903 INFO    MainThread:2824751 [wandb_init.py:init():753] communicating run to backend with 90.0 second timeout
+2026-02-17 14:32:59,542 INFO    MainThread:2824751 [wandb_run.py:_on_init():2435] communicating current version
+2026-02-17 14:32:59,730 INFO    MainThread:2824751 [wandb_run.py:_on_init():2444] got version response upgrade_message: "wandb version 0.25.0 is available!  To upgrade, please run:\n $ pip install wandb --upgrade"
+
+2026-02-17 14:32:59,731 INFO    MainThread:2824751 [wandb_init.py:init():804] starting run threads in backend
+2026-02-17 14:33:03,110 INFO    MainThread:2824751 [wandb_run.py:_console_start():2413] atexit reg
+2026-02-17 14:33:03,110 INFO    MainThread:2824751 [wandb_run.py:_redirect():2255] redirect: wrap_raw
+2026-02-17 14:33:03,110 INFO    MainThread:2824751 [wandb_run.py:_redirect():2320] Wrapping output streams.
+2026-02-17 14:33:03,110 INFO    MainThread:2824751 [wandb_run.py:_redirect():2345] Redirects installed.
+2026-02-17 14:33:03,113 INFO    MainThread:2824751 [wandb_init.py:init():847] run started, returning control to user process
+2026-02-17 14:35:56,888 INFO    MainThread:2824751 [wandb_watch.py:watch():51] Watching
+2026-02-17 14:51:14,739 INFO    MainThread:2824751 [jupyter.py:save_ipynb():372] not saving jupyter notebook
+2026-02-17 14:51:14,740 INFO    MainThread:2824751 [wandb_init.py:_pause_backend():440] pausing backend
+2026-02-17 15:04:59,518 INFO    MainThread:2824751 [wandb_init.py:_resume_backend():445] resuming backend
+2026-02-17 15:04:59,520 INFO    MainThread:2824751 [jupyter.py:save_ipynb():372] not saving jupyter notebook
+2026-02-17 15:04:59,520 INFO    MainThread:2824751 [wandb_init.py:_pause_backend():440] pausing backend
+2026-02-17 15:06:32,673 INFO    MainThread:2824751 [wandb_init.py:_resume_backend():445] resuming backend
+2026-02-17 15:06:32,675 INFO    MainThread:2824751 [jupyter.py:save_ipynb():372] not saving jupyter notebook
+2026-02-17 15:06:32,675 INFO    MainThread:2824751 [wandb_init.py:_pause_backend():440] pausing backend
+2026-02-17 15:06:37,169 INFO    MainThread:2824751 [wandb_init.py:_resume_backend():445] resuming backend
+2026-02-17 15:06:37,176 INFO    MainThread:2824751 [jupyter.py:save_ipynb():372] not saving jupyter notebook
+2026-02-17 15:06:37,176 INFO    MainThread:2824751 [wandb_init.py:_pause_backend():440] pausing backend

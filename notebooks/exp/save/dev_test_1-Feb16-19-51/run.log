@@ -1,0 +1,24 @@
+19:54:30-scGPT-INFO-<module>: match 3501/3501 genes in vocabulary of size 60697.
+19:54:30-scGPT-INFO-<module>: Resume model from /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/best_model.pt, the model args will override the config /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/args.json.
+19:54:31-scGPT-INFO-__call__: Normalizing total counts ...
+19:54:31-scGPT-INFO-__call__: Log1p transforming ...
+19:54:32-scGPT-INFO-__call__: Binning data ...
+19:54:45-scGPT-INFO-__call__: Normalizing total counts ...
+19:54:45-scGPT-INFO-__call__: Log1p transforming ...
+19:54:45-scGPT-INFO-__call__: Binning data ...
+19:54:50-scGPT-INFO-<module>: train set number of samples: 18580, 
+	 feature length: 3501
+19:54:50-scGPT-INFO-<module>: valid set number of samples: 2065, 
+	 feature length: 3501
+19:54:51-scGPT-INFO-<module>: Total Pre freeze Params 51357235
+19:54:51-scGPT-INFO-<module>: Total Post freeze Params 51357235
+19:56:01-scGPT-INFO-train: | epoch   1 | 100/581 batches | lr 0.0001 | ms/batch 677.06 | loss  0.99 | 
+19:57:07-scGPT-INFO-train: | epoch   1 | 200/581 batches | lr 0.0001 | ms/batch 658.74 | loss  0.98 | 
+19:58:13-scGPT-INFO-train: | epoch   1 | 300/581 batches | lr 0.0001 | ms/batch 658.68 | loss  0.95 | 
+19:59:19-scGPT-INFO-train: | epoch   1 | 400/581 batches | lr 0.0001 | ms/batch 658.70 | loss  0.96 | 
+20:00:25-scGPT-INFO-train: | epoch   1 | 500/581 batches | lr 0.0001 | ms/batch 658.71 | loss  0.94 | 
+20:01:27-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+20:01:27-scGPT-INFO-<module>: | end of epoch   1 | time: 395.20s | valid loss/mse 0.9543 | err 0.3557
+20:01:27-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+20:01:28-scGPT-INFO-<module>: Best model with score 0.9543
+20:02:36-scGPT-INFO-train: | epoch   2 | 100/581 batches | lr 0.0001 | ms/batch 666.38 | loss  0.96 | 

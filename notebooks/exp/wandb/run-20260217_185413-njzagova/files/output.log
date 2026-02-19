@@ -1,0 +1,5 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0, 'dab_weight': 0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+original ecs threshold 0
+original dab weight 0
+Trained dropout is 0.2
+save to save/dev_test_1-Feb17-18-54

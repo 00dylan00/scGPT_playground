@@ -1,0 +1,743 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0, 'dab_weight': 0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+original ecs threshold 0
+original dab weight 0
+Trained dropout is 0.2
+save to save/dev_test_1-Feb16-18-53
+adata loaded - shape (3979, 998)
+Using RNA-Seq data only - adata shape (3979, 998)
+Index(['ids', 'dataset', 'dataset_id', 'batch', 'batch_id', 'dsaid', 'tissue',
+       'n_genes', 'disease', 'celltype', 'disease_study', 'library',
+       'doid_study', 'doid_id', 'do_id', 'doid_disease'],
+      dtype='object')
+2026-02-16 18:53:41,256 - Nº genes: 998, Nº samples: 3979
+2026-02-16 18:53:41,261 - Top 3501 most present genes selected. - >= 3979
+2026-02-16 18:53:41,262 - Combined mask 998 genes left
+0.9 Keeping 2689 samples out of 3979 (67.58%)
+0.5 Keeping 3897 samples out of 3979 (97.94%)
+Combined: Keeping 2689 samples out of 3979 (67.58%)
+Number of DO leaves: 9018
+Generated multilabel vectors for class nodes with shape (2689, 51)
+Cleaned multilabel vectors for class nodes with shape (2689, 37)
+1154 samples	Node Control
+20 samples	Node DOID:0014667 - disease of metabolism
+18 samples	Node DOID:0050117 - disease by infectious agent
+54 samples	Node DOID:0050155 - sensory system disease
+54 samples	Node DOID:0050177 - monogenic disease
+323 samples	Node DOID:0050686 - organ system cancer
+315 samples	Node DOID:0050687 - cell type cancer
+54 samples	Node DOID:0050736 - autosomal dominant disease
+54 samples	Node DOID:0050739 - autosomal genetic disease
+30 samples	Node DOID:0080000 - muscular disease
+31 samples	Node DOID:0080001 - bone disease
+25 samples	Node DOID:1287 - cardiovascular system disease
+347 samples	Node DOID:1289 - neurodegenerative disease
+356 samples	Node DOID:14566 - disease of cellular proliferation
+19 samples	Node DOID:15 - reproductive system disease
+74 samples	Node DOID:150 - disease of mental health
+138 samples	Node DOID:1579 - respiratory system disease
+101 samples	Node DOID:16 - integumentary system disease
+356 samples	Node DOID:162 - cancer
+194 samples	Node DOID:17 - musculoskeletal system disease
+25 samples	Node DOID:178 - vascular disease
+5 samples	Node DOID:225 - syndrome
+12 samples	Node DOID:28 - endocrine system disease
+437 samples	Node DOID:2914 - immune system disease
+97 samples	Node DOID:305 - carcinoma
+595 samples	Node DOID:331 - central nervous system disease
+101 samples	Node DOID:37 - skin disease
+278 samples	Node DOID:5295 - intestinal disease
+54 samples	Node DOID:5614 - eye disease
+434 samples	Node DOID:612 - primary immunodeficiency disease
+74 samples	Node DOID:630 - genetic disease
+164 samples	Node DOID:65 - connective tissue disease
+20 samples	Node DOID:655 - inherited metabolic disorder
+1392 samples	Node DOID:7 - disease of anatomical entity
+23 samples	Node DOID:74 - hematopoietic system disease
+317 samples	Node DOID:77 - gastrointestinal system disease
+649 samples	Node DOID:863 - nervous system disease
+Nº of samples with only one label: 1249
+Nº of samples with +1 labels: 1440
+Max nº of labels per sample: 8
+Nº of times each class appears in the multilabel vector:
+[1154   20   18   54   54  323  315   54   54   30   31   25  347  356
+   19   74  138  101  356  194   25    5   12  437   97  595  101  278
+   54  434   74  164   20 1392   23  317  649]
+Generated poitional weights for BCEWithLogitsLoss with shape torch.Size([37])
+Positional weights:
+tensor([ 1.3302, 50.0000, 50.0000, 48.7963, 48.7963,  7.3251,  7.5365, 48.7963,
+        48.7963, 50.0000, 50.0000, 50.0000,  6.7493,  6.5534, 50.0000, 35.3378,
+        18.4855, 25.6238,  6.5534, 12.8608, 50.0000, 50.0000, 50.0000,  5.1533,
+        26.7216,  3.5193, 25.6238,  8.6727, 48.7963,  5.1959, 35.3378, 15.3963,
+        50.0000,  1.0000, 50.0000,  7.4826,  3.1433])
+Number of classes: 37
+Removed samples in multiple datasets, new shape: (2689, 998)
+Removed duplicate samples, new shape: (2602, 998)
+Removed duplicate samples independent of disease, new shape: (2599, 998)
+BEFORE QC - ADATA SHAPE: (2599, 998)
+Nº of failed datasets - less than +2 control samples: 5
+Nº of failed datasets - less than +2 disease samples: 4
+Nº of failed datasets - less than +2 samples (control and disease): 9 / 117
+adata shape after filtering datasets with +2 samples: (2566, 998)
+Nº of passed diseases +2 29/ 35
+Nº of passed dsaids +2 119/ 126
+AFTER QC - ADATA SHAPE: (2484, 998)
+config.load_model /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human
+scGPT - INFO - match 998/998 genes in vocabulary of size 60697.
+scGPT - INFO - Resume model from /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/best_model.pt, the model args will override the config /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/args.json.
+df shape: (2484, 21)
+df diseases: (1475, 21)
+All Labels: 30 ['Control', 'DOID:0050156', 'DOID:0080199', 'DOID:0081087', 'DOID:10286', 'DOID:10652', 'DOID:10871', 'DOID:11714', 'DOID:11727', 'DOID:11934', 'DOID:12365', 'DOID:12858', 'DOID:14330', 'DOID:1909', 'DOID:1932', 'DOID:2280', 'DOID:2377', 'DOID:2841', 'DOID:3068', 'DOID:3083', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:7147', 'DOID:7148', 'DOID:850', 'DOID:8577', 'DOID:8893', 'DOID:9074', 'DOID:9744']
+Remove Controls - Labels: 29 ['DOID:0050156', 'DOID:0080199', 'DOID:0081087', 'DOID:10286', 'DOID:10652', 'DOID:10871', 'DOID:11714', 'DOID:11727', 'DOID:11934', 'DOID:12365', 'DOID:12858', 'DOID:14330', 'DOID:1909', 'DOID:1932', 'DOID:2280', 'DOID:2377', 'DOID:2841', 'DOID:3068', 'DOID:3083', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:7147', 'DOID:7148', 'DOID:850', 'DOID:8577', 'DOID:8893', 'DOID:9074', 'DOID:9744']
+Nº of diseases in train split test_split_1:	30
+Nº of diseases in test split test_split_1:	30
+Nº of datasets in train split test_split_1:	73
+Nº of datasets in test split test_split_1:	29
+Nº of samples in train split test_split_1:	1598
+Nº of samples in test split test_split_1:	886
+Output directory created: /aloy/home/ddalton/projects/scGPT_playground/outputs/run-26-02-16-03
+[DEBUG] Starting preprocessing
+[DEBUG] key_to_process = None
+[DEBUG] adata.X type=<class 'numpy.ndarray'>, shape=(1598, 998)
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - INFO - Binning data ...
+[DEBUG] Binning data with n_bins=51
+[DEBUG] layer_data type=<class 'numpy.ndarray'>, shape=(1598, 998)
+[DEBUG] Starting preprocessing
+[DEBUG] key_to_process = None
+[DEBUG] adata.X type=<class 'numpy.ndarray'>, shape=(886, 998)
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - INFO - Binning data ...
+[DEBUG] Binning data with n_bins=51
+[DEBUG] layer_data type=<class 'numpy.ndarray'>, shape=(886, 998)
+doid_id
+Control         586
+DOID:8577       225
+DOID:14330      126
+DOID:332         74
+DOID:5419        69
+DOID:2841        66
+DOID:12858       59
+DOID:2377        58
+DOID:0080199     41
+DOID:9074        38
+DOID:8893        31
+DOID:1909        30
+DOID:11727       27
+DOID:2280        26
+DOID:10652       23
+DOID:3068        17
+DOID:10286       13
+DOID:0050156     13
+DOID:850         13
+DOID:12365       10
+DOID:3083        10
+DOID:0081087      9
+DOID:7148         7
+DOID:9744         7
+DOID:11714        5
+DOID:1932         3
+DOID:11934        3
+DOID:10871        3
+DOID:5015         3
+DOID:7147         3
+Name: count, dtype: int64
+###################
+celltype
+Control         586
+DOID:8577       225
+DOID:14330      126
+DOID:332         74
+DOID:5419        69
+DOID:2841        66
+DOID:12858       59
+DOID:2377        58
+DOID:0080199     41
+DOID:9074        38
+DOID:8893        31
+DOID:1909        30
+DOID:11727       27
+DOID:2280        26
+DOID:10652       23
+DOID:3068        17
+DOID:0050156     13
+DOID:850         13
+DOID:10286       13
+DOID:12365       10
+DOID:3083        10
+DOID:0081087      9
+DOID:9744         7
+DOID:7148         7
+DOID:11714        5
+DOID:11934        3
+DOID:10871        3
+DOID:1932         3
+DOID:5015         3
+DOID:7147         3
+Name: count, dtype: int64
+train_idx (1438,), valid_idx (160,)
+scGPT - INFO - train set number of samples: 1438,
+	 feature length: 999
+scGPT - INFO - valid set number of samples: 160,
+	 feature length: 999
+scGPT - INFO - Total Pre freeze Params 51350566
+scGPT - INFO - Total Post freeze Params 51350566
+0
+NVIDIA H200
+_Y_test (886, 37) 0 1
+_Y_valid (160, 37) 0 1
+_Y_train (1438, 37) 0 1
+random masking at epoch   1, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   1 | time: 28.53s | valid loss/mse 0.8576 | err 0.2340
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8576
+random masking at epoch   2, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   2 | time:  6.12s | valid loss/mse 0.8453 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8453
+random masking at epoch   3, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   3 | time:  6.13s | valid loss/mse 0.8416 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8416
+random masking at epoch   4, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   4 | time:  6.13s | valid loss/mse 0.8393 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8393
+random masking at epoch   5, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   5 | time:  6.12s | valid loss/mse 0.8380 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8380
+random masking at epoch   6, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   6 | time:  6.12s | valid loss/mse 0.8372 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8372
+random masking at epoch   7, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   7 | time:  6.10s | valid loss/mse 0.8367 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8367
+random masking at epoch   8, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   8 | time:  6.10s | valid loss/mse 0.8367 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8367 at epoch 7
+random masking at epoch   9, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch   9 | time:  6.10s | valid loss/mse 0.8366 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8366
+random masking at epoch  10, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  10 | time:  6.11s | valid loss/mse 0.8363 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8363
+random masking at epoch  11, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  11 | time:  6.11s | valid loss/mse 0.8362 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8362
+random masking at epoch  12, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  12 | time:  6.07s | valid loss/mse 0.8361 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8361
+random masking at epoch  13, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  13 | time:  5.89s | valid loss/mse 0.8360 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8360
+random masking at epoch  14, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  14 | time:  5.54s | valid loss/mse 0.8360 | err 0.2235
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8360
+random masking at epoch  15, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  15 | time:  5.52s | valid loss/mse 0.8360 | err 0.2238
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8360 at epoch 14
+random masking at epoch  16, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  16 | time:  5.52s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8359
+random masking at epoch  17, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  17 | time:  5.53s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8359
+random masking at epoch  18, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  18 | time:  5.55s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Best model with score 0.8359
+random masking at epoch  19, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  19 | time:  5.52s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8359 at epoch 18
+random masking at epoch  20, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  20 | time:  5.53s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8359 at epoch 18
+random masking at epoch  21, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  21 | time:  5.52s | valid loss/mse 0.8359 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8359 at epoch 18
+random masking at epoch  22, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  22 | time:  5.53s | valid loss/mse 0.8360 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8359 at epoch 18
+random masking at epoch  23, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 73
+Range of remapped batch labels: 0 to 101
+>>> Sample batch labels after remapping: batch_id
+49    226
+8     140
+46     73
+58     72
+75     65
+Name: count, dtype: int64
+CLS is False
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - | end of epoch  23 | time: 10.41s | valid loss/mse 0.8360 | err 0.2465
+scGPT - INFO - -----------------------------------------------------------------------------------------
+scGPT - INFO - Validation loss did not improve.
+scGPT - INFO - Current best model score: 0.8359 at epoch 18
+early stop
+predictions_bin [[0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ ...
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]]
+disease_multilabels [[1 0 0 ... 0 0 0]
+ [1 0 0 ... 0 0 0]
+ [1 0 0 ... 0 0 0]
+ ...
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 0 1]
+ [0 0 0 ... 0 0 1]]
+Average Precision: 0.100, AUROC: 0.596
+scGPT - INFO - Accuracy: 0.000, Precision: 0.030, Recall: 0.270, Macro F1: 0.048
+predictions_bin [[0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ ...
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]
+ [0 0 0 ... 0 1 0]]
+disease_multilabels [[1 0 0 ... 0 0 0]
+ [1 0 0 ... 0 0 0]
+ [1 0 0 ... 0 0 0]
+ ...
+ [0 0 0 ... 0 0 0]
+ [0 0 0 ... 0 0 0]
+ [0 0 0 ... 0 0 0]]
+Average Precision: 0.087, AUROC: 0.768
+scGPT - INFO - Accuracy: 0.000, Precision: 0.052, Recall: 0.270, Macro F1: 0.082
+2026-02-16 18:56:37,600 - region 4
+2026-02-16 18:56:37,601 - CPU Memory Usage: 33.8% used of 2015.09 GB total
+2026-02-16 18:56:37,602 - GPU 0 Memory Usage: 1.29 GB allocated, 7.83 GB cached
+####	Test inference for split 1	####
+input_gene_ids tensor([[60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        ...,
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694]], device='cuda:0')
+input_values tensor([[ 0., 45.,  9.,  ..., -2., -2., -2.],
+        [ 0., 44., 12.,  ..., -2., -2., -2.],
+        [ 0., 42.,  9.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 45., 11.,  ..., -2., -2., -2.],
+        [ 0., 44.,  8.,  ..., -2., -2., -2.],
+        [ 0., 45., 10.,  ..., -2., -2., -2.]], device='cuda:0')
+target_values tensor([[ 0., 45.,  9.,  ..., -2., -2., -2.],
+        [ 0., 44., 12.,  ..., -2., -2., -2.],
+        [ 0., 42.,  9.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 45., 11.,  ..., -2., -2., -2.],
+        [ 0., 44.,  8.,  ..., -2., -2., -2.],
+        [ 0., 45., 10.,  ..., -2., -2., -2.]], device='cuda:0')
+batch_labels tensor([13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13,
+        13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13, 13],
+       device='cuda:0')
+celltype_labels tensor([ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 19, 19, 19, 19, 19, 19, 19, 19,
+        19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19],
+       device='cuda:0')
+Average Precision: 0.100, AUROC: 0.596
+scGPT - INFO - Accuracy: 0.000, Precision: 0.030, Recall: 0.270, Macro F1: 0.048
+2026-02-16 18:56:43,110 - Results Test: {'test/accuracy': 0.0, 'test/precision': 0.030474040632054177, 'test/recall': 0.2702702702702703, 'test/macro_f1': 0.04806816101456451}
+train_adata shape: (1438, 998)
+[[2.0510e+03 7.6000e+01 5.5000e+02 ... 1.2000e+01 1.1010e+03 1.6950e+03]
+ [3.6320e+03 1.3600e+02 8.7600e+02 ... 5.0000e+00 4.8400e+02 1.7060e+03]
+ [1.1557e+04 5.5200e+02 1.0380e+03 ... 1.6000e+01 8.1700e+02 1.6390e+03]
+ ...
+ [3.1510e+03 2.4000e+02 4.1200e+02 ... 9.3000e+01 6.2950e+03 8.4800e+02]
+ [3.0780e+03 1.3300e+02 9.1100e+02 ... 1.9000e+01 1.5730e+03 2.2360e+03]
+ [2.6140e+03 1.9100e+02 3.5800e+02 ... 7.6000e+01 2.8320e+03 6.8400e+02]]
+####	Training inference for split 1	####
+input_gene_ids tensor([[60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        ...,
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694]], device='cuda:0')
+input_values tensor([[ 0., 37.,  9.,  ..., -2., -2., -2.],
+        [ 0., 44., 14.,  ..., -2., -2., -2.],
+        [ 0., 47., 17.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 41., 13.,  ..., -2., -2., -2.],
+        [ 0., 39., 10.,  ..., -2., -2., -2.],
+        [ 0., 39., 14.,  ..., -2., -2., -2.]], device='cuda:0')
+target_values tensor([[ 0., 37.,  9.,  ..., -2., -2., -2.],
+        [ 0., 44., 14.,  ..., -2., -2., -2.],
+        [ 0., 47., 17.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 41., 13.,  ..., -2., -2., -2.],
+        [ 0., 39., 10.,  ..., -2., -2., -2.],
+        [ 0., 39., 14.,  ..., -2., -2., -2.]], device='cuda:0')
+batch_labels tensor([75, 37, 91, 60, 49,  2, 51, 52,  9,  7, 81, 48,  0, 49, 89, 41, 53, 76,
+        53,  6,  3,  9, 49, 70, 55,  8, 46, 14, 91, 82,  7, 96],
+       device='cuda:0')
+celltype_labels tensor([20, 11, 26,  0, 32,  1,  0,  0,  0,  0,  0,  0, 24, 32,  0, 26,  0, 22,
+        15, 22, 21,  0, 32, 20,  0, 15, 24,  0,  0, 10,  0, 21],
+       device='cuda:0')
+Average Precision: 0.087, AUROC: 0.767
+scGPT - INFO - Accuracy: 0.000, Precision: 0.052, Recall: 0.270, Macro F1: 0.082
+####	Validation inference for split 1	####
+input_gene_ids tensor([[60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        ...,
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694],
+        [60695, 12056, 12087,  ..., 60694, 60694, 60694]], device='cuda:0')
+input_values tensor([[ 0., 41., 12.,  ..., -2., -2., -2.],
+        [ 0., 45., 17.,  ..., -2., -2., -2.],
+        [ 0., 45., 14.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 44., 12.,  ..., -2., -2., -2.],
+        [ 0., 40., 15.,  ..., -2., -2., -2.],
+        [ 0., 38., 17.,  ..., -2., -2., -2.]], device='cuda:0')
+target_values tensor([[ 0., 41., 12.,  ..., -2., -2., -2.],
+        [ 0., 45., 17.,  ..., -2., -2., -2.],
+        [ 0., 45., 14.,  ..., -2., -2., -2.],
+        ...,
+        [ 0., 44., 12.,  ..., -2., -2., -2.],
+        [ 0., 40., 15.,  ..., -2., -2., -2.],
+        [ 0., 38., 17.,  ..., -2., -2., -2.]], device='cuda:0')
+batch_labels tensor([62, 76, 51, 76,  8, 59, 14, 20,  8, 58, 49, 56, 89, 37,  9, 98,  8, 45,
+         7, 46,  8,  8, 55, 75, 86, 55, 14, 46, 20, 41, 82,  8],
+       device='cuda:0')
+celltype_labels tensor([ 0,  0, 15,  0,  0, 21,  0,  0, 15, 34, 32, 14,  0,  0,  3, 24, 15,  2,
+         0, 24,  0,  0,  0, 20,  0, 33, 26, 24,  0, 26, 10,  0],
+       device='cuda:0')
+Average Precision: 0.089, AUROC: 0.773
+scGPT - INFO - Accuracy: 0.000, Precision: 0.053, Recall: 0.270, Macro F1: 0.083
+2026-02-16 18:56:45,886 - region 5
+2026-02-16 18:56:45,887 - CPU Memory Usage: 33.8% used of 2015.09 GB total
+2026-02-16 18:56:45,888 - GPU 0 Memory Usage: 1.30 GB allocated, 1.93 GB cached
+tensor(0.8366)
+tensor(0.4532)
+scGPT version: /aloy/home/ddalton/git_clones/scGPT/scgpt/__init__.py
+2026-02-16 19:22:17,867 - Is Cuda Available True
+1
+data_path:
+max_seq_len: 3501
+batch_size: 32
+gene_presence_pct: 0.9
+benchmark_data: False
+split_type: stratified
+val_split_type: rand_stratified
+n_splits: 10
+n_tested_splits: None
+epochs: 50
+gene_filtering: top_presence
+sample_presence_pct: 0.3
+MLM: False
+CLS: False
+CLS_multilabel: True
+DAB: False
+ADV: False
+CCE: False
+ecs_thres: False
+dab_weight: False
+use_fast_transformer: True
+output_attentions: False
+INPUT_BATCH_LABELS: False
+do_combat: False
+ontology: do
+scgpt_pp: norm_log1p
+description:
+library: RNA-Seq
+use_controls: True
+use_control_loss: False
+include_zero_gene: True
+set_cls_to_pad: False
+pad_nan_vals: True
+[34m[1mwandb[0m: [33mWARNING[0m Calling wandb.login() after wandb.init() has no effect.
+[34m[1mwandb[0m: [32m[41mERROR[0m The nbformat package was not found. It is required to save notebook history.

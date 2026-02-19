@@ -1,0 +1,315 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0, 'dab_weight': 0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+original ecs threshold 0
+original dab weight 0
+Trained dropout is 0.2
+save to save/dev_test_1-Feb16-15-20
+adata loaded - shape (4622, 999)
+Using RNA-Seq data only - adata shape (4622, 999)
+Index(['ids', 'dataset', 'dataset_id', 'batch', 'batch_id', 'dsaid', 'tissue',
+       'n_genes', 'disease', 'celltype', 'disease_study', 'library',
+       'doid_study', 'doid_id', 'do_id', 'doid_disease'],
+      dtype='object')
+2026-02-16 15:20:12,423 - Nº genes: 999, Nº samples: 4622
+2026-02-16 15:20:12,429 - Top 3501 most present genes selected. - >= 4622
+2026-02-16 15:20:12,430 - Combined mask 999 genes left
+0.9 Keeping 3030 samples out of 4622 (65.56%)
+0.5 Keeping 4290 samples out of 4622 (92.82%)
+Combined: Keeping 3030 samples out of 4622 (65.56%)
+Number of DO leaves: 9018
+Generated multilabel vectors for class nodes with shape (3030, 51)
+Cleaned multilabel vectors for class nodes with shape (3030, 34)
+1017 samples	Node Control
+22 samples	Node DOID:0014667 - disease of metabolism
+4 samples	Node DOID:0050117 - disease by infectious agent
+9 samples	Node DOID:0050177 - monogenic disease
+562 samples	Node DOID:0050686 - organ system cancer
+559 samples	Node DOID:0050687 - cell type cancer
+9 samples	Node DOID:0050736 - autosomal dominant disease
+9 samples	Node DOID:0050739 - autosomal genetic disease
+92 samples	Node DOID:0080001 - bone disease
+12 samples	Node DOID:0080015 - physical disorder
+14 samples	Node DOID:114 - heart disease
+14 samples	Node DOID:1287 - cardiovascular system disease
+114 samples	Node DOID:1289 - neurodegenerative disease
+562 samples	Node DOID:14566 - disease of cellular proliferation
+502 samples	Node DOID:15 - reproductive system disease
+38 samples	Node DOID:150 - disease of mental health
+180 samples	Node DOID:1579 - respiratory system disease
+90 samples	Node DOID:16 - integumentary system disease
+562 samples	Node DOID:162 - cancer
+163 samples	Node DOID:17 - musculoskeletal system disease
+14 samples	Node DOID:225 - syndrome
+2 samples	Node DOID:28 - endocrine system disease
+1068 samples	Node DOID:2914 - immune system disease
+559 samples	Node DOID:305 - carcinoma
+121 samples	Node DOID:331 - central nervous system disease
+90 samples	Node DOID:37 - skin disease
+911 samples	Node DOID:5295 - intestinal disease
+1028 samples	Node DOID:612 - primary immunodeficiency disease
+27 samples	Node DOID:630 - genetic disease
+163 samples	Node DOID:65 - connective tissue disease
+18 samples	Node DOID:655 - inherited metabolic disorder
+1941 samples	Node DOID:7 - disease of anatomical entity
+928 samples	Node DOID:77 - gastrointestinal system disease
+121 samples	Node DOID:863 - nervous system disease
+Nº of samples with only one label: 1064
+Nº of samples with +1 labels: 1966
+Max nº of labels per sample: 8
+Nº of times each class appears in the multilabel vector:
+[1017   22    4    9  562  559    9    9   92   12   14   14  114  562
+  502   38  180   90  562  163   14    2 1068  559  121   90  911 1028
+   27  163   18 1941  928  121]
+Generated poitional weights for BCEWithLogitsLoss with shape torch.Size([34])
+Positional weights:
+tensor([ 1.9794, 50.0000, 50.0000, 50.0000,  4.3915,  4.4204, 50.0000, 50.0000,
+        31.9348, 50.0000, 50.0000, 50.0000, 25.5789,  4.3915,  5.0359, 50.0000,
+        15.8333, 32.6667,  4.3915, 17.5890, 50.0000, 50.0000,  1.8371,  4.4204,
+        24.0413, 32.6667,  2.3260,  1.9475, 50.0000, 17.5890, 50.0000,  1.0000,
+         2.2651, 24.0413])
+Number of classes: 34
+Removed samples in multiple datasets, new shape: (3030, 999)
+Removed duplicate samples, new shape: (3030, 999)
+Removed duplicate samples independent of disease, new shape: (3030, 999)
+BEFORE QC - ADATA SHAPE: (3030, 999)
+Nº of failed datasets - less than +2 control samples: 3
+Nº of failed datasets - less than +2 disease samples: 7
+Nº of failed datasets - less than +2 samples (control and disease): 8 / 77
+adata shape after filtering datasets with +2 samples: (3015, 999)
+Nº of passed diseases +2 22/ 33
+Nº of passed dsaids +2 63/ 78
+AFTER QC - ADATA SHAPE: (2901, 999)
+config.load_model /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human
+scGPT - INFO - match 997/999 genes in vocabulary of size 60697.
+scGPT - INFO - Resume model from /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/best_model.pt, the model args will override the config /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/args.json.
+df shape: (2901, 21)
+df diseases: (1953, 21)
+All Labels: 23 ['Control', 'DOID:0050156', 'DOID:0080199', 'DOID:10652', 'DOID:11714', 'DOID:12858', 'DOID:14330', 'DOID:1520', 'DOID:1928', 'DOID:1932', 'DOID:2377', 'DOID:2526', 'DOID:2841', 'DOID:3083', 'DOID:3310', 'DOID:3312', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:6419', 'DOID:7148', 'DOID:8577', 'DOID:8893']
+Remove Controls - Labels: 22 ['DOID:0050156', 'DOID:0080199', 'DOID:10652', 'DOID:11714', 'DOID:12858', 'DOID:14330', 'DOID:1520', 'DOID:1928', 'DOID:1932', 'DOID:2377', 'DOID:2526', 'DOID:2841', 'DOID:3083', 'DOID:3310', 'DOID:3312', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:6419', 'DOID:7148', 'DOID:8577', 'DOID:8893']
+Nº of diseases in train split test_split_1:	23
+Nº of diseases in test split test_split_1:	23
+Nº of datasets in train split test_split_1:	34
+Nº of datasets in test split test_split_1:	22
+Nº of samples in train split test_split_1:	1157
+Nº of samples in test split test_split_1:	1744
+Output directory created: /aloy/home/ddalton/projects/scGPT_playground/outputs/run-26-02-16-01
+adata loaded - shape (4622, 999)
+Using RNA-Seq data only - adata shape (4622, 999)
+Index(['ids', 'dataset', 'dataset_id', 'batch', 'batch_id', 'dsaid', 'tissue',
+       'n_genes', 'disease', 'celltype', 'disease_study', 'library',
+       'doid_study', 'doid_id', 'do_id', 'doid_disease'],
+      dtype='object')
+2026-02-16 15:21:35,764 - Nº genes: 999, Nº samples: 4622
+2026-02-16 15:21:35,771 - Top 3501 most present genes selected. - >= 4622
+2026-02-16 15:21:35,771 - Combined mask 999 genes left
+0.9 Keeping 3030 samples out of 4622 (65.56%)
+0.5 Keeping 4290 samples out of 4622 (92.82%)
+Combined: Keeping 3030 samples out of 4622 (65.56%)
+Number of DO leaves: 9018
+Generated multilabel vectors for class nodes with shape (3030, 51)
+Cleaned multilabel vectors for class nodes with shape (3030, 34)
+1017 samples	Node Control
+22 samples	Node DOID:0014667 - disease of metabolism
+4 samples	Node DOID:0050117 - disease by infectious agent
+9 samples	Node DOID:0050177 - monogenic disease
+562 samples	Node DOID:0050686 - organ system cancer
+559 samples	Node DOID:0050687 - cell type cancer
+9 samples	Node DOID:0050736 - autosomal dominant disease
+9 samples	Node DOID:0050739 - autosomal genetic disease
+92 samples	Node DOID:0080001 - bone disease
+12 samples	Node DOID:0080015 - physical disorder
+14 samples	Node DOID:114 - heart disease
+14 samples	Node DOID:1287 - cardiovascular system disease
+114 samples	Node DOID:1289 - neurodegenerative disease
+562 samples	Node DOID:14566 - disease of cellular proliferation
+502 samples	Node DOID:15 - reproductive system disease
+38 samples	Node DOID:150 - disease of mental health
+180 samples	Node DOID:1579 - respiratory system disease
+90 samples	Node DOID:16 - integumentary system disease
+562 samples	Node DOID:162 - cancer
+163 samples	Node DOID:17 - musculoskeletal system disease
+14 samples	Node DOID:225 - syndrome
+2 samples	Node DOID:28 - endocrine system disease
+1068 samples	Node DOID:2914 - immune system disease
+559 samples	Node DOID:305 - carcinoma
+121 samples	Node DOID:331 - central nervous system disease
+90 samples	Node DOID:37 - skin disease
+911 samples	Node DOID:5295 - intestinal disease
+1028 samples	Node DOID:612 - primary immunodeficiency disease
+27 samples	Node DOID:630 - genetic disease
+163 samples	Node DOID:65 - connective tissue disease
+18 samples	Node DOID:655 - inherited metabolic disorder
+1941 samples	Node DOID:7 - disease of anatomical entity
+928 samples	Node DOID:77 - gastrointestinal system disease
+121 samples	Node DOID:863 - nervous system disease
+Nº of samples with only one label: 1064
+Nº of samples with +1 labels: 1966
+Max nº of labels per sample: 8
+Nº of times each class appears in the multilabel vector:
+[1017   22    4    9  562  559    9    9   92   12   14   14  114  562
+  502   38  180   90  562  163   14    2 1068  559  121   90  911 1028
+   27  163   18 1941  928  121]
+Generated poitional weights for BCEWithLogitsLoss with shape torch.Size([34])
+Positional weights:
+tensor([ 1.9794, 50.0000, 50.0000, 50.0000,  4.3915,  4.4204, 50.0000, 50.0000,
+        31.9348, 50.0000, 50.0000, 50.0000, 25.5789,  4.3915,  5.0359, 50.0000,
+        15.8333, 32.6667,  4.3915, 17.5890, 50.0000, 50.0000,  1.8371,  4.4204,
+        24.0413, 32.6667,  2.3260,  1.9475, 50.0000, 17.5890, 50.0000,  1.0000,
+         2.2651, 24.0413])
+Number of classes: 34
+Removed samples in multiple datasets, new shape: (3030, 999)
+Removed duplicate samples, new shape: (3030, 999)
+Removed duplicate samples independent of disease, new shape: (3030, 999)
+BEFORE QC - ADATA SHAPE: (3030, 999)
+Nº of failed datasets - less than +2 control samples: 3
+Nº of failed datasets - less than +2 disease samples: 7
+Nº of failed datasets - less than +2 samples (control and disease): 8 / 77
+adata shape after filtering datasets with +2 samples: (3015, 999)
+Nº of passed diseases +2 22/ 33
+Nº of passed dsaids +2 63/ 78
+AFTER QC - ADATA SHAPE: (2901, 999)
+config.load_model /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human
+scGPT - INFO - match 997/999 genes in vocabulary of size 60697.
+scGPT - INFO - Resume model from /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/best_model.pt, the model args will override the config /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/args.json.
+df shape: (2901, 21)
+df diseases: (1953, 21)
+All Labels: 23 ['Control', 'DOID:0050156', 'DOID:0080199', 'DOID:10652', 'DOID:11714', 'DOID:12858', 'DOID:14330', 'DOID:1520', 'DOID:1928', 'DOID:1932', 'DOID:2377', 'DOID:2526', 'DOID:2841', 'DOID:3083', 'DOID:3310', 'DOID:3312', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:6419', 'DOID:7148', 'DOID:8577', 'DOID:8893']
+Remove Controls - Labels: 22 ['DOID:0050156', 'DOID:0080199', 'DOID:10652', 'DOID:11714', 'DOID:12858', 'DOID:14330', 'DOID:1520', 'DOID:1928', 'DOID:1932', 'DOID:2377', 'DOID:2526', 'DOID:2841', 'DOID:3083', 'DOID:3310', 'DOID:3312', 'DOID:332', 'DOID:5015', 'DOID:5419', 'DOID:6419', 'DOID:7148', 'DOID:8577', 'DOID:8893']
+Nº of diseases in train split test_split_1:	23
+Nº of diseases in test split test_split_1:	23
+Nº of datasets in train split test_split_1:	35
+Nº of datasets in test split test_split_1:	21
+Nº of samples in train split test_split_1:	1168
+Nº of samples in test split test_split_1:	1733
+Output directory created: /aloy/home/ddalton/projects/scGPT_playground/outputs/run-26-02-16-02
+[DEBUG] Starting preprocessing
+[DEBUG] key_to_process = None
+[DEBUG] adata.X type=<class 'numpy.ndarray'>, shape=(1168, 997)
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - INFO - Binning data ...
+[DEBUG] Binning data with n_bins=51
+[DEBUG] layer_data type=<class 'numpy.ndarray'>, shape=(1168, 997)
+[DEBUG] Starting preprocessing
+[DEBUG] key_to_process = None
+[DEBUG] adata.X type=<class 'numpy.ndarray'>, shape=(1733, 997)
+scGPT - INFO - Normalizing total counts ...
+scGPT - INFO - Log1p transforming ...
+scGPT - INFO - Binning data ...
+[DEBUG] Binning data with n_bins=51
+[DEBUG] layer_data type=<class 'numpy.ndarray'>, shape=(1733, 997)
+doid_id
+DOID:2526       499
+Control         317
+DOID:7148        86
+DOID:14330       57
+DOID:2841        53
+DOID:8893        48
+DOID:1520        20
+DOID:10652       17
+DOID:5419        15
+DOID:0050156      8
+DOID:6419         7
+DOID:332          7
+DOID:3083         6
+DOID:0080199      4
+DOID:1932         3
+DOID:3312         3
+DOID:3310         3
+DOID:5015         3
+DOID:11714        3
+DOID:8577         3
+DOID:1928         2
+DOID:2377         2
+DOID:12858        2
+Name: count, dtype: int64
+###################
+celltype
+DOID:2526       499
+Control         317
+DOID:7148        86
+DOID:14330       57
+DOID:2841        53
+DOID:8893        48
+DOID:1520        20
+DOID:10652       17
+DOID:5419        15
+DOID:0050156      8
+DOID:332          7
+DOID:6419         7
+DOID:3083         6
+DOID:0080199      4
+DOID:11714        3
+DOID:5015         3
+DOID:3312         3
+DOID:3310         3
+DOID:1932         3
+DOID:8577         3
+DOID:12858        2
+DOID:1928         2
+DOID:2377         2
+Name: count, dtype: int64
+train_idx (1051,), valid_idx (117,)
+scGPT - INFO - train set number of samples: 1051,
+	 feature length: 993
+scGPT - INFO - valid set number of samples: 117,
+	 feature length: 990
+scGPT - INFO - Total Pre freeze Params 51349027
+scGPT - INFO - Total Post freeze Params 51349027
+0
+NVIDIA H200
+_Y_test (1733, 34) 0 1
+_Y_valid (117, 34) 0 1
+_Y_train (1051, 34) 0 1
+random masking at epoch   1, ratio of masked values in train:  0.0000
+>>> Finished remapping batch labels
+Total unique remapped batch labels: 35
+Range of remapped batch labels: 1 to 54
+>>> Sample batch labels after remapping: batch_id
+40    551
+2      92
+53     78
+43     47
+36     42
+Name: count, dtype: int64
+CLS is True
+../aten/src/ATen/native/cuda/Loss.cu:250: nll_loss_forward_reduce_cuda_kernel_2d: block: [0,0,0], thread: [21,0,0] Assertion `t >= 0 && t < n_classes` failed.
+../aten/src/ATen/native/cuda/Loss.cu:250: nll_loss_forward_reduce_cuda_kernel_2d: block: [0,0,0], thread: [23,0,0] Assertion `t >= 0 && t < n_classes` failed.
+../aten/src/ATen/native/cuda/Loss.cu:250: nll_loss_forward_reduce_cuda_kernel_2d: block: [0,0,0], thread: [25,0,0] Assertion `t >= 0 && t < n_classes` failed.
+scGPT version: /aloy/home/ddalton/git_clones/scGPT/scgpt/__init__.py
+2026-02-16 18:43:31,749 - Is Cuda Available True
+1
+data_path:
+max_seq_len: 3501
+batch_size: 32
+gene_presence_pct: 0.9
+benchmark_data: False
+split_type: stratified
+val_split_type: rand_stratified
+n_splits: 10
+n_tested_splits: None
+epochs: 50
+gene_filtering: top_presence
+sample_presence_pct: 0.3
+MLM: False
+CLS: False
+CLS_multilabel: True
+DAB: False
+ADV: False
+CCE: False
+ecs_thres: False
+dab_weight: False
+use_fast_transformer: True
+output_attentions: False
+INPUT_BATCH_LABELS: False
+do_combat: False
+ontology: do
+scgpt_pp: norm_log1p
+description:
+library: RNA-Seq
+use_controls: True
+use_control_loss: False
+include_zero_gene: True
+set_cls_to_pad: False
+pad_nan_vals: True
+[34m[1mwandb[0m: [33mWARNING[0m Calling wandb.login() after wandb.init() has no effect.
+[34m[1mwandb[0m: [32m[41mERROR[0m The nbformat package was not found. It is required to save notebook history.

@@ -1,0 +1,38 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0, 'dab_weight': 0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+scGPT version: /aloy/home/ddalton/git_clones/scGPT/scgpt/__init__.py
+2026-02-16 18:43:45,413 - Is Cuda Available True
+1
+data_path:
+max_seq_len: 3501
+batch_size: 32
+gene_presence_pct: 0.9
+benchmark_data: False
+split_type: stratified
+val_split_type: rand_stratified
+n_splits: 10
+n_tested_splits: None
+epochs: 50
+gene_filtering: top_presence
+sample_presence_pct: 0.3
+MLM: False
+CLS: False
+CLS_multilabel: True
+DAB: False
+ADV: False
+CCE: False
+ecs_thres: False
+dab_weight: False
+use_fast_transformer: True
+output_attentions: False
+INPUT_BATCH_LABELS: False
+do_combat: False
+ontology: do
+scgpt_pp: norm_log1p
+description:
+library: RNA-Seq
+use_controls: True
+use_control_loss: False
+include_zero_gene: True
+set_cls_to_pad: False
+pad_nan_vals: True
+[34m[1mwandb[0m: [33mWARNING[0m Calling wandb.login() after wandb.init() has no effect.

@@ -1,0 +1,180 @@
+18:15:34-scGPT-INFO-<module>: match 3501/3501 genes in vocabulary of size 60697.
+18:15:34-scGPT-INFO-<module>: Resume model from /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/best_model.pt, the model args will override the config /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human/args.json.
+18:15:35-scGPT-INFO-__call__: Normalizing total counts ...
+18:15:35-scGPT-INFO-__call__: Log1p transforming ...
+18:15:35-scGPT-INFO-__call__: Binning data ...
+18:15:44-scGPT-INFO-__call__: Normalizing total counts ...
+18:15:44-scGPT-INFO-__call__: Log1p transforming ...
+18:15:44-scGPT-INFO-__call__: Binning data ...
+18:15:48-scGPT-INFO-<module>: train set number of samples: 12151, 
+	 feature length: 3501
+18:15:48-scGPT-INFO-<module>: valid set number of samples: 1351, 
+	 feature length: 3501
+18:15:49-scGPT-INFO-<module>: Total Pre freeze Params 51356722
+18:15:49-scGPT-INFO-<module>: Total Post freeze Params 51356722
+18:16:58-scGPT-INFO-train: | epoch   1 | 100/760 batches | lr 0.0001 | ms/batch 565.49 | loss  0.80 | 
+18:17:17-scGPT-INFO-train: | epoch   1 | 200/760 batches | lr 0.0001 | ms/batch 189.43 | loss  0.55 | 
+18:17:36-scGPT-INFO-train: | epoch   1 | 300/760 batches | lr 0.0001 | ms/batch 189.30 | loss  0.46 | 
+18:17:54-scGPT-INFO-train: | epoch   1 | 400/760 batches | lr 0.0001 | ms/batch 189.38 | loss  0.44 | 
+18:18:13-scGPT-INFO-train: | epoch   1 | 500/760 batches | lr 0.0001 | ms/batch 189.40 | loss  0.36 | 
+18:18:32-scGPT-INFO-train: | epoch   1 | 600/760 batches | lr 0.0001 | ms/batch 189.37 | loss  0.37 | 
+18:18:51-scGPT-INFO-train: | epoch   1 | 700/760 batches | lr 0.0001 | ms/batch 189.41 | loss  0.30 | 
+18:19:09-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:19:09-scGPT-INFO-<module>: | end of epoch   1 | time: 189.60s | valid loss/mse 0.2950 | err 0.0503
+18:19:09-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:19:09-scGPT-INFO-<module>: Best model with score 0.2950
+18:19:30-scGPT-INFO-train: | epoch   2 | 100/760 batches | lr 0.0001 | ms/batch 193.36 | loss  0.32 | 
+18:19:49-scGPT-INFO-train: | epoch   2 | 200/760 batches | lr 0.0001 | ms/batch 189.41 | loss  0.26 | 
+18:20:09-scGPT-INFO-train: | epoch   2 | 300/760 batches | lr 0.0001 | ms/batch 202.02 | loss  0.24 | 
+18:20:28-scGPT-INFO-train: | epoch   2 | 400/760 batches | lr 0.0001 | ms/batch 189.35 | loss  0.26 | 
+18:20:47-scGPT-INFO-train: | epoch   2 | 500/760 batches | lr 0.0001 | ms/batch 189.43 | loss  0.21 | 
+18:21:06-scGPT-INFO-train: | epoch   2 | 600/760 batches | lr 0.0001 | ms/batch 189.43 | loss  0.23 | 
+18:21:25-scGPT-INFO-train: | epoch   2 | 700/760 batches | lr 0.0001 | ms/batch 189.40 | loss  0.19 | 
+18:21:40-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:21:40-scGPT-INFO-<module>: | end of epoch   2 | time: 150.65s | valid loss/mse 0.1955 | err 0.0307
+18:21:40-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:21:40-scGPT-INFO-<module>: Best model with score 0.1955
+18:22:00-scGPT-INFO-train: | epoch   3 | 100/760 batches | lr 0.0001 | ms/batch 193.25 | loss  0.21 | 
+18:22:19-scGPT-INFO-train: | epoch   3 | 200/760 batches | lr 0.0001 | ms/batch 189.43 | loss  0.16 | 
+18:22:38-scGPT-INFO-train: | epoch   3 | 300/760 batches | lr 0.0001 | ms/batch 189.38 | loss  0.14 | 
+18:22:57-scGPT-INFO-train: | epoch   3 | 400/760 batches | lr 0.0001 | ms/batch 189.45 | loss  0.18 | 
+18:23:16-scGPT-INFO-train: | epoch   3 | 500/760 batches | lr 0.0001 | ms/batch 190.15 | loss  0.14 | 
+18:23:35-scGPT-INFO-train: | epoch   3 | 600/760 batches | lr 0.0001 | ms/batch 189.45 | loss  0.15 | 
+18:23:54-scGPT-INFO-train: | epoch   3 | 700/760 batches | lr 0.0001 | ms/batch 189.43 | loss  0.13 | 
+18:24:10-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:24:10-scGPT-INFO-<module>: | end of epoch   3 | time: 149.46s | valid loss/mse 0.1968 | err 0.0202
+18:24:10-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:24:10-scGPT-INFO-<module>: Validation loss did not improve.
+18:24:10-scGPT-INFO-<module>: Current best model score: 0.1955 at epoch 2
+18:24:30-scGPT-INFO-train: | epoch   4 | 100/760 batches | lr 0.0001 | ms/batch 193.07 | loss  0.16 | 
+18:24:49-scGPT-INFO-train: | epoch   4 | 200/760 batches | lr 0.0001 | ms/batch 189.41 | loss  0.13 | 
+18:25:08-scGPT-INFO-train: | epoch   4 | 300/760 batches | lr 0.0001 | ms/batch 189.39 | loss  0.10 | 
+18:25:27-scGPT-INFO-train: | epoch   4 | 400/760 batches | lr 0.0001 | ms/batch 189.41 | loss  0.13 | 
+18:25:46-scGPT-INFO-train: | epoch   4 | 500/760 batches | lr 0.0001 | ms/batch 189.49 | loss  0.11 | 
+18:26:05-scGPT-INFO-train: | epoch   4 | 600/760 batches | lr 0.0001 | ms/batch 189.41 | loss  0.11 | 
+18:26:24-scGPT-INFO-train: | epoch   4 | 700/760 batches | lr 0.0001 | ms/batch 189.39 | loss  0.09 | 
+18:26:39-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:26:39-scGPT-INFO-<module>: | end of epoch   4 | time: 149.44s | valid loss/mse 0.1322 | err 0.0150
+18:26:39-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:26:39-scGPT-INFO-<module>: Best model with score 0.1322
+18:26:59-scGPT-INFO-train: | epoch   5 | 100/760 batches | lr 0.0001 | ms/batch 193.21 | loss  0.11 | 
+18:27:18-scGPT-INFO-train: | epoch   5 | 200/760 batches | lr 0.0001 | ms/batch 189.35 | loss  0.09 | 
+18:27:37-scGPT-INFO-train: | epoch   5 | 300/760 batches | lr 0.0001 | ms/batch 189.37 | loss  0.08 | 
+18:27:56-scGPT-INFO-train: | epoch   5 | 400/760 batches | lr 0.0001 | ms/batch 189.36 | loss  0.10 | 
+18:28:15-scGPT-INFO-train: | epoch   5 | 500/760 batches | lr 0.0001 | ms/batch 189.39 | loss  0.08 | 
+18:28:34-scGPT-INFO-train: | epoch   5 | 600/760 batches | lr 0.0001 | ms/batch 189.36 | loss  0.08 | 
+18:28:53-scGPT-INFO-train: | epoch   5 | 700/760 batches | lr 0.0001 | ms/batch 189.38 | loss  0.07 | 
+18:29:08-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:29:08-scGPT-INFO-<module>: | end of epoch   5 | time: 149.34s | valid loss/mse 0.1073 | err 0.0123
+18:29:08-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:29:08-scGPT-INFO-<module>: Best model with score 0.1073
+18:29:29-scGPT-INFO-train: | epoch   6 | 100/760 batches | lr 0.0001 | ms/batch 193.17 | loss  0.10 | 
+18:29:48-scGPT-INFO-train: | epoch   6 | 200/760 batches | lr 0.0001 | ms/batch 190.12 | loss  0.07 | 
+18:30:07-scGPT-INFO-train: | epoch   6 | 300/760 batches | lr 0.0001 | ms/batch 189.37 | loss  0.04 | 
+18:30:26-scGPT-INFO-train: | epoch   6 | 400/760 batches | lr 0.0001 | ms/batch 189.32 | loss  0.07 | 
+18:30:44-scGPT-INFO-train: | epoch   6 | 500/760 batches | lr 0.0001 | ms/batch 189.39 | loss  0.06 | 
+18:31:03-scGPT-INFO-train: | epoch   6 | 600/760 batches | lr 0.0001 | ms/batch 189.38 | loss  0.06 | 
+18:31:22-scGPT-INFO-train: | epoch   6 | 700/760 batches | lr 0.0001 | ms/batch 189.40 | loss  0.08 | 
+18:31:38-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:31:38-scGPT-INFO-<module>: | end of epoch   6 | time: 149.41s | valid loss/mse 0.0834 | err 0.0099
+18:31:38-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:31:38-scGPT-INFO-<module>: Best model with score 0.0834
+18:31:58-scGPT-INFO-train: | epoch   7 | 100/760 batches | lr 0.0001 | ms/batch 193.03 | loss  0.05 | 
+18:32:17-scGPT-INFO-train: | epoch   7 | 200/760 batches | lr 0.0001 | ms/batch 189.17 | loss  0.06 | 
+18:32:36-scGPT-INFO-train: | epoch   7 | 300/760 batches | lr 0.0001 | ms/batch 189.22 | loss  0.04 | 
+18:32:55-scGPT-INFO-train: | epoch   7 | 400/760 batches | lr 0.0001 | ms/batch 189.18 | loss  0.05 | 
+18:33:14-scGPT-INFO-train: | epoch   7 | 500/760 batches | lr 0.0001 | ms/batch 189.88 | loss  0.04 | 
+18:33:33-scGPT-INFO-train: | epoch   7 | 600/760 batches | lr 0.0001 | ms/batch 189.19 | loss  0.05 | 
+18:33:52-scGPT-INFO-train: | epoch   7 | 700/760 batches | lr 0.0001 | ms/batch 189.21 | loss  0.04 | 
+18:34:07-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:34:07-scGPT-INFO-<module>: | end of epoch   7 | time: 149.28s | valid loss/mse 0.0789 | err 0.0078
+18:34:07-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:34:07-scGPT-INFO-<module>: Best model with score 0.0789
+18:34:27-scGPT-INFO-train: | epoch   8 | 100/760 batches | lr 0.0000 | ms/batch 193.11 | loss  0.05 | 
+18:34:46-scGPT-INFO-train: | epoch   8 | 200/760 batches | lr 0.0000 | ms/batch 189.28 | loss  0.04 | 
+18:35:05-scGPT-INFO-train: | epoch   8 | 300/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.03 | 
+18:35:24-scGPT-INFO-train: | epoch   8 | 400/760 batches | lr 0.0000 | ms/batch 189.20 | loss  0.04 | 
+18:35:43-scGPT-INFO-train: | epoch   8 | 500/760 batches | lr 0.0000 | ms/batch 189.25 | loss  0.03 | 
+18:36:02-scGPT-INFO-train: | epoch   8 | 600/760 batches | lr 0.0000 | ms/batch 189.20 | loss  0.04 | 
+18:36:21-scGPT-INFO-train: | epoch   8 | 700/760 batches | lr 0.0000 | ms/batch 189.94 | loss  0.04 | 
+18:36:36-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:36:36-scGPT-INFO-<module>: | end of epoch   8 | time: 149.31s | valid loss/mse 0.0787 | err 0.0068
+18:36:36-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:36:36-scGPT-INFO-<module>: Best model with score 0.0787
+18:36:57-scGPT-INFO-train: | epoch   9 | 100/760 batches | lr 0.0000 | ms/batch 193.20 | loss  0.04 | 
+18:37:16-scGPT-INFO-train: | epoch   9 | 200/760 batches | lr 0.0000 | ms/batch 189.34 | loss  0.03 | 
+18:37:35-scGPT-INFO-train: | epoch   9 | 300/760 batches | lr 0.0000 | ms/batch 189.24 | loss  0.02 | 
+18:37:54-scGPT-INFO-train: | epoch   9 | 400/760 batches | lr 0.0000 | ms/batch 189.20 | loss  0.04 | 
+18:38:12-scGPT-INFO-train: | epoch   9 | 500/760 batches | lr 0.0000 | ms/batch 189.24 | loss  0.04 | 
+18:38:31-scGPT-INFO-train: | epoch   9 | 600/760 batches | lr 0.0000 | ms/batch 189.28 | loss  0.03 | 
+18:38:50-scGPT-INFO-train: | epoch   9 | 700/760 batches | lr 0.0000 | ms/batch 189.25 | loss  0.03 | 
+18:39:06-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:39:06-scGPT-INFO-<module>: | end of epoch   9 | time: 149.29s | valid loss/mse 0.0814 | err 0.0058
+18:39:06-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:39:06-scGPT-INFO-<module>: Validation loss did not improve.
+18:39:06-scGPT-INFO-<module>: Current best model score: 0.0787 at epoch 8
+18:39:26-scGPT-INFO-train: | epoch  10 | 100/760 batches | lr 0.0000 | ms/batch 193.10 | loss  0.03 | 
+18:39:45-scGPT-INFO-train: | epoch  10 | 200/760 batches | lr 0.0000 | ms/batch 190.07 | loss  0.03 | 
+18:40:04-scGPT-INFO-train: | epoch  10 | 300/760 batches | lr 0.0000 | ms/batch 189.27 | loss  0.02 | 
+18:40:23-scGPT-INFO-train: | epoch  10 | 400/760 batches | lr 0.0000 | ms/batch 189.32 | loss  0.02 | 
+18:40:42-scGPT-INFO-train: | epoch  10 | 500/760 batches | lr 0.0000 | ms/batch 189.29 | loss  0.03 | 
+18:41:01-scGPT-INFO-train: | epoch  10 | 600/760 batches | lr 0.0000 | ms/batch 189.31 | loss  0.03 | 
+18:41:20-scGPT-INFO-train: | epoch  10 | 700/760 batches | lr 0.0000 | ms/batch 190.82 | loss  0.02 | 
+18:41:35-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:41:35-scGPT-INFO-<module>: | end of epoch  10 | time: 149.54s | valid loss/mse 0.0911 | err 0.0054
+18:41:35-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:41:35-scGPT-INFO-<module>: Validation loss did not improve.
+18:41:35-scGPT-INFO-<module>: Current best model score: 0.0787 at epoch 8
+18:41:56-scGPT-INFO-train: | epoch  11 | 100/760 batches | lr 0.0000 | ms/batch 193.09 | loss  0.02 | 
+18:42:14-scGPT-INFO-train: | epoch  11 | 200/760 batches | lr 0.0000 | ms/batch 189.20 | loss  0.02 | 
+18:42:33-scGPT-INFO-train: | epoch  11 | 300/760 batches | lr 0.0000 | ms/batch 189.17 | loss  0.01 | 
+18:42:52-scGPT-INFO-train: | epoch  11 | 400/760 batches | lr 0.0000 | ms/batch 189.94 | loss  0.02 | 
+18:43:11-scGPT-INFO-train: | epoch  11 | 500/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.01 | 
+18:43:30-scGPT-INFO-train: | epoch  11 | 600/760 batches | lr 0.0000 | ms/batch 189.19 | loss  0.02 | 
+18:43:49-scGPT-INFO-train: | epoch  11 | 700/760 batches | lr 0.0000 | ms/batch 189.22 | loss  0.01 | 
+18:44:05-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:44:05-scGPT-INFO-<module>: | end of epoch  11 | time: 149.31s | valid loss/mse 0.0841 | err 0.0050
+18:44:05-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:44:05-scGPT-INFO-<module>: Validation loss did not improve.
+18:44:05-scGPT-INFO-<module>: Current best model score: 0.0787 at epoch 8
+18:44:25-scGPT-INFO-train: | epoch  12 | 100/760 batches | lr 0.0000 | ms/batch 192.86 | loss  0.01 | 
+18:44:44-scGPT-INFO-train: | epoch  12 | 200/760 batches | lr 0.0000 | ms/batch 189.13 | loss  0.01 | 
+18:45:03-scGPT-INFO-train: | epoch  12 | 300/760 batches | lr 0.0000 | ms/batch 189.09 | loss  0.01 | 
+18:45:22-scGPT-INFO-train: | epoch  12 | 400/760 batches | lr 0.0000 | ms/batch 189.11 | loss  0.02 | 
+18:45:41-scGPT-INFO-train: | epoch  12 | 500/760 batches | lr 0.0000 | ms/batch 189.16 | loss  0.01 | 
+18:45:59-scGPT-INFO-train: | epoch  12 | 600/760 batches | lr 0.0000 | ms/batch 189.18 | loss  0.02 | 
+18:46:18-scGPT-INFO-train: | epoch  12 | 700/760 batches | lr 0.0000 | ms/batch 189.91 | loss  0.04 | 
+18:46:34-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:46:34-scGPT-INFO-<module>: | end of epoch  12 | time: 149.24s | valid loss/mse 0.0733 | err 0.0043
+18:46:34-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:46:34-scGPT-INFO-<module>: Best model with score 0.0733
+18:46:54-scGPT-INFO-train: | epoch  13 | 100/760 batches | lr 0.0000 | ms/batch 193.05 | loss  0.02 | 
+18:47:13-scGPT-INFO-train: | epoch  13 | 200/760 batches | lr 0.0000 | ms/batch 189.16 | loss  0.01 | 
+18:47:32-scGPT-INFO-train: | epoch  13 | 300/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.01 | 
+18:47:51-scGPT-INFO-train: | epoch  13 | 400/760 batches | lr 0.0000 | ms/batch 189.22 | loss  0.01 | 
+18:48:10-scGPT-INFO-train: | epoch  13 | 500/760 batches | lr 0.0000 | ms/batch 189.22 | loss  0.01 | 
+18:48:29-scGPT-INFO-train: | epoch  13 | 600/760 batches | lr 0.0000 | ms/batch 189.19 | loss  0.01 | 
+18:48:48-scGPT-INFO-train: | epoch  13 | 700/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.01 | 
+18:49:03-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:49:03-scGPT-INFO-<module>: | end of epoch  13 | time: 149.23s | valid loss/mse 0.0753 | err 0.0044
+18:49:03-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:49:03-scGPT-INFO-<module>: Validation loss did not improve.
+18:49:03-scGPT-INFO-<module>: Current best model score: 0.0733 at epoch 12
+18:49:23-scGPT-INFO-train: | epoch  14 | 100/760 batches | lr 0.0000 | ms/batch 193.05 | loss  0.01 | 
+18:49:42-scGPT-INFO-train: | epoch  14 | 200/760 batches | lr 0.0000 | ms/batch 189.97 | loss  0.01 | 
+18:50:01-scGPT-INFO-train: | epoch  14 | 300/760 batches | lr 0.0000 | ms/batch 189.26 | loss  0.01 | 
+18:50:20-scGPT-INFO-train: | epoch  14 | 400/760 batches | lr 0.0000 | ms/batch 189.18 | loss  0.01 | 
+18:50:39-scGPT-INFO-train: | epoch  14 | 500/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.01 | 
+18:50:58-scGPT-INFO-train: | epoch  14 | 600/760 batches | lr 0.0000 | ms/batch 189.19 | loss  0.01 | 
+18:51:17-scGPT-INFO-train: | epoch  14 | 700/760 batches | lr 0.0000 | ms/batch 189.18 | loss  0.01 | 
+18:51:32-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:51:32-scGPT-INFO-<module>: | end of epoch  14 | time: 149.31s | valid loss/mse 0.0919 | err 0.0040
+18:51:32-scGPT-INFO-<module>: -----------------------------------------------------------------------------------------
+18:51:32-scGPT-INFO-<module>: Validation loss did not improve.
+18:51:32-scGPT-INFO-<module>: Current best model score: 0.0733 at epoch 12
+18:51:53-scGPT-INFO-train: | epoch  15 | 100/760 batches | lr 0.0000 | ms/batch 193.15 | loss  0.01 | 
+18:52:12-scGPT-INFO-train: | epoch  15 | 200/760 batches | lr 0.0000 | ms/batch 189.24 | loss  0.01 | 
+18:52:31-scGPT-INFO-train: | epoch  15 | 300/760 batches | lr 0.0000 | ms/batch 189.20 | loss  0.01 | 
+18:52:50-scGPT-INFO-train: | epoch  15 | 400/760 batches | lr 0.0000 | ms/batch 190.01 | loss  0.01 | 
+18:53:08-scGPT-INFO-train: | epoch  15 | 500/760 batches | lr 0.0000 | ms/batch 189.26 | loss  0.01 | 
+18:53:27-scGPT-INFO-train: | epoch  15 | 600/760 batches | lr 0.0000 | ms/batch 189.21 | loss  0.01 | 

@@ -1,0 +1,64 @@
+{'seed': 0, 'dataset_name': 'test_1', 'do_train': True, 'load_model': '/aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human', 'mask_ratio': 0, 'epochs': 10, 'n_bins': 51, 'MVC': False, 'ecs_thres': 0, 'dab_weight': 0, 'lr': 0.0001, 'batch_size': 32, 'layer_size': 128, 'nlayers': 4, 'nhead': 4, 'dropout': 0.2, 'schedule_ratio': 0.9, 'save_eval_interval': 5, 'fast_transformer': True, 'pre_norm': False, 'amp': True, 'include_zero_gene': False, 'freeze': False, 'DSBN': False}
+adata loaded - shape (4622, 999)
+Using RNA-Seq data only - adata shape (4622, 999)
+Index(['ids', 'dataset', 'dataset_id', 'batch', 'batch_id', 'dsaid', 'tissue',
+       'n_genes', 'disease', 'celltype', 'disease_study', 'library',
+       'doid_study', 'doid_id', 'do_id', 'doid_disease'],
+      dtype='object')
+2026-02-16 18:43:56,467 - Nº genes: 999, Nº samples: 4622
+2026-02-16 18:43:56,474 - Top 3501 most present genes selected. - >= 4622
+2026-02-16 18:43:56,474 - Combined mask 999 genes left
+0.9 Keeping 3030 samples out of 4622 (65.56%)
+0.5 Keeping 4290 samples out of 4622 (92.82%)
+Combined: Keeping 3030 samples out of 4622 (65.56%)
+Number of DO leaves: 9018
+Generated multilabel vectors for class nodes with shape (3030, 51)
+Cleaned multilabel vectors for class nodes with shape (3030, 34)
+1017 samples	Node Control
+22 samples	Node DOID:0014667 - disease of metabolism
+4 samples	Node DOID:0050117 - disease by infectious agent
+9 samples	Node DOID:0050177 - monogenic disease
+562 samples	Node DOID:0050686 - organ system cancer
+559 samples	Node DOID:0050687 - cell type cancer
+9 samples	Node DOID:0050736 - autosomal dominant disease
+9 samples	Node DOID:0050739 - autosomal genetic disease
+92 samples	Node DOID:0080001 - bone disease
+12 samples	Node DOID:0080015 - physical disorder
+14 samples	Node DOID:114 - heart disease
+14 samples	Node DOID:1287 - cardiovascular system disease
+114 samples	Node DOID:1289 - neurodegenerative disease
+562 samples	Node DOID:14566 - disease of cellular proliferation
+502 samples	Node DOID:15 - reproductive system disease
+38 samples	Node DOID:150 - disease of mental health
+180 samples	Node DOID:1579 - respiratory system disease
+90 samples	Node DOID:16 - integumentary system disease
+562 samples	Node DOID:162 - cancer
+163 samples	Node DOID:17 - musculoskeletal system disease
+14 samples	Node DOID:225 - syndrome
+2 samples	Node DOID:28 - endocrine system disease
+1068 samples	Node DOID:2914 - immune system disease
+559 samples	Node DOID:305 - carcinoma
+121 samples	Node DOID:331 - central nervous system disease
+90 samples	Node DOID:37 - skin disease
+911 samples	Node DOID:5295 - intestinal disease
+1028 samples	Node DOID:612 - primary immunodeficiency disease
+27 samples	Node DOID:630 - genetic disease
+163 samples	Node DOID:65 - connective tissue disease
+18 samples	Node DOID:655 - inherited metabolic disorder
+1941 samples	Node DOID:7 - disease of anatomical entity
+928 samples	Node DOID:77 - gastrointestinal system disease
+121 samples	Node DOID:863 - nervous system disease
+Nº of samples with only one label: 1064
+Nº of samples with +1 labels: 1966
+Max nº of labels per sample: 8
+Nº of times each class appears in the multilabel vector:
+[1017   22    4    9  562  559    9    9   92   12   14   14  114  562
+  502   38  180   90  562  163   14    2 1068  559  121   90  911 1028
+   27  163   18 1941  928  121]
+Generated poitional weights for BCEWithLogitsLoss with shape torch.Size([34])
+Positional weights:
+tensor([ 1.9794, 50.0000, 50.0000, 50.0000,  4.3915,  4.4204, 50.0000, 50.0000,
+        31.9348, 50.0000, 50.0000, 50.0000, 25.5789,  4.3915,  5.0359, 50.0000,
+        15.8333, 32.6667,  4.3915, 17.5890, 50.0000, 50.0000,  1.8371,  4.4204,
+        24.0413, 32.6667,  2.3260,  1.9475, 50.0000, 17.5890, 50.0000,  1.0000,
+         2.2651, 24.0413])

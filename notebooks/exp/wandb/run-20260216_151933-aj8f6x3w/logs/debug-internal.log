@@ -1,0 +1,14 @@
+{"time":"2026-02-16T15:20:05.023397148+01:00","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-02-16T15:20:09.294425257+01:00","level":"INFO","msg":"stream: created new stream","id":"aj8f6x3w"}
+{"time":"2026-02-16T15:20:09.294872267+01:00","level":"INFO","msg":"handler: started","stream_id":"aj8f6x3w"}
+{"time":"2026-02-16T15:20:09.296677068+01:00","level":"INFO","msg":"stream: started","id":"aj8f6x3w"}
+{"time":"2026-02-16T15:20:09.296695159+01:00","level":"INFO","msg":"sender: started","stream_id":"aj8f6x3w"}
+{"time":"2026-02-16T15:20:09.296705236+01:00","level":"INFO","msg":"writer: started","stream_id":"aj8f6x3w"}
+{"time":"2026-02-16T18:26:52.238242821+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/aj8f6x3w/file_stream\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-16T18:26:54.739506365+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/aj8f6x3w/file_stream\": read tcp 10.10.7.10:36414->35.186.228.49:443: read: connection reset by peer"}
+{"time":"2026-02-16T18:43:33.202727232+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-02-16T18:43:33.393611358+01:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-02-16T18:43:33.398188855+01:00","level":"INFO","msg":"stream: closing","id":"aj8f6x3w"}
+{"time":"2026-02-16T18:43:33.398197409+01:00","level":"INFO","msg":"handler: closed","stream_id":"aj8f6x3w"}
+{"time":"2026-02-16T18:43:33.398930409+01:00","level":"INFO","msg":"sender: closed","stream_id":"aj8f6x3w"}
+{"time":"2026-02-16T18:43:33.398941548+01:00","level":"INFO","msg":"stream: closed","id":"aj8f6x3w"}

@@ -31,7 +31,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scanpy as sc
-import scvi
+# import scvi
 import seaborn as sns
 import torch
 import wandb
@@ -2086,7 +2086,7 @@ for split in range(1, manual_parameters.get("n_tested_splits") + 1):
         train_loader = prepare_dataloader(
             train_data_pt,
             batch_size=batch_size,
-            shuffle=False,
+            shuffle=True,   #! CHANGED FROM FALSE 
             intra_domain_shuffle=True,
             drop_last=False,
         )

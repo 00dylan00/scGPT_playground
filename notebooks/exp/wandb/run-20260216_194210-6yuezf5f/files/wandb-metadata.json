@@ -1,0 +1,84 @@
+{
+  "os":  "Linux-5.14.0-570.17.1.el9_6.x86_64-x86_64-with-glibc2.34",
+  "python":  "CPython 3.10.19",
+  "startedAt":  "2026-02-16T18:42:10.317626Z",
+  "program":  "/home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/2026-02-13-explore_GTEx.ipynb",
+  "codePath":  "/home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/2026-02-13-explore_GTEx.ipynb",
+  "codePathLocal":  "2026-02-13-explore_GTEx.ipynb",
+  "git":  {
+    "remote":  "https://github.com/00dylan00/scGPT_playground.git",
+    "commit":  "4d1aa83b8fe2d577482b0a062e48837c1b02624f"
+  },
+  "email":  "dylandaltonsub@gmail.com",
+  "root":  "/home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp",
+  "host":  "irbgcn10.sc.irbbarcelona.org",
+  "executable":  "/home/ddalton/.conda/envs/protocol/bin/python",
+  "cpu_count":  112,
+  "cpu_count_logical":  112,
+  "gpu":  "NVIDIA H200",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "107307008000",
+      "used":  "17708453888"
+    }
+  },
+  "memory":  {
+    "total":  "2163688701952"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA H200",
+      "memoryTotal":  "150754820096",
+      "cudaCores":  16896,
+      "architecture":  "Hopper",
+      "uuid":  "GPU-06e93bbe-2f7f-05a9-0a71-6df9bc63c053"
+    }
+  ],
+  "cudaVersion":  "12.8",
+  "slurm":  {
+    "cluster_name":  "irbcluster",
+    "conf":  "/var/spool/slurmd/conf-cache/slurm.conf",
+    "cpus_on_node":  "8",
+    "cpus_per_task":  "8",
+    "distribution":  "block:block:block",
+    "export_env":  "NONE",
+    "get_user_env":  "1",
+    "gpus_on_node":  "1",
+    "gtids":  "0",
+    "job_account":  "sbnb",
+    "job_cpus_per_node":  "8",
+    "job_end_time":  "1771290394",
+    "job_gid":  "1003",
+    "job_gpus":  "1",
+    "job_id":  "1218111",
+    "job_name":  "vscode",
+    "job_nodelist":  "irbgcn10",
+    "job_num_nodes":  "1",
+    "job_partition":  "sbnb_gpu_h200",
+    "job_qos":  "medium",
+    "job_start_time":  "1771247194",
+    "job_uid":  "17447",
+    "job_user":  "ddalton",
+    "jobid":  "1218111",
+    "localid":  "0",
+    "mem_per_node":  "81920",
+    "nnodes":  "1",
+    "node_aliases":  "(null)",
+    "nodeid":  "0",
+    "nodelist":  "irbgcn10",
+    "nprocs":  "1",
+    "ntasks":  "1",
+    "prio_process":  "0",
+    "procid":  "0",
+    "script_context":  "prolog_task",
+    "submit_dir":  "/var/www/ood/apps/sys/dashboard",
+    "submit_host":  "irbood04.sc.irbbarcelona.org",
+    "task_pid":  "2274547",
+    "tasks_per_node":  "1",
+    "topology_addr":  "irbgcn10",
+    "topology_addr_pattern":  "node",
+    "working_cluster":  "irbcluster:irbslurm.sc.irbbarcelona.org:6817:9984:109"
+  },
+  "writerId":  "31u8lbscj1vw4l4be81za9svv5tw2fvd"
+}

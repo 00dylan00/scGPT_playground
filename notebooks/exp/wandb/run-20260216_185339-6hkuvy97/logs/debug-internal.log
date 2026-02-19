@@ -1,0 +1,15 @@
+{"time":"2026-02-16T18:53:40.196634171+01:00","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-02-16T18:53:40.472322585+01:00","level":"INFO","msg":"stream: created new stream","id":"6hkuvy97"}
+{"time":"2026-02-16T18:53:40.472360422+01:00","level":"INFO","msg":"handler: started","stream_id":"6hkuvy97"}
+{"time":"2026-02-16T18:53:40.474644747+01:00","level":"INFO","msg":"stream: started","id":"6hkuvy97"}
+{"time":"2026-02-16T18:53:40.474660133+01:00","level":"INFO","msg":"sender: started","stream_id":"6hkuvy97"}
+{"time":"2026-02-16T18:53:40.474660461+01:00","level":"INFO","msg":"writer: started","stream_id":"6hkuvy97"}
+{"time":"2026-02-16T18:54:24.642783777+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/graphql\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-16T19:03:10.838837003+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/6hkuvy97/file_stream\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-16T19:04:14.304772787+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/6hkuvy97/file_stream\": read tcp 10.10.7.10:58662->35.186.228.49:443: read: connection reset by peer"}
+{"time":"2026-02-16T19:22:19.471387605+01:00","level":"INFO","msg":"fileTransfer: Close: file transfer manager closed"}
+{"time":"2026-02-16T19:23:21.848273676+01:00","level":"INFO","msg":"handler: operation stats","stats":{}}
+{"time":"2026-02-16T19:23:21.856834882+01:00","level":"INFO","msg":"stream: closing","id":"6hkuvy97"}
+{"time":"2026-02-16T19:23:21.85684584+01:00","level":"INFO","msg":"handler: closed","stream_id":"6hkuvy97"}
+{"time":"2026-02-16T19:23:21.857444065+01:00","level":"INFO","msg":"sender: closed","stream_id":"6hkuvy97"}
+{"time":"2026-02-16T19:23:21.857457205+01:00","level":"INFO","msg":"stream: closed","id":"6hkuvy97"}

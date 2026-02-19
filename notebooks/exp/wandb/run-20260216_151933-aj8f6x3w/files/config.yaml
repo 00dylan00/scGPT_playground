@@ -1,0 +1,194 @@
+_wandb:
+    value:
+        cli_version: 0.25.0
+        e:
+            g55voy8i7dswi1hvivyxls392rf2icc4:
+                codePath: /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/2026-02-13-explore_GTEx.ipynb
+                codePathLocal: 2026-02-13-explore_GTEx.ipynb
+                cpu_count: 112
+                cpu_count_logical: 112
+                cudaVersion: "12.8"
+                disk:
+                    /:
+                        total: "107307008000"
+                        used: "17708462080"
+                email: dylandaltonsub@gmail.com
+                executable: /home/ddalton/.conda/envs/protocol/bin/python
+                git:
+                    commit: 4d1aa83b8fe2d577482b0a062e48837c1b02624f
+                    remote: https://github.com/00dylan00/scGPT_playground.git
+                gpu: NVIDIA H200
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Hopper
+                      cudaCores: 16896
+                      memoryTotal: "150754820096"
+                      name: NVIDIA H200
+                      uuid: GPU-06e93bbe-2f7f-05a9-0a71-6df9bc63c053
+                host: irbgcn10.sc.irbbarcelona.org
+                memory:
+                    total: "2163688701952"
+                os: Linux-5.14.0-570.17.1.el9_6.x86_64-x86_64-with-glibc2.34
+                program: /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp/2026-02-13-explore_GTEx.ipynb
+                python: CPython 3.10.19
+                root: /home/sbnb/ddalton/projects/scGPT_playground/notebooks/exp
+                slurm:
+                    cluster_name: irbcluster
+                    conf: /var/spool/slurmd/conf-cache/slurm.conf
+                    cpus_on_node: "8"
+                    cpus_per_task: "8"
+                    distribution: block:block:block
+                    export_env: NONE
+                    get_user_env: "1"
+                    gpus_on_node: "1"
+                    gtids: "0"
+                    job_account: sbnb
+                    job_cpus_per_node: "8"
+                    job_end_time: "1771290394"
+                    job_gid: "1003"
+                    job_gpus: "1"
+                    job_id: "1218111"
+                    job_name: vscode
+                    job_nodelist: irbgcn10
+                    job_num_nodes: "1"
+                    job_partition: sbnb_gpu_h200
+                    job_qos: medium
+                    job_start_time: "1771247194"
+                    job_uid: "17447"
+                    job_user: ddalton
+                    jobid: "1218111"
+                    localid: "0"
+                    mem_per_node: "81920"
+                    nnodes: "1"
+                    node_aliases: (null)
+                    nodeid: "0"
+                    nodelist: irbgcn10
+                    nprocs: "1"
+                    ntasks: "1"
+                    prio_process: "0"
+                    procid: "0"
+                    script_context: prolog_task
+                    submit_dir: /var/www/ood/apps/sys/dashboard
+                    submit_host: irbood04.sc.irbbarcelona.org
+                    task_pid: "2274547"
+                    tasks_per_node: "1"
+                    topology_addr: irbgcn10
+                    topology_addr_pattern: node
+                    working_cluster: irbcluster:irbslurm.sc.irbbarcelona.org:6817:9984:109
+                startedAt: "2026-02-16T14:19:33.453059Z"
+                writerId: g55voy8i7dswi1hvivyxls392rf2icc4
+        m:
+            - "1": valid/mse
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7":
+                - 1
+            - "1": epoch
+              "6": []
+              "7": []
+            - "1": valid/mre
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7":
+                - 1
+            - "1": valid/dab
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7":
+                - 1
+            - "1": valid/sum_mse_dab
+              "5": 2
+              "6":
+                - 1
+                - 3
+              "7":
+                - 1
+            - "1": test/avg_bio
+              "6":
+                - 3
+              "7":
+                - 2
+        python_version: 3.10.19
+        t:
+            "1":
+                - 1
+                - 5
+                - 40
+                - 49
+                - 51
+                - 53
+            "2":
+                - 1
+                - 5
+                - 40
+                - 49
+                - 51
+                - 53
+            "3":
+                - 1
+                - 2
+                - 7
+                - 16
+                - 63
+            "4": 3.10.19
+            "5": 0.25.0
+            "8":
+                - 1
+            "10":
+                - 20
+            "12": 0.25.0
+            "13": linux-x86_64
+DSBN:
+    value: false
+MVC:
+    value: false
+amp:
+    value: true
+batch_size:
+    value: 32
+dab_weight:
+    value: 0
+dataset_name:
+    value: test_1
+do_train:
+    value: true
+dropout:
+    value: 0.2
+ecs_thres:
+    value: 0
+epochs:
+    value: 10
+fast_transformer:
+    value: true
+freeze:
+    value: false
+include_zero_gene:
+    value: false
+layer_size:
+    value: 128
+load_model:
+    value: /aloy/home/ddalton/projects/scGPT_playground/save/scGPT_human
+lr:
+    value: 0.0001
+mask_ratio:
+    value: 0
+n_bins:
+    value: 51
+nhead:
+    value: 4
+nlayers:
+    value: 4
+pre_norm:
+    value: false
+save_eval_interval:
+    value: 5
+schedule_ratio:
+    value: 0.9
+seed:
+    value: 0

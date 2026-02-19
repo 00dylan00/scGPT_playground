@@ -1,0 +1,17 @@
+{"time":"2026-02-17T18:59:59.242578696+01:00","level":"INFO","msg":"stream: starting","core version":"0.25.0"}
+{"time":"2026-02-17T18:59:59.518199419+01:00","level":"INFO","msg":"stream: created new stream","id":"5btbf7ez"}
+{"time":"2026-02-17T18:59:59.518241199+01:00","level":"INFO","msg":"handler: started","stream_id":"5btbf7ez"}
+{"time":"2026-02-17T18:59:59.520912006+01:00","level":"INFO","msg":"stream: started","id":"5btbf7ez"}
+{"time":"2026-02-17T18:59:59.520928198+01:00","level":"INFO","msg":"writer: started","stream_id":"5btbf7ez"}
+{"time":"2026-02-17T18:59:59.520929703+01:00","level":"INFO","msg":"sender: started","stream_id":"5btbf7ez"}
+{"time":"2026-02-18T00:15:58.689132782+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": read tcp 10.10.7.10:46878->35.186.228.49:443: read: connection reset by peer"}
+{"time":"2026-02-18T06:43:24.95498077+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T06:43:28.417111882+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": read tcp 10.10.7.10:48372->35.186.228.49:443: read: connection reset by peer"}
+{"time":"2026-02-18T13:00:39.511041145+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T13:00:42.003040136+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": read tcp 10.10.7.10:37702->35.186.228.49:443: read: connection reset by peer"}
+{"time":"2026-02-18T15:08:29.880739332+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T15:11:33.287994183+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": context deadline exceeded (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T15:14:37.97457117+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T15:17:46.066364907+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T15:21:02.722008483+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": net/http: request canceled (Client.Timeout exceeded while awaiting headers)"}
+{"time":"2026-02-18T15:21:41.847077997+01:00","level":"INFO","msg":"api: retrying error","error":"Post \"https://api.wandb.ai/files/dylandaltonsub-irb/scGPT/5btbf7ez/file_stream\": read tcp 10.10.7.10:48816->35.186.228.49:443: read: no route to host"}
